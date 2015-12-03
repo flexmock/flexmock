@@ -48,9 +48,9 @@ for pyexec in $PYEXECS; do
   fi
 
   if [[ "$RUNNERS" =~ pytest ]]; then
-    if $pyexec -c 'import py.test' 2>/dev/null; then
+    if $pyexec -c 'import pytest' 2>/dev/null; then
       echo py.test for $pyexec
-      $pyexec -m py.test $TEST_PATH/flexmock_pytest_test.py
+      $pyexec -m pytest $TEST_PATH/flexmock_pytest_test.py
       [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo py.test for $pyexec NOT FOUND
