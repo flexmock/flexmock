@@ -1,4 +1,11 @@
+# flexmock
+
+[![Build Status](https://travis-ci.org/bkabrda/flexmock.svg?branch=master)](https://travis-ci.org/bkabrda/flexmock)
+
 flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes.
+
+    from flexmock import flexmock
+    flexmock(pirate).should_receive('drink').with_args('full bottle').and_return('empty bottle')
 
 Its API is inspired by a Ruby library of the same name. However, it is not a goal of Python flexmock to be a clone of the Ruby version. Instead, the focus is on providing full support for testing Python programs and making the creation of fake objects as unobtrusive as possible.
 
