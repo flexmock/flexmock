@@ -8,12 +8,12 @@
  :Contribute: `flexmock on Github`_
  :Download: `http://pypi.python.org/pypi/flexmock <http://pypi.python.org/pypi/flexmock>`_
  :License: `FreeBSD-style License`_
- :Issue tracker: `Issue Tracker <http://github.com/has207/flexmock/issues>`_
+ :Issue tracker: `Issue Tracker <http://github.com/bkabrda/flexmock/issues>`_
  :Twitter: `Follow pyflexmock <http://twitter.com/#!/pyflexmock>`_
 
- .. _flexmock on Github: http://github.com/has207/flexmock
+ .. _flexmock on Github: http://github.com/bkabrda/flexmock
  .. _flexmock Homepage: http://flexmock.readthedocs.org
- .. _FreeBSD-style License: http://github.com/has207/flexmock/blob/master/LICENSE
+ .. _FreeBSD-style License: http://github.com/bkabrda/flexmock/blob/master/LICENSE
 
 flexmock is a testing library for Python.
 
