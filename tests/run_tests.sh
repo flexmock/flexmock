@@ -40,7 +40,8 @@ for pyexec in $PYEXECS; do
   if [[ "$RUNNERS" =~ nose ]]; then
     if $pyexec -c 'import nose' 2>/dev/null; then
       echo nose for $pyexec
-      $pyexec -m nose $TEST_PATH/flexmock_nose_test.py
+      # can't use "-m nose" with 2.6: python2.6: nose is a package and cannot be directly executed
+      $pyexec -m nose.__main__ $TEST_PATH/flexmock_nose_test.py
       [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo nose for $pyexec NOT FOUND
