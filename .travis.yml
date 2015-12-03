@@ -1,0 +1,26 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+  - "pypy3"
+install:
+  - |
+    if [ $TRAVIS_PYTHON_VERSION == pypy3 || $TRAVIS_PYTHON_VERSION == 3.* ]; then
+      pip install -r requirements-py3-devel.txt
+    else
+      pip install -r requirements-py3-devel.txt
+    fi
+      
+before_script:
+  - |
+    if [ $TRAVIS_PYTHON_VERSION == pypy || $TRAVIS_PYTHON_VERSION == pypy3 ]; then
+      export PYEXECS=$TRAVIS_PYTHON_VERSION
+    else
+      export PYEXECS=python$TRAVIS_PYTHON_VERSION
+    fi
+script:
+  - ./tests/run_test.sh
