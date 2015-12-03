@@ -7,6 +7,7 @@ python:
   - "3.5"
   - "pypy"
   - "pypy3"
+
 install:
   - |
     if [ $TRAVIS_PYTHON_VERSION == pypy3 || $TRAVIS_PYTHON_VERSION == 3.* ]; then
@@ -14,7 +15,7 @@ install:
     else
       pip install -r requirements-py3-devel.txt
     fi
-      
+
 before_script:
   - |
     if [ $TRAVIS_PYTHON_VERSION == pypy || $TRAVIS_PYTHON_VERSION == pypy3 ]; then
@@ -22,5 +23,6 @@ before_script:
     else
       export PYEXECS=python$TRAVIS_PYTHON_VERSION
     fi
+
 script:
-  - ./tests/run_test.sh
+  - ./tests/run_tests.sh

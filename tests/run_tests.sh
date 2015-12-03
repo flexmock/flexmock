@@ -24,11 +24,14 @@ TEST_PATH=$(dirname $SCRIPT)
 FLEXMOCK_PATH=$(echo $TEST_PATH | sed -e s/tests$//)
 export PYTHONPATH=$FLEXMOCK_PATH:$TEST_PATH:$PYTHONPATH
 
+EXIT_CODE=0
+
 for pyexec in $PYEXECS; do
   if [[ "$RUNNERS" =~ unittest ]]; then
     echo unittest for $pyexec
     if test -f "`which $pyexec 2>/dev/null`"; then
       $pyexec $TEST_PATH/flexmock_unittest_test.py
+      [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo $pyexec NOT FOUND
     fi
@@ -38,6 +41,7 @@ for pyexec in $PYEXECS; do
     if $pyexec -c 'import nose' 2>/dev/null; then
       echo nose for $pyexec
       $pyexec -m nose $TEST_PATH/flexmock_nose_test.py
+      [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo nose for $pyexec NOT FOUND
     fi
@@ -47,6 +51,7 @@ for pyexec in $PYEXECS; do
     if $pyexec -c 'import py.test' 2>/dev/null; then
       echo py.test for $pyexec
       $pyexec -m py.test $TEST_PATH/flexmock_pytest_test.py
+      [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo py.test for $pyexec NOT FOUND
     fi
@@ -56,9 +61,12 @@ for pyexec in $PYEXECS; do
     if $pyexec -c "from twisted.scripts.trial import run" 2>/dev/null; then
       echo twisted for $pyexec
       $pyexec -c "from twisted.scripts.trial import run; run();" $TEST_PATH/flexmock_pytest_test.py
+      [[ $? -ne 0 ]] && EXIT_CODE=1
       rm -rf _trial_temp/
     else
       echo twisted for $pyexec NOT FOUND
     fi
   fi
 done
+
+exit $EXIT_CODE
