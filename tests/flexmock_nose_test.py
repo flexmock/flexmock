@@ -1,10 +1,8 @@
 from flexmock import MethodCallError
 from flexmock import flexmock_teardown
 from flexmock_test import assertRaises
-from nose import with_setup
 import flexmock
 import flexmock_test
-import unittest
 
 
 def test_module_level():
@@ -21,7 +19,6 @@ def test_module_level_generator():
 
 
 class TestRegularClass(flexmock_test.RegularClass):
-
     def test_regular(self):
         a = flexmock(a=2)
         a.should_receive('a').once
@@ -35,7 +32,6 @@ class TestRegularClass(flexmock_test.RegularClass):
 
 
 class TestUnittestClass(flexmock_test.TestFlexmockUnittest):
-
     def test_unittest(self):
         a = flexmock(a=2)
         a.should_receive('a').once

@@ -99,8 +99,12 @@ class RegularClass(object):
 
     def test_flexmock_should_accept_shortcuts_for_creating_expectations(self):
         class Foo:
-            def method1(self): pass
-            def method2(self): pass
+            def method1(self):
+                pass
+
+            def method2(self):
+                pass
+
         foo = Foo()
         flexmock(foo, method1='returning 1', method2='returning 2')
         assertEqual('returning 1', foo.method1())
@@ -118,14 +122,12 @@ class RegularClass(object):
         mock = flexmock(name='temp')
         mock.should_receive('method_foo')
         assertEqual('method_foo',
-                    FlexmockContainer.get_flexmock_expectation(
-                         mock, 'method_foo').name)
+                    FlexmockContainer.get_flexmock_expectation(mock, 'method_foo').name)
 
     def test_flexmock_expectations_returns_none_if_not_found(self):
         mock = flexmock(name='temp')
         mock.should_receive('method_foo')
-        assert (FlexmockContainer.get_flexmock_expectation(
-           mock, 'method_bar') is None)
+        assert (FlexmockContainer.get_flexmock_expectation(mock, 'method_bar') is None)
 
     def test_flexmock_should_check_parameters(self):
         mock = flexmock(name='temp')
@@ -162,8 +164,10 @@ class RegularClass(object):
 
     def test_flexmock_should_check_raised_exceptions(self):
         mock = flexmock(name='temp')
+
         class FakeException(Exception):
             pass
+
         mock.should_receive('method_foo').and_raise(FakeException)
         assertRaises(FakeException, mock.method_foo)
         assertEqual(1,
@@ -172,9 +176,11 @@ class RegularClass(object):
 
     def test_flexmock_should_check_raised_exceptions_instance_with_args(self):
         mock = flexmock(name='temp')
+
         class FakeException(Exception):
             def __init__(self, arg, arg2):
                 pass
+
         mock.should_receive('method_foo').and_raise(FakeException(1, arg2=2))
         assertRaises(FakeException, mock.method_foo)
         assertEqual(1,
@@ -183,9 +189,11 @@ class RegularClass(object):
 
     def test_flexmock_should_check_raised_exceptions_class_with_args(self):
         mock = flexmock(name='temp')
+
         class FakeException(Exception):
             def __init__(self, arg, arg2):
                 pass
+
         mock.should_receive('method_foo').and_raise(FakeException, 1, arg2=2)
         assertRaises(FakeException, mock.method_foo)
         assertEqual(1,
@@ -221,10 +229,13 @@ class RegularClass(object):
         class User(object):
             def __init__(self, name=None):
                 self.name = name
+
             def get_name(self):
                 return self.name
+
             def set_name(self, name):
                 self.name = name
+
         user = User()
         flexmock(user)
         user.should_receive('get_name').and_return('john')
@@ -235,10 +246,13 @@ class RegularClass(object):
         class User:
             def __init__(self, name=None):
                 self.name = name
+
             def get_name(self):
                 return self.name
+
             def set_name(self, name):
                 self.name = name
+
         user = User()
         flexmock(user)
         user.should_receive('get_name').and_return('john')
@@ -247,8 +261,12 @@ class RegularClass(object):
 
     def test_flexmock_should_create_partial_new_style_class_mock(self):
         class User(object):
-            def __init__(self): pass
-            def get_name(self): pass
+            def __init__(self):
+                pass
+
+            def get_name(self):
+                pass
+
         flexmock(User)
         User.should_receive('get_name').and_return('mike')
         user = User()
@@ -256,8 +274,12 @@ class RegularClass(object):
 
     def test_flexmock_should_create_partial_old_style_class_mock(self):
         class User:
-            def __init__(self): pass
-            def get_name(self): pass
+            def __init__(self):
+                pass
+
+            def get_name(self):
+                pass
+
         flexmock(User)
         User.should_receive('get_name').and_return('mike')
         user = User()
@@ -273,8 +295,10 @@ class RegularClass(object):
 
     def test_flexmock_should_match_expectations_against_user_defined_classes(self):
         mock = flexmock(name='temp')
+
         class Foo:
             pass
+
         mock.should_receive('method_foo').with_args(Foo).and_return('got a Foo')
         assertEqual('got a Foo', mock.method_foo(Foo()))
         assertRaises(MethodSignatureError, mock.method_foo, 1)
@@ -341,8 +365,10 @@ class RegularClass(object):
     def test_flexmock_removes_stubs_from_multiple_objects_on_teardown(self):
         class User:
             def get_name(self): pass
+
         class Group:
             def get_name(self): pass
+
         user = User()
         group = User()
         saved1 = user.get_name
@@ -360,8 +386,10 @@ class RegularClass(object):
     def test_flexmock_removes_stubs_from_multiple_classes_on_teardown(self):
         class User:
             def get_name(self): pass
+
         class Group:
             def get_name(self): pass
+
         user = User()
         group = User()
         saved1 = user.get_name
@@ -458,7 +486,9 @@ class RegularClass(object):
             mock, 'method_foo', 'value_bar')
 
     def test_flexmock_function_should_return_previously_mocked_object(self):
-        class User(object): pass
+        class User(object):
+            pass
+
         user = User()
         foo = flexmock(user)
         assert foo == user
@@ -466,7 +496,9 @@ class RegularClass(object):
 
     def test_flexmock_should_not_return_class_object_if_mocking_instance(self):
         class User:
-            def method(self): pass
+            def method(self):
+                pass
+
         user = User()
         user2 = User()
         class_mock = flexmock(User).should_receive(
@@ -505,17 +537,24 @@ class RegularClass(object):
         assertEqual('static', User.foo())
 
     def test_flexmock_should_mock_new_instances_with_multiple_params(self):
-        class User(object): pass
+        class User(object):
+            pass
+
         class Group(object):
             def __init__(self, arg, arg2):
                 pass
+
         user = User()
         flexmock(Group).new_instances(user)
         assert user is Group(1, 2)
 
     def test_flexmock_should_revert_new_instances_on_teardown(self):
-        class User(object): pass
-        class Group(object): pass
+        class User(object):
+            pass
+
+        class Group(object):
+            pass
+
         user = User()
         group = Group()
         flexmock(Group).new_instances(user)
@@ -524,7 +563,9 @@ class RegularClass(object):
         assertEqual(group.__class__, Group().__class__)
 
     def test_flexmock_should_cleanup_added_methods_and_attributes(self):
-        class Group(object): pass
+        class Group(object):
+            pass
+
         group = Group()
         flexmock(Group)
         assert 'should_receive' in Group.__dict__
@@ -538,9 +579,13 @@ class RegularClass(object):
 
     def test_flexmock_should_cleanup_after_exception(self):
         class User:
-            def method2(self): pass
+            def method2(self):
+                pass
+
         class Group:
-            def method1(self): pass
+            def method1(self):
+                pass
+
         flexmock(Group)
         flexmock(User)
         Group.should_receive('method1').once()
@@ -555,8 +600,10 @@ class RegularClass(object):
         class Group(object):
             def method1(self, arg1, arg2='b'):
                 return '%s:%s' % (arg1, arg2)
+
             def method2(self, arg):
                 return arg
+
         group = Group()
         flexmock(group).should_call('method1').twice()
         assertEqual('a:c', group.method1('a', arg2='c'))
@@ -569,7 +616,10 @@ class RegularClass(object):
         class Group(object):
             def method1(self, arg1, arg2='b'):
                 return '%s:%s' % (arg1, arg2)
-            def method2(self, a): pass
+
+            def method2(self, a):
+                pass
+
         group = Group()
         flexmock(group).should_call('method1').at_least().once()
         assertRaises(MethodCallError, self._tear_down)
@@ -581,10 +631,18 @@ class RegularClass(object):
 
     def test_flexmock_doesnt_error_on_properly_ordered_expectations(self):
         class Foo(object):
-            def foo(self): pass
-            def method1(self, a): pass
-            def bar(self): pass
-            def baz(self): pass
+            def foo(self):
+                pass
+
+            def method1(self, a):
+                pass
+
+            def bar(self):
+                pass
+
+            def baz(self):
+                pass
+
         foo = Foo()
         flexmock(foo).should_receive('foo')
         flexmock(foo).should_receive('method1').with_args('a').ordered()
@@ -665,8 +723,12 @@ class RegularClass(object):
 
     def test_flexmock_should_match_types_on_multiple_arguments_classes(self):
         class Foo:
-            def method1(self, a, b): pass
-        class Bar: pass
+            def method1(self, a, b):
+                pass
+
+        class Bar:
+            pass
+
         foo = Foo()
         bar = Bar()
         flexmock(foo).should_receive('method1').with_args(
@@ -704,8 +766,10 @@ class RegularClass(object):
         class Foo:
             def __private_method(self):
                 return 'foo'
+
             def public_method(self):
                 return self.__private_method()
+
         foo = Foo()
         flexmock(foo).should_receive('__private_method').and_return('bar')
         assertEqual('bar', foo.public_method())
@@ -714,8 +778,10 @@ class RegularClass(object):
         class Foo:
             def __special_method__(self):
                 return 'foo'
+
             def public_method(self):
                 return self.__special_method__()
+
         foo = Foo()
         flexmock(foo).should_receive('__special_method__').and_return('bar')
         assertEqual('bar', foo.public_method())
@@ -724,8 +790,10 @@ class RegularClass(object):
         class Foo:
             def __(self):
                 return 'foo'
+
             def public_method(self):
                 return self.__()
+
         foo = Foo()
         flexmock(foo).should_receive('__').and_return('bar')
         assertEqual('bar', foo.public_method())
@@ -760,16 +828,21 @@ class RegularClass(object):
 
     def test_flexmock_should_mock_private_methods_with_leading_underscores(self):
         class _Foo:
-            def __stuff(self): pass
+            def __stuff(self):
+                pass
+
             def public_method(self):
                 return self.__stuff()
+
         foo = _Foo()
         flexmock(foo).should_receive('__stuff').and_return('bar')
         assertEqual('bar', foo.public_method())
 
     def test_flexmock_should_mock_generators(self):
         class Gen:
-            def foo(self): pass
+            def foo(self):
+                pass
+
         gen = Gen()
         flexmock(gen).should_receive('foo').and_yield(*range(1, 10))
         output = [val for val in gen.foo()]
@@ -795,8 +868,10 @@ class RegularClass(object):
             def __init__(self, param, param2):
                 self.message = '%s, %s' % (param, param2)
                 Exception.__init__(self)
+
         class User:
             def get_stuff(self): raise FakeException(1, 2)
+
         user = User()
         flexmock(user).should_call('get_stuff').and_raise(FakeException, 1, 2)
         user.get_stuff()
@@ -807,10 +882,13 @@ class RegularClass(object):
                 self.p1 = param
                 self.p2 = param2
                 Exception.__init__(self, param)
+
             def __str__(self):
                 return '%s, %s' % (self.p1, self.p2)
+
         class User:
             def get_stuff(self): raise FakeException('1', '2')
+
         user = User()
         flexmock(user).should_call('get_stuff').and_raise(FakeException, '2', '1')
         assertRaises(ExceptionMessageError, user.get_stuff)
@@ -848,8 +926,12 @@ class RegularClass(object):
 
     def test_flexmock_should_blow_up_on_wrong_spy_return_values(self):
         class User:
-            def get_stuff(self): return 'real', 'stuff'
-            def get_more_stuff(self): return 'other', 'stuff'
+            def get_stuff(self):
+                return 'real', 'stuff'
+
+            def get_more_stuff(self):
+                return 'other', 'stuff'
+
         user = User()
         flexmock(user).should_call('get_stuff').and_return('other', 'stuff')
         assertRaises(MethodSignatureError, user.get_stuff)
@@ -857,7 +939,9 @@ class RegularClass(object):
         assertRaises(MethodSignatureError, user.get_more_stuff)
 
     def test_flexmock_should_mock_same_class_twice(self):
-        class Foo: pass
+        class Foo:
+            pass
+
         flexmock(Foo)
         flexmock(Foo)
 
@@ -936,7 +1020,9 @@ class RegularClass(object):
         assertEqual('User', User.get_stuff())
 
     def test_spy_should_match_return_value_class(self):
-        class User: pass
+        class User:
+            pass
+
         user = User()
         foo = flexmock(foo=lambda: ('bar', 'baz'),
                        bar=lambda: user,
@@ -953,10 +1039,18 @@ class RegularClass(object):
 
     def test_spy_should_not_match_falsy_stuff(self):
         class Foo:
-            def foo(self): return None
-            def bar(self): return False
-            def baz(self): return []
-            def quux(self): return ''
+            def foo(self):
+                return None
+
+            def bar(self):
+                return False
+
+            def baz(self):
+                return []
+
+            def quux(self):
+                return ''
+
         foo = Foo()
         flexmock(foo).should_call('foo').and_return('bar').once
         flexmock(foo).should_call('bar').and_return('bar').once
@@ -968,7 +1062,9 @@ class RegularClass(object):
         assertRaises(FlexmockError, foo.quux)
 
     def test_new_instances_should_blow_up_on_should_receive(self):
-        class User(object): pass
+        class User(object):
+            pass
+
         mock = flexmock(User).new_instances(None).mock
         assertRaises(FlexmockError, mock.should_receive, 'foo')
 
@@ -976,24 +1072,25 @@ class RegularClass(object):
         class Foo:
             def get_stuff(self):
                 return 'yay'
+
         foo = Foo()
         flexmock(foo).should_call('get_stuff').and_return('yay').once()
         assertRaises(MethodCallError, self._tear_down)
 
     def test_flexmock_should_fail_mocking_nonexistent_methods(self):
-        class User: pass
+        class User:
+            pass
+
         user = User()
         assertRaises(FlexmockError,
                      flexmock(user).should_receive, 'nonexistent')
 
     def test_flexmock_should_not_explode_on_unicode_formatting(self):
         if sys.version_info >= (3, 0):
-            formatted = _format_args(
-                'method', {'kargs' : (chr(0x86C7),), 'kwargs' : {}})
+            formatted = _format_args('method', {'kargs': (chr(0x86C7),), 'kwargs': {}})
             assertEqual('method("蛇")', formatted)
         else:
-            formatted = _format_args(
-                'method', {'kargs' : (unichr(0x86C7),), 'kwargs' : {}})
+            formatted = _format_args('method', {'kargs': (unichr(0x86C7),), 'kwargs': {}})
             assertEqual('method("%s")' % unichr(0x86C7), formatted)
 
     def test_return_value_should_not_explode_on_unicode_values(self):
@@ -1012,8 +1109,10 @@ class RegularClass(object):
         class Nyan(object):
             def __init__(self):
                 self.n = 0
+
             def method(self):
                 self.n += 1
+
         obj = Nyan()
         flexmock(obj)
         obj.should_call('method')
@@ -1051,9 +1150,11 @@ class RegularClass(object):
         class Foo:
             def method2(self):
                 return 'foo'
+
         class Bar:
             def method1(self):
                 return Foo()
+
         foo = Bar()
         assertEqual('foo', foo.method1().method2())
         flexmock(foo).should_receive('method1.method2').and_return('bar')
@@ -1063,9 +1164,11 @@ class RegularClass(object):
         class Foo:
             def method2(self, arg):
                 return arg
+
         class Bar:
             def method1(self):
                 return Foo()
+
         foo = Bar()
         assertEqual('foo', foo.method1().method2('foo'))
         flexmock(foo).should_receive('method1.method2').with_args(
@@ -1080,12 +1183,15 @@ class RegularClass(object):
         class Baz:
             def method3(self):
                 return 'foo'
+
         class Foo:
             def method2(self):
                 return Baz()
+
         class Bar:
             def method1(self):
                 return Foo()
+
         foo = Bar()
         assertEqual('foo', foo.method1().method2().method3())
         flexmock(foo).should_receive('method1.method2.method3').and_return('bar')
@@ -1124,27 +1230,35 @@ class RegularClass(object):
         assertEqual(foo.method(), 4)
 
     def test_new_instances_should_be_a_method(self):
-        class Foo(object): pass
+        class Foo(object):
+            pass
+
         flexmock(Foo).new_instances('bar')
         assertEqual('bar', Foo())
         self._tear_down()
         assert 'bar' != Foo()
 
     def test_new_instances_raises_error_when_not_a_class(self):
-        class Foo(object): pass
+        class Foo(object):
+            pass
+
         foo = Foo()
         flexmock(foo)
         assertRaises(FlexmockError, foo.new_instances, 'bar')
 
     def test_new_instances_works_with_multiple_return_values(self):
-        class Foo(object): pass
+        class Foo(object):
+            pass
+
         flexmock(Foo).new_instances('foo', 'bar')
         assertEqual('foo', Foo())
         assertEqual('bar', Foo())
 
     def test_should_receive_should_not_replace_flexmock_methods(self):
         class Foo:
-            def bar(self): pass
+            def bar(self):
+                pass
+
         foo = Foo()
         flexmock(foo)
         assertRaises(FlexmockError, foo.should_receive, 'should_receive')
@@ -1153,7 +1267,10 @@ class RegularClass(object):
         class Foo:
             def should_receive(self):
                 return 'real'
-            def bar(self): pass
+
+            def bar(self):
+                pass
+
         foo = Foo()
         mock = flexmock(foo)
         assertEqual(foo.should_receive(), 'real')
@@ -1168,7 +1285,10 @@ class RegularClass(object):
         class Foo:
             def should_receive(self):
                 return 'real'
-            def bar(self): pass
+
+            def bar(self):
+                pass
+
         foo = Foo()
         mock = flexmock(Foo)
         assertEqual(foo.should_receive(), 'real')
@@ -1186,9 +1306,12 @@ class RegularClass(object):
 
     def test_mocking_down_the_inheritance_chain_class_to_class(self):
         class Parent(object):
-            def foo(self): pass
+            def foo(self):
+                pass
+
         class Child(Parent):
-            def bar(self): pass
+            def bar(self):
+                pass
 
         flexmock(Parent).should_receive('foo').and_return('outer')
         flexmock(Child).should_receive('bar').and_return('inner')
@@ -1197,7 +1320,9 @@ class RegularClass(object):
 
     def test_arg_matching_works_with_regexp(self):
         class Foo:
-            def foo(self, arg1, arg2): pass
+            def foo(self, arg1, arg2):
+                pass
+
         foo = Foo()
         flexmock(foo).should_receive('foo').with_args(
             re.compile('^arg1.*asdf$'), arg2=re.compile('f')).and_return('mocked')
@@ -1220,13 +1345,17 @@ class RegularClass(object):
         assertRaises(MethodSignatureError, foo.foo, 'arg1somejunkasdf', arg2='b')
 
     def test_flexmock_class_returns_same_object_on_repeated_calls(self):
-        class Foo: pass
+        class Foo:
+            pass
+
         a = flexmock(Foo)
         b = flexmock(Foo)
         assertEqual(a, b)
 
     def test_flexmock_object_returns_same_object_on_repeated_calls(self):
-        class Foo: pass
+        class Foo:
+            pass
+
         foo = Foo()
         a = flexmock(foo)
         b = flexmock(foo)
@@ -1262,11 +1391,20 @@ class RegularClass(object):
 
     def test_state_machine(self):
         class Radio:
-            def __init__(self): self.is_on = False
-            def switch_on(self): self.is_on = True
-            def switch_off(self): self.is_on = False
-            def select_channel(self): return None
-            def adjust_volume(self, num): self.volume = num
+            def __init__(self):
+                self.is_on = False
+
+            def switch_on(self):
+                self.is_on = True
+
+            def switch_off(self):
+                self.is_on = False
+
+            def select_channel(self):
+                return None
+
+            def adjust_volume(self, num):
+                self.volume = num
 
         radio = Radio()
         flexmock(radio)
@@ -1359,19 +1497,23 @@ class RegularClass(object):
         class A:
             def x(self):
                 return 'a'
+
         class B(A):
             def x(self):
                 return 'b'
+
         flexmock(B).should_receive('x').and_return('1')
         self._tear_down()
         assertEqual('b', B().x())
 
     def test_format_args_supports_tuples(self):
-        formatted = _format_args('method', {'kargs' : ((1, 2),), 'kwargs' : {}})
+        formatted = _format_args('method', {'kargs': ((1, 2),), 'kwargs': {}})
         assertEqual('method((1, 2))', formatted)
 
     def test_mocking_subclass_of_str(self):
-        class String(str): pass
+        class String(str):
+            pass
+
         s = String()
         flexmock(s, endswith='fake')
         assertEqual('fake', s.endswith('stuff'))
@@ -1379,7 +1521,9 @@ class RegularClass(object):
         assertEqual(False, s.endswith('stuff'))
 
     def test_ordered_on_different_methods(self):
-        class String(str): pass
+        class String(str):
+            pass
+
         s = String('abc')
         flexmock(s)
         s.should_call('startswith').with_args('asdf', 0, 4).ordered()
@@ -1406,8 +1550,10 @@ class RegularClass(object):
     def test_should_chain_attributes(self):
         class Baz:
             x = 1
+
         class Bar:
             baz = Baz()
+
         class Foo:
             bar = Bar()
 
@@ -1464,8 +1610,10 @@ class RegularClass(object):
     def test_should_replace_attributes_that_are_instances_of_classes(self):
         class Foo(object):
             pass
+
         class Bar(object):
             foo = Foo()
+
         bar = Bar()
         flexmock(bar, foo='test')
         assertEqual('test', bar.foo)
@@ -1473,9 +1621,15 @@ class RegularClass(object):
     def test_isproperty(self):
         class Foo:
             @property
-            def bar(self): pass
-            def baz(self): pass
-        class Bar(Foo): pass
+            def bar(self):
+                pass
+
+            def baz(self):
+                pass
+
+        class Bar(Foo):
+            pass
+
         foo = Foo()
         bar = Bar()
         assertEqual(True, _isproperty(foo, 'bar'))
@@ -1569,16 +1723,20 @@ class RegularClass(object):
 
     def test_calling_with_keyword_args_matches_mock_with_positional_args(self):
         class Foo(object):
-            def bar(self, a, b, c): pass
+            def bar(self, a, b, c):
+                pass
+
         foo = Foo()
-        flexmock(foo).should_receive('bar').with_args(1,2,3).once()
+        flexmock(foo).should_receive('bar').with_args(1, 2, 3).once()
         foo.bar(a=1, b=2, c=3)
 
     def test_calling_with_positional_args_matches_mock_with_kwargs(self):
         class Foo(object):
-            def bar(self, a, b, c): pass
+            def bar(self, a, b, c):
+                pass
+
         foo = Foo()
-        flexmock(foo).should_receive('bar').with_args(a=1,b=2,c=3).once()
+        flexmock(foo).should_receive('bar').with_args(a=1, b=2, c=3).once()
         foo.bar(1, 2, c=3)
 
     def test_use_replace_with_for_callable_shortcut_kwargs(self):

@@ -2,26 +2,37 @@ import flexmock
 import sys
 import unittest
 
+
 class ModernClass(object):
     """Contains features only available in 2.6 and above."""
     def test_context_manager_on_instance(self):
         class CM(object):
-            def __enter__(self): pass
-            def __exit__(self, *_): pass
+            def __enter__(self):
+                pass
+
+            def __exit__(self, *_):
+                pass
+
         cm = CM()
         flexmock(cm).should_call('__enter__').once
         flexmock(cm).should_call('__exit__').once
-        with cm: pass
+        with cm:
+            pass
         self._tear_down()
 
     def test_context_manager_on_class(self):
         class CM(object):
-            def __enter__(self): pass
-            def __exit__(self, *_): pass
+            def __enter__(self):
+                pass
+
+            def __exit__(self, *_):
+                pass
+
         cm = CM()
         flexmock(CM).should_receive('__enter__').once
         flexmock(CM).should_receive('__exit__').once
-        with cm: pass
+        with cm:
+            pass
         self._tear_down()
 
     def test_flexmock_should_support_with(self):
@@ -40,7 +51,6 @@ class ModernClass(object):
         with open('file_name') as f:
             data = f.read()
         self.assertEqual('some data', data)
-
 
 
 class TestFlexmockUnittestModern(ModernClass, unittest.TestCase):

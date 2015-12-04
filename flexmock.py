@@ -43,16 +43,6 @@ RE_TYPE = re.compile('')
 SPECIAL_METHODS = (classmethod, staticmethod)
 
 
-try:
-    any([])
-except NameError:
-    # Python 2.4 sucks
-    def any(iterable):
-        for x in iterable:
-            if x: return True
-        return False
-
-
 class FlexmockError(Exception):
     pass
 
@@ -110,6 +100,7 @@ class FullArgSpec(object):
         (self.args, self.varargs, self.keywords, self.defaults, self.kwonlyargs,
          self.kwonlydefaults, self.annotations) = spec
 
+
 class FlexmockContainer(object):
     """Holds global hash of object/expectation mappings."""
     flexmock_objects = {}
@@ -127,7 +118,7 @@ class FlexmockContainer(object):
     @classmethod
     def get_flexmock_expectation(cls, obj, name=None, args=None):
         """Retrieves an existing matching expectation."""
-        if args == None:
+        if args is None:
             args = {'kargs': (), 'kwargs': {}}
         if not isinstance(args, dict):
             args = {'kargs': args, 'kwargs': {}}
@@ -258,7 +249,7 @@ class Expectation(object):
         # TODO(herman): fix it properly so that module mocks aren't set as methods
         is_method = (inspect.ismethod(getattr(self._mock, self.name)) and
                      self.method_type is not staticmethod and
-                     type(self._mock) != types.ModuleType)
+                     not isinstance(self._mock, types.ModuleType))
         args_len = len(allowed.args)
         if is_method:
             args_len -= 1
@@ -269,8 +260,8 @@ class Expectation(object):
         total_positional = len(
             kargs + tuple(a for a in kwargs if a in allowed.args))
         named_optionals = [a for a in kwargs
-            if allowed.defaults
-            if a in allowed.args[len(allowed.args) - len(allowed.defaults):]]
+                           if allowed.defaults
+                           if a in allowed.args[len(allowed.args) - len(allowed.defaults):]]
         if allowed.defaults and total_positional == minimum and named_optionals:
             minimum += len(named_optionals)
         if total_positional < minimum:
@@ -286,7 +277,7 @@ class Expectation(object):
                 '%s already given as positional arguments to %s' %
                 ([a for a in kwargs if a in allowed.args], self.name))
         if (not allowed.keywords and
-            any(a for a in kwargs if a not in allowed.args + allowed.kwonlyargs)):
+                any(a for a in kwargs if a not in allowed.args + allowed.kwonlyargs)):
             raise MethodSignatureError(
                 '%s is not a valid keyword argument to %s' %
                 ([a for a in kwargs
@@ -299,7 +290,6 @@ class Expectation(object):
             raise MethodSignatureError(
                 '%s requires keyword-only argument(s) "%s"' %
                 (self.name, '", "'.join(missing_kwonlyargs)))
-
 
     def _update_original(self, name, obj):
         if hasattr(obj, '__dict__') and name in obj.__dict__:
@@ -332,7 +322,8 @@ class Expectation(object):
         else:
             args = argspec.args
         for i, arg in enumerate(kargs):
-            if len(args) <= i: return default
+            if len(args) <= i:
+                return default
             ret['kwargs'][args[i]] = arg
         return ret
 
@@ -577,8 +568,7 @@ class Expectation(object):
           - self, i.e. can be chained with other Expectation methods
         """
         if not self._callable:
-            self.__raise(FlexmockError,
-                "can't use replace_with() with attribute/property stubs")
+            self.__raise(FlexmockError, "can't use replace_with() with attribute/property stubs")
         replace_with = _getattr(self, '_replace_with')
         original = self.__dict__.get('original')
         if replace_with:
@@ -654,12 +644,12 @@ class Expectation(object):
                 # name may be unicode but pypy demands dict keys to be str
                 name = str(_getattr(self, 'name'))
                 if (hasattr(_mock, '__dict__') and
-                    name in _mock.__dict__ and
-                    self._local_override):
+                        name in _mock.__dict__ and
+                        self._local_override):
                     del _mock.__dict__[name]
                 elif (hasattr(_mock, '__dict__') and
-                    name in _mock.__dict__ and
-                    type(_mock.__dict__) is dict):
+                        name in _mock.__dict__ and
+                        type(_mock.__dict__) is dict):
                     _mock.__dict__[name] = original
                 else:
                     setattr(_mock, name, original)
@@ -698,7 +688,7 @@ class Mock(object):
         Call the instance's version of __iter__ if available, otherwise yield self.
         """
         if (hasattr(self, '__dict__') and type(self.__dict__) is dict and
-            '__iter__' in self.__dict__):
+                '__iter__' in self.__dict__):
             for item in self.__dict__['__iter__'](self):
                 yield item
         else:
@@ -723,8 +713,7 @@ class Mock(object):
         name = _update_name_if_private(obj, name)
         _ensure_object_has_named_attribute(obj, name)
         if chained_methods:
-            if (not isinstance(obj, Mock) and
-                not hasattr(getattr(obj, name), '__call__')):
+            if (not isinstance(obj, Mock) and not hasattr(getattr(obj, name), '__call__')):
                 return_value = _create_partial_mock(getattr(obj, name))
             else:
                 return_value = Mock()
@@ -795,7 +784,7 @@ class Mock(object):
                 self._object, name=name, return_value=return_value)
         return expectation
 
-    def _update_class_for_magic_builtins( self, obj, name):
+    def _update_class_for_magic_builtins(self, obj, name):
         """Fixes MRO for builtin methods on new-style objects.
 
         On 2.7+ and 3.2+, replacing magic builtins on instances of new-style
@@ -806,9 +795,10 @@ class Mock(object):
         if not (name.startswith('__') and name.endswith('__') and len(name) > 4):
             return
         original = getattr(obj.__class__, name)
+
         def updated(self, *kargs, **kwargs):
             if (hasattr(self, '__dict__') and type(self.__dict__) is dict and
-                name in self.__dict__):
+                    name in self.__dict__):
                 return self.__dict__[name](*kargs, **kwargs)
             else:
                 return original(self, *kargs, **kwargs)
@@ -835,14 +825,15 @@ class Mock(object):
                 # When a class/static method is mocked out on an *instance*
                 # we need to fetch the type from the class
                 method_type = type(_getattr(obj.__class__, name))
-            except: pass
+            except:
+                pass
             if method_type in SPECIAL_METHODS:
                 expectation.original_function = getattr(obj, name)
             expectation.method_type = method_type
         override = _setattr(obj, name, types.MethodType(method_instance, obj))
         expectation._local_override = override
         if (override and not _isclass(obj) and not isinstance(obj, Mock) and
-            hasattr(obj.__class__, name)):
+                hasattr(obj.__class__, name)):
             self._update_class_for_magic_builtins(obj, name)
 
     def _update_attribute(self, expectation, name, return_value=None):
@@ -860,10 +851,11 @@ class Mock(object):
             obj = obj.__class__
         expectation._callable = False
         original = getattr(obj, name)
+
         @property
         def updated(self):
             if (hasattr(self, '__dict__') and type(self.__dict__) is dict and
-                name in self.__dict__):
+                    name in self.__dict__):
                 return self.__dict__[name]
             else:
                 return getattr(self, new_name)
@@ -932,7 +924,7 @@ class Mock(object):
                 return _handle_exception_matching(expectation)
             expected_values = _getattr(expectation, 'return_values')
             if (expected_values and
-                not match_return_values(expected_values[0].value, return_values)):
+                    not match_return_values(expected_values[0].value, return_values)):
                 raise (MethodSignatureError('expected to return %s, returned %s' %
                        (expected_values[0].value, return_values)))
             return return_values
@@ -944,7 +936,7 @@ class Mock(object):
             if expectation:
                 if not expectation.runnable():
                     raise StateError('%s expected to be called when %s is True' %
-                                       (name, expectation._get_runnable()))
+                                     (name, expectation._get_runnable()))
                 expectation.times_called += 1
                 expectation.verify(final=False)
                 _pass_thru = _getattr(expectation, '_pass_thru')
@@ -1002,8 +994,7 @@ def _format_args(name, arguments):
     if arguments is None:
         arguments = {'kargs': (), 'kwargs': {}}
     kargs = ', '.join(_arg_to_str(arg) for arg in arguments['kargs'])
-    kwargs = ', '.join('%s=%s' % (k, _arg_to_str(v)) for k, v in
-                                  arguments['kwargs'].items())
+    kwargs = ', '.join('%s=%s' % (k, _arg_to_str(v)) for k, v in arguments['kwargs'].items())
     if kargs and kwargs:
         args = '%s, %s' % (kargs, kwargs)
     else:
@@ -1026,8 +1017,7 @@ def _create_partial_mock(obj_or_class, **kwargs):
             mock.should_receive(name).and_return(return_value)
     if not matches:
         FlexmockContainer.add_expectation(mock, Expectation(obj_or_class))
-    if (_attach_flexmock_methods(mock, Mock, obj_or_class) and
-      not _isclass(mock._object)):
+    if (_attach_flexmock_methods(mock, Mock, obj_or_class) and not _isclass(mock._object)):
         mock = mock._object
     return mock
 
@@ -1036,8 +1026,7 @@ def _attach_flexmock_methods(mock, flexmock_class, obj):
     try:
         for attr in UPDATED_ATTRS:
             if hasattr(obj, attr):
-                if (_get_code(getattr(obj, attr)) is not
-                    _get_code(getattr(flexmock_class, attr))):
+                if (_get_code(getattr(obj, attr)) is not _get_code(getattr(flexmock_class, attr))):
                     return False
         for attr in UPDATED_ATTRS:
             _setattr(obj, attr, getattr(mock, attr))
@@ -1095,8 +1084,7 @@ def _setattr(obj, name, value):
 
 def _hasattr(obj, name):
     """Ensure hasattr checks don't create side-effects for properties."""
-    if (not _isclass(obj) and hasattr(obj, '__dict__') and
-        name not in obj.__dict__):
+    if (not _isclass(obj) and hasattr(obj, '__dict__') and name not in obj.__dict__):
         if name in DEFAULT_CLASS_ATTRIBUTES:
             return False  # avoid false positives for things like __call__
         else:
@@ -1128,8 +1116,7 @@ def _isproperty(obj, name):
 
 
 def _update_name_if_private(obj, name):
-    if (name.startswith('__') and not name.endswith('__') and
-        not inspect.ismodule(obj)):
+    if (name.startswith('__') and not name.endswith('__') and not inspect.ismodule(obj)):
         if _isclass(obj):
             class_name = obj.__name__
         else:
@@ -1222,6 +1209,7 @@ def _hook_into_pytest():
     try:
         from _pytest import runner
         saved = runner.call_runtest_hook
+
         def call_runtest_hook(item, when, **kwargs):
             ret = saved(item, when, **kwargs)
             if when != 'call' and ret.excinfo is None:
@@ -1242,6 +1230,7 @@ def _hook_into_doctest():
     try:
         from doctest import DocTestRunner
         saved = DocTestRunner.run
+
         def run(self, test, compileflags=None, out=None, clear_globs=True):
             try:
                 return saved(self, test, compileflags, out, clear_globs)
@@ -1309,7 +1298,7 @@ def _hook_into_unittest():
         except AttributeError:
             # ugh, python2.4
             _patch_test_result(unittest._TextTestResult)
-    except: # let's not take any chances
+    except:  # let's not take any chances
         pass
 _hook_into_unittest()
 
@@ -1374,6 +1363,7 @@ def _hook_into_teamcity_unittest():
         pass
 _hook_into_teamcity_unittest()
 
+
 # Dark magic to make the flexmock module itself callable.
 # So that you can say:
 #   import flexmock
@@ -1385,10 +1375,13 @@ class _CallableModule(types.ModuleType):
         self._realmod = sys.modules['flexmock']
         sys.modules['flexmock'] = self
         self.__doc__ = flexmock.__doc__
+
     def __dir__(self):
         return dir(self._realmod)
+
     def __call__(self, *args, **kw):
         return self._realmod.flexmock(*args, **kw)
+
     def __getattr__(self, attr):
         return getattr(self._realmod, attr)
 

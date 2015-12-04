@@ -10,4 +10,4 @@ setup(name='flexmock',
       author_email='slavek@redhat.com',
       url='http://flexmock.readthedocs.org',
       license='FreeBSD style license',
-)
+      )
