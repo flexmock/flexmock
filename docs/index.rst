@@ -9,7 +9,6 @@
  :Download: `http://pypi.python.org/pypi/flexmock <http://pypi.python.org/pypi/flexmock>`_
  :License: `FreeBSD-style License`_
  :Issue tracker: `Issue Tracker <http://github.com/bkabrda/flexmock/issues>`_
- :Twitter: `Follow pyflexmock <http://twitter.com/#!/pyflexmock>`_
 
  .. _flexmock on Github: http://github.com/bkabrda/flexmock
  .. _flexmock Homepage: http://flexmock.readthedocs.org
