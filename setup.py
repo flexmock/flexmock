@@ -5,9 +5,23 @@ except ImportError:
 
 setup(name='flexmock',
       version='0.9.7',
-      py_modules=['flexmock'],
       author='Slavek Kabrda, Herman Sheremetyev',
       author_email='slavek@redhat.com',
       url='http://flexmock.readthedocs.org',
-      license='FreeBSD style license',
+      license='BSD License',
+      py_modules=['flexmock'],
+      description='flexmock is a testing library for Python that makes it easy to create mocks,'
+                  'stubs and fakes.',
+      long_description=open('README.md').read(),
+      keywords='flexmock mock stub test unittest pytest nose',
+      classifiers=[
+          'License :: OSI Approved :: BSD License',
+          'Intended Audience :: Developers',
+          'Development Status :: 5 - Production/Stable',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: Implementation :: Jython',
+          'Programming Language :: Python :: Implementation :: PyPy',
+          'Topic :: Software Development :: Testing',
+      ],
       )
