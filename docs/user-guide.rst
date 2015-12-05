@@ -182,7 +182,10 @@ method for all instances of that class.
 
 ::
 
-    >>> class User: pass
+    >>> class User:
+    >>>     def get_name(self):
+    >>>         return 'George Bush'
+    >>>
     >>> flexmock(User)
     >>> User.should_receive('get_name').and_return('Bill Clinton')
     >>> bubba = User()
