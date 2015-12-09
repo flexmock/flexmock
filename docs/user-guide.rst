@@ -70,6 +70,11 @@ Setup
 This will include flexmock in your test and make the necessary runner modifications
 so no further setup or cleanup is necessary.
 
+Since version 0.10.0, it's also possible to call flexmock module directly, so you
+can just do::
+
+  import flexmock
+
 
 Fake objects
 ------------
