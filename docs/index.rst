@@ -94,6 +94,13 @@ API
 
    api
 
+Changelog
+=========
+
+.. toctree::
+
+   changelog
+
 Comparison
 ==========
 
