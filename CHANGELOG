@@ -1,4 +1,5 @@
 Release 0.10.0
+--------------
 
 - new official upstream repository: https://github.com/bkabrda/flexmock/
 - new official homepage: https://flexmock.readthedocs.org
@@ -19,20 +20,24 @@ Release 0.10.0
 - various code style issues were fixed, 4-spaces indent is now used
 
 Release 0.9.7
+-------------
 
 - small update to add support for TeamCity / PyCharm test runner.
 
 Release 0.9.6
+-------------
 
 - fix staticmethod mocking on instances
 - fix comparison of kwargs ordering issues
 - fix ``ReturnValue.__str__``
 
 Release 0.9.5
+-------------
 
 - bugfix: stop enforcing argument signatures on flexmock objects
 
 Release 0.9.4
+-------------
 
 - add support for stubbing return values on getter properties
 - add custom matcher object support to ``with_args``
@@ -49,6 +54,7 @@ Release 0.9.4
   style now default to ``replace_with`` instead of ``should_receive`` for callables
 
 Release 0.9.3
+-------------
 
 - add python 3.3 test target
 - add proper handling of ``ordered()`` expectation across different methods
@@ -59,6 +65,7 @@ Release 0.9.3
 - fix reseting subclass methods
 
 Release 0.9.2
+-------------
 
 - fix mocking builtins by reseting expectation when raising exceptions
 - fix mocking private methods on classes with leading underscores
@@ -66,6 +73,7 @@ Release 0.9.2
 - ensure ``_pre_flexmock_success`` is cleaned up after each test
 
 Release 0.9.1
+-------------
 
 - adding support for more test runners:
 
@@ -77,6 +85,7 @@ Release 0.9.1
   * testtools
 
 Release 0.9.0
+-------------
 
 - adding state machine support using ``when()``
 - make expectation fail as soon as number of expected calls is exceeded
@@ -89,11 +98,13 @@ Release 0.9.0
 - fixing private method handling
 
 Release 0.8.1
+-------------
 
 - fixing pytest and doctest integration to always call ``flexmock_teardown``
 - fixing ``flexmock_teardown`` to return a function as before so it can be used as a decorator
 
 Release 0.8.0
+-------------
 
 - big changes in runner integration support (no more stack examination or sketchy teardown replacement)
 - doctest integration
@@ -104,6 +115,7 @@ Release 0.8.0
 - ensure consecutive calls return same mock object
 
 Release 0.7.4.2
+---------------
 
 - adding regex support for arg matching and spy return values
 - enabling ``replace_with`` for class mocks
@@ -111,11 +123,13 @@ Release 0.7.4.2
 - massive refactoring of the way flexmock does monkey patching
 
 Release 0.7.4.1
+---------------
 
 - Fixing replace_with to work properly like ``and_execute``
 - (``and_execute`` will be deprecated in next release!)
 
 Release 0.7.4
+-------------
 
 - Fixed exception type check when no message specified
 - Make properties work optionally with parentheses
@@ -124,6 +138,7 @@ Release 0.7.4
 - Refactoring to move all state to ``FlexmockContainer`` class
 
 Release 0.7.3
+-------------
 
 - Added ``new_instances`` method (``new_instances`` param will be deprecated in next release!)
 - Added ``replace_with`` to enable returning results of custom functions
@@ -132,6 +147,7 @@ Release 0.7.3
 - Lots of documentation cleanup and updates
 
 Release 0.7.2
+-------------
 
 - Added support for chained methods
 - Moved ``flexmock_teardown`` to module level to expose it for other test runners
@@ -141,12 +157,14 @@ Release 0.7.2
 - Fix ``should_call`` for same method with different args
 
 Release 0.7.1
+-------------
 
 - Fix bug with "never" not working when the expectation is not met
 - Fix bug in duplicate calls to original method in ``pass_thru`` mode (thanks sagara-!)
 - Fix bug in handling unicode characters in ``ReturnValue``
 
 Release 0.7.0
+-------------
 
 - Better error handling for trying to mock builtins
 - Added simple test harness for running on multiple versions / test runners
@@ -155,12 +173,14 @@ Release 0.7.0
 - Ensure flexmock teardown takes varargs (for better runner integration)
 
 Release 0.6.9
+-------------
 
 - Initial nose integration (still no support for generated tests)
 - Fixing private class methods
 - Some test refactoring to support different test runners
 
 Release 0.6.8
+-------------
 
 - Add ``should_call()`` alias for ``should_receive().and_execute``
 - Ensure ``new_instances`` can't be used with expectation modifiers
@@ -169,6 +189,7 @@ Release 0.6.8
 - Bit of test fixage (thanks to derdon)
 
 Release 0.6.7
+-------------
 
 - Fixing clobbering of original method by multiple flexmock calls
 - Making ``and_raise`` work properly with exception classes and args
@@ -176,6 +197,7 @@ Release 0.6.7
 - Fix mocking same class twice
 
 Release 0.6.6
+-------------
 
 - Removing extra args from ``should_receive``
 - Making ``and_execute`` check return/raise value of original method
@@ -184,12 +206,14 @@ Release 0.6.6
 - Raising an exception when ``and_execute`` is set on class mock
 
 Release 0.6.5
+-------------
 
 - Adding support for multiple ``flexmock()`` calls on same object
 - Adding error detection on ``and_execute`` for missing or unbound methods
 - Make sure empty args don't include ``None``
 
 Release 0.6.4
+-------------
 
 - Fixing up teardown cleanup code after an exception is raised in tests
 - Fixing ``and_yield`` to return proper generator
@@ -198,10 +222,12 @@ Release 0.6.4
 - Make it easier to mock private methods
 
 Release 0.6.3
+-------------
 
 - Adding keyword argument expectation matching
 
 Release 0.6.2
+-------------
 
 - Changing ``and_return(multiple=True)`` to ``one_by_one``
 - Making it possible to supply multiple args to ``and_return`` instead of a tuple
@@ -209,16 +235,19 @@ Release 0.6.2
 - FIX teardown for python3
 
 Release 0.6.1
+-------------
 
 - Make it even easier to integrate with new test runners
 - Adding support for mixing returns and raises in return values
 
 Release 0.6
+-----------
 
 - Adding support for multiple arg type matches
 - Pulling out the entry point code from constructor into its own method.
 
 Release 0.5
+-----------
 
 - FIX: ensuring that mocks are cleaned up properly between tests
 - BROKEN: part1 on ensuring mocking multiple objects works correctly
@@ -227,6 +256,7 @@ Release 0.5
 - Adding some missing pydocs
 
 Release 0.4
+-----------
 
 - Fixing tests and ensuring mock methods really get created properly
 - Making sure shortcuts create methods rather than attributes
@@ -234,6 +264,7 @@ Release 0.4
 - Removing the new-style/old-style convert code, it's stupid
 
 Release 0.3
+-----------
 
 - Making ``Expectation.mock`` into a property so that it shows up in pydoc
 - Adding proxying/spying and ``at_least``/``at_most`` expectation modifiers
