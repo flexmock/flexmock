@@ -4,7 +4,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name='flexmock',
-      version='0.9.7',
+      version='0.10.0',
       author='Slavek Kabrda, Herman Sheremetyev',
       author_email='slavek@redhat.com',
       url='http://flexmock.readthedocs.org',
