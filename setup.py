@@ -1,3 +1,5 @@
+import codecs
+
 try:
     from setuptools import setup
 except ImportError:
@@ -12,7 +14,7 @@ setup(name='flexmock',
       py_modules=['flexmock'],
       description='flexmock is a testing library for Python that makes it easy to create mocks,'
                   'stubs and fakes.',
-      long_description=open('README.md').read(),
+      long_description=codecs.open('README.md', encoding='utf8').read(),
       keywords='flexmock mock stub test unittest pytest nose',
       classifiers=[
           'License :: OSI Approved :: BSD License',
