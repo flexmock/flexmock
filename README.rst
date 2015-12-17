@@ -1,8 +1,10 @@
 # flexmock
 
-[![Build Status](https://travis-ci.org/bkabrda/flexmock.svg?branch=master)](https://travis-ci.org/bkabrda/flexmock)
+.. image:: https://travis-ci.org/bkabrda/flexmock.svg?branch=0.10.1
+    :target: https://travis-ci.org/bkabrda/flexmock
 
 flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes.
+::
 
     from flexmock import flexmock
     flexmock(pirate).should_receive('drink').with_args('full bottle').and_return('empty bottle')
@@ -19,8 +21,8 @@ In addition, flexmock integrates seamlessly with all major test runners to reduc
 
 More details, including full API and user documentation, available here:
 
-http://flexmock.readthedocs.org
+https://flexmock.readthedocs.org
 
 To report bugs or file feature requests:
 
-http://github.com/bkabrda/flexmock/issues
+https://github.com/bkabrda/flexmock/issues
