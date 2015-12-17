@@ -1,4 +1,5 @@
-# flexmock
+flexmock
+========
 
 .. image:: https://travis-ci.org/bkabrda/flexmock.svg?branch=0.10.1
     :target: https://travis-ci.org/bkabrda/flexmock
