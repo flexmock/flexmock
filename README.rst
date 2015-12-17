@@ -1,8 +1,11 @@
 flexmock
 ========
 
-.. image:: https://travis-ci.org/bkabrda/flexmock.svg?branch=0.10.1
+.. image:: https://travis-ci.org/bkabrda/flexmock.svg?branch=master
     :target: https://travis-ci.org/bkabrda/flexmock
+
+.. image:: https://coveralls.io/repos/bkabrda/flexmock/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/bkabrda/flexmock?branch=master
 
 flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes.
 ::
