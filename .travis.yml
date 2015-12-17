@@ -16,6 +16,7 @@ install:
     else
       pip install -r requirements-py2-devel.txt
     fi
+  - pip install pytest-cov coveralls
 
 before_script:
   - |
@@ -26,4 +27,6 @@ before_script:
     fi
 
 script:
-  - ./tests/run_tests.sh
+  - ./tests/run_tests.sh --pytest-cov
+
+after_success: coveralls

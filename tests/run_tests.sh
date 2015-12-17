@@ -51,7 +51,11 @@ for pyexec in $PYEXECS; do
   if [[ "$RUNNERS" =~ pytest ]]; then
     if $pyexec -c 'import pytest' 2>/dev/null; then
       echo py.test for $pyexec
-      $pyexec -m pytest $TEST_PATH/flexmock_pytest_test.py
+      if [[ "$1" == "--pytest-cov" ]]; then
+        $pyexec -m pytest $TEST_PATH/flexmock_pytest_test.py --cov flexmock
+      else
+        $pyexec -m pytest $TEST_PATH/flexmock_pytest_test.py
+      fi
       [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo py.test for $pyexec NOT FOUND
