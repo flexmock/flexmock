@@ -23,6 +23,9 @@ import sys
 import unittest
 
 
+import some_module
+
+
 def module_level_function(some, args):
     return "%s, %s" % (some, args)
 
@@ -1779,6 +1782,12 @@ class RegularClass(object):
                     'Property bar not cleaned up')
         assertEqual('bar', foo.bar)
         assertEqual('bar', foo2.bar)
+
+    def test_verifying_methods_when_mocking_module(self):
+        # previously, we had problems with recognizing methods vs functions if the mocked
+        #  object was an imported module
+        flexmock(some_module).should_receive('SomeClass').with_args(1, 2)
+        flexmock(some_module).should_receive('foo').with_args(1, 2)
 
 
 class TestFlexmockUnittest(RegularClass, unittest.TestCase):

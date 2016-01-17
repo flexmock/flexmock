@@ -247,10 +247,19 @@ class Expectation(object):
         if isinstance(self._mock, Mock):
             return  # no sense in enforcing this for fake objects
         allowed = self.argspec
-        # TODO(herman): fix it properly so that module mocks aren't set as methods
-        is_method = (inspect.ismethod(getattr(self._mock, self.name)) and
+        # we consider object a method for purposes or not counting "self"/"cls" as argument if:
+        #  - one of inspect.ismethod, inspect.isfunction, _isclass return True
+        #    (in Python 3 it's sometimes impossible to tell whether callable is method or not,
+        #     so we try both inspect.ismethod and inspect.isfunction; classes are callable too -
+        #     they have __init__)
+        #  - it's not a static method
+        #  - the mocked object is a module - module "methods" are in fact plain functions;
+        #    unless they're classes, which means they still have __init__
+        is_method = ((inspect.ismethod(self.original) or inspect.isfunction(self.original)
+                      or _isclass(self.original)) and
                      self.method_type is not staticmethod and
-                     not isinstance(self._mock, types.ModuleType))
+                     (not isinstance(self._mock, types.ModuleType) or
+                      _isclass(self.original)))
         args_len = len(allowed.args)
         if is_method:
             args_len -= 1
