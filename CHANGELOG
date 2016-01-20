@@ -1,3 +1,8 @@
+Release 0.10.2
+--------------
+
+- fix recognizing whether mocked object is a method or not on Python 3
+
 Release 0.10.1
 --------------
 
