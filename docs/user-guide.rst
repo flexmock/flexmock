@@ -383,6 +383,7 @@ Your first option is to simply replace the class with a function.
 
 
 ::
+
     (flexmock(some_module)
         .should_receive('NameOfClass')
         .and_return(fake_instance))
@@ -392,7 +393,7 @@ The upside of this approach is that it works for both new-style and old-style
 classes. The downside is that you may run into subtle issues since the
 class has now been replaced by a function.
 
-If you're dealing with new-style classes, flexmock offers another alternative using the .new_instances() command.
+If you're dealing with new-style classes, flexmock offers another alternative using the `.new_instances()` method.
 
 ::
 
@@ -415,7 +416,7 @@ It is also possible to return different fake objects in a sequence.
     >>> Group().name == 'real'
     True
 
-Another approach, if you're familiar with how instance instatiation is done in Python, is to stub the __new__ method directly.
+Another approach, if you're familiar with how instance instatiation is done in Python, is to stub the `__new__` method directly.
 
 ::
 
@@ -423,7 +424,9 @@ Another approach, if you're familiar with how instance instatiation is done in P
     >>> # or, if you want to be even slicker
     >>> flexmock(Group, __new__=fake_group)
 
-In fact, the new_instances command is simply shorthand for should_receive('__new__').and_return() under the hood.
+In fact, the new_instances command is simply shorthand for `should_receive('__new__').and_return()` under the hood.
+
+Note, that `Python issue 25731 <http://bugs.python.org/issue25731>`_ causes a problem with restoring the original `__new__` method. It has been already fixed upstream, but all versions of Python 3 lower than 3.5.2 are affected and will probably never receieve a bug fix for this. If you're using some of the affected versions and are getting `TypeError: object() takes no parameters`, you're hitting this issue (original bug report is at `flexmock issue 13 <https://github.com/bkabrda/flexmock/issues/13>`_.
 
 Generators
 ----------
