@@ -707,7 +707,7 @@ Match the empty string using a compiled regular expression
         .with_args(regex))
 
 Match any set of three arguments where the first one is an integer,
-second one is anything, and third is string 'foo'
+second one is anything, and third is string 'notes'
 (matching against user defined classes is also supported in the same fashion)
 
 ::
