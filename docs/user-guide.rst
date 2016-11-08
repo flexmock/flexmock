@@ -594,7 +594,7 @@ methods using the same object:
 
     (flexmock(HTTP)
         .should_receive('get_url.parse_html')
-        .and_return(flexmock, display_results='ok', save_results='ok'))
+        .and_return(flexmock(display_results='ok', save_results='ok')))
 
 
 Replacing methods
