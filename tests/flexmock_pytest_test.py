@@ -6,6 +6,9 @@ import flexmock_test
 import pytest
 
 
+pytestmark = pytest.mark.pytest
+
+
 def test_module_level_test_for_pytest():
     flexmock(foo='bar').should_receive('foo').once
     assertRaises(MethodCallError, flexmock_teardown)
@@ -36,6 +39,25 @@ class TestUnittestClass(flexmock_test.TestFlexmockUnittest):
 
 class TestFailureOnException(object):
 
+    def _setup_failing_expectation(self):
+        flexmock(foo='bar').should_receive('foo').once
+
+    # Use xfail to ensure we process exceptions as returned by _hook_into_pytest
+
     @pytest.mark.xfail(raises=RuntimeError)
     def test_exception(self):
         raise RuntimeError("TEST ERROR")
+
+    @pytest.mark.xfail(raises=MethodCallError)
+    def test_flexmock_raises_if_no_exception(self):
+        self._setup_failing_expectation()
+
+    @pytest.mark.xfail(raises=RuntimeError)
+    def test_flexmock_doesnt_override_existing_exception(self):
+        self._setup_failing_expectation()
+        raise RuntimeError("Flexmock shouldn't suppress this exception")
+
+    @pytest.mark.xfail(raises=AssertionError)
+    def test_flexmock_doesnt_override_assertion(self):
+        self._setup_failing_expectation()
+        assert False, "Flexmock shouldn't suppress this assertion"
