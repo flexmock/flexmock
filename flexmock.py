@@ -686,7 +686,7 @@ class Mock(object):
         return self._object
 
     def __exit__(self, type, value, traceback):
-        return self
+        pass
 
     def __call__(self, *kargs, **kwargs):
         """Hack to make Expectation.mock() work with parens."""
