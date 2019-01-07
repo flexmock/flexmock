@@ -1224,8 +1224,11 @@ def _hook_into_pytest():
             ret = saved(item, when, **kwargs)
             if when != 'call' and ret.excinfo is None:
                 return ret
-            teardown = runner.CallInfo(flexmock_teardown, when=when)
-            teardown.result = None
+            if hasattr(runner.CallInfo, "from_call"):
+                teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
+            else:
+                teardown = runner.CallInfo(flexmock_teardown, when=when)
+                teardown.result = None
             if ret.excinfo is not None and teardown.excinfo is None:
                 teardown.excinfo = ret.excinfo
             return teardown
