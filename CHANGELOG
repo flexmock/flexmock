@@ -1,3 +1,9 @@
+Release 0.10.3
+--------------
+
+- fix compatibility with py.test 4.1
+- minor documentation fixes
+
 Release 0.10.2
 --------------
 
