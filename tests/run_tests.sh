@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PYTHON_IMPLEMENTATIONS=${PYTHON_IMPLEMENTATIONS:-"python pypy jython"}
-python_VERSIONS=${PYTHON_VERSIONS:-"2.6 2.7 3.3 3.4 3.5"}
+python_VERSIONS=${PYTHON_VERSIONS:-"2.7 3.3 3.4 3.5"}
 pypy_VERSIONS=${PYPY_VERSIONS:-"nover 3"}
 jython_VERSIONS=${JYTHON_VERSIONS:-"nover"}
 
@@ -40,7 +40,6 @@ for pyexec in $PYEXECS; do
   if [[ "$RUNNERS" =~ nose ]]; then
     if $pyexec -c 'import nose' 2>/dev/null; then
       echo nose for $pyexec
-      # can't use "-m nose" with 2.6: python2.6: nose is a package and cannot be directly executed
       $pyexec -m nose.__main__ $TEST_PATH/flexmock_nose_test.py
       [[ $? -ne 0 ]] && EXIT_CODE=1
     else

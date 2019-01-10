@@ -1,6 +1,5 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
   - "3.3"
   - "3.4"
@@ -9,9 +8,8 @@ python:
   - "pypy3"
 
 install:
-  # note: Twisted doesn't support Python 2.6 any more
   - |
-    if [[ $TRAVIS_PYTHON_VERSION == pypy3 || $TRAVIS_PYTHON_VERSION == 3.* || $TRAVIS_PYTHON_VERSION == 2.6 ]]; then
+    if [[ $TRAVIS_PYTHON_VERSION == pypy3 || $TRAVIS_PYTHON_VERSION == 3.* ]]; then
       pip install -r requirements-py3-devel.txt
     else
       pip install -r requirements-py2-devel.txt

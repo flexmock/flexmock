@@ -51,7 +51,6 @@ Compatibility
 
 Tested to work with:
 
-- python 2.6
 - python 2.7
 - python 3.3
 - python 3.4
