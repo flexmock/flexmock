@@ -662,7 +662,14 @@ class Expectation(object):
                         type(_mock.__dict__) is dict):
                     _mock.__dict__[name] = original
                 else:
-                    setattr(_mock, name, original)
+                    if self.method_type == staticmethod and sys.version_info < (3, 0):
+                        # on some Python 2 implementations (e.g. pypy), just assigning
+                        # the original staticmethod would make it a normal method,
+                        # thus an additional "self" argument would be passed to it,
+                        # we need to explicitly cast it to staticmethod
+                        setattr(_mock, name, staticmethod(original))
+                    else:
+                        setattr(_mock, name, original)
         del self
 
 
