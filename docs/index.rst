@@ -52,12 +52,12 @@ Compatibility
 Tested to work with:
 
 - python 2.7
-- python 3.3
 - python 3.4
 - python 3.5
+- python 3.6
+- python 3.7
 - pypy
 - pypy3
-- jython
 
 Automatically integrates with all major test runners, including:
 

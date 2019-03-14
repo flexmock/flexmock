@@ -1,3 +1,8 @@
+- drop Python 2.6, 3.3 and Jython support
+- add Python 3.6 and 3.7 support
+- don't hide exception when flexmock is used as context manager
+- fix expectation reset for static methods on pypy 2
+
 Release 0.10.3
 --------------
 
