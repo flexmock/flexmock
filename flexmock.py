@@ -29,6 +29,7 @@ __version__ = '0.10.4'
 
 
 import inspect
+import platform
 import re
 import sys
 import types
@@ -662,7 +663,9 @@ class Expectation(object):
                         type(_mock.__dict__) is dict):
                     _mock.__dict__[name] = original
                 else:
-                    if self.method_type == staticmethod and sys.version_info < (3, 0):
+                    if (self.method_type == staticmethod and
+                        sys.version_info < (3, 0) and
+                        platform.python_implementation() != 'CPython'):
                         # on some Python 2 implementations (e.g. pypy), just assigning
                         # the original staticmethod would make it a normal method,
                         # thus an additional "self" argument would be passed to it,
