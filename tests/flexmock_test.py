@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 from flexmock import EXACTLY
 from flexmock import AT_LEAST
 from flexmock import AT_MOST
