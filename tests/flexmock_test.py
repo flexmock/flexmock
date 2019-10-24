@@ -966,6 +966,16 @@ class RegularClass(object):
         self._tear_down()
         assertEqual('ok!', User.get_stuff())
 
+    def test_flexmock_should_properly_restore_static_methods_newstyle(self):
+        class User(object):
+            @staticmethod
+            def get_stuff(): return 'ok!'
+        assertEqual('ok!', User.get_stuff())
+        flexmock(User).should_receive('get_stuff')
+        assert User.get_stuff() is None
+        self._tear_down()
+        assertEqual('ok!', User.get_stuff())
+
     def test_flexmock_should_properly_restore_undecorated_static_methods(self):
         class User:
             def get_stuff(): return 'ok!'
