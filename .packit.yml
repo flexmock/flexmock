@@ -1,0 +1,7 @@
+specfile_path: python-flexmock.spec
+jobs:
+- job: copr_build
+  trigger: pull_request
+  metadata:
+    targets:
+      - fedora-all
