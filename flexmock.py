@@ -946,45 +946,56 @@ class Mock(object):
                        (expected_values[0].value, return_values)))
             return return_values
 
+        def _handle_matched_expectation(expectation, runtime_self, *kargs, **kwargs):
+            if not expectation.runnable():
+                raise StateError('%s expected to be called when %s is True' %
+                                 (name, expectation._get_runnable()))
+            expectation.times_called += 1
+            expectation.verify(final=False)
+            _pass_thru = _getattr(expectation, '_pass_thru')
+            _replace_with = _getattr(expectation, '_replace_with')
+            if _pass_thru:
+                return pass_thru(expectation, runtime_self, *kargs, **kwargs)
+            elif _replace_with:
+                return _replace_with(*kargs, **kwargs)
+            return_values = _getattr(expectation, 'return_values')
+            if return_values:
+                return_value = return_values[0]
+                del return_values[0]
+                return_values.append(return_value)
+            else:
+                return_value = ReturnValue()
+            if return_value.raises:
+                if _isclass(return_value.raises):
+                    raise return_value.raises(
+                        *return_value.value['kargs'], **return_value.value['kwargs'])
+                else:
+                    raise return_value.raises
+            else:
+                return return_value.value
+
         def mock_method(runtime_self, *kargs, **kwargs):
             arguments = {'kargs': kargs, 'kwargs': kwargs}
             expectation = FlexmockContainer.get_flexmock_expectation(
                 self, name, arguments)
             if expectation:
-                if not expectation.runnable():
-                    raise StateError('%s expected to be called when %s is True' %
-                                     (name, expectation._get_runnable()))
-                expectation.times_called += 1
-                expectation.verify(final=False)
-                _pass_thru = _getattr(expectation, '_pass_thru')
-                _replace_with = _getattr(expectation, '_replace_with')
-                if _pass_thru:
-                    return pass_thru(expectation, runtime_self, *kargs, **kwargs)
-                elif _replace_with:
-                    return _replace_with(*kargs, **kwargs)
-                return_values = _getattr(expectation, 'return_values')
-                if return_values:
-                    return_value = return_values[0]
-                    del return_values[0]
-                    return_values.append(return_value)
-                else:
-                    return_value = ReturnValue()
-                if return_value.raises:
-                    if _isclass(return_value.raises):
-                        raise return_value.raises(
-                            *return_value.value['kargs'], **return_value.value['kwargs'])
-                    else:
-                        raise return_value.raises
-                else:
-                    return return_value.value
-            else:
-                # make sure to clean up expectations to ensure none of them
-                # interfere with the runner's error reporing mechanism
-                # e.g. open()
-                for _, expectations in FlexmockContainer.flexmock_objects.items():
-                    for expectation in expectations:
-                        _getattr(expectation, 'reset')()
-                raise MethodSignatureError(_format_args(name, arguments))
+                return _handle_matched_expectation(expectation, runtime_self, *kargs, **kwargs)
+            # inform the user which expectation(s) for the method were _not_ matched
+            expectations = [
+                e for e in reversed(FlexmockContainer.flexmock_objects.get(self, []))
+                if e.name == name
+            ]
+            error_msg = _format_args(name, arguments)
+            if expectations:
+                for e in expectations:
+                    error_msg += '\nDid not match expectation %s' % _format_args(name, e.args)
+            # make sure to clean up expectations to ensure none of them
+            # interfere with the runner's error reporing mechanism
+            # e.g. open()
+            for _, expectations in FlexmockContainer.flexmock_objects.items():
+                for expectation in expectations:
+                    _getattr(expectation, 'reset')()
+            raise MethodSignatureError(error_msg)
 
         return mock_method
 
