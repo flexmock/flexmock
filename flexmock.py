@@ -1244,6 +1244,7 @@ def _hook_into_pytest():
                 return ret
             if hasattr(runner.CallInfo, "from_call"):
                 teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
+                teardown.duration = ret.duration
             else:
                 teardown = runner.CallInfo(flexmock_teardown, when=when)
                 teardown.result = None
