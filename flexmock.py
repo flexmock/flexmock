@@ -847,7 +847,9 @@ class Mock(object):
             if method_type in SPECIAL_METHODS:
                 expectation.original_function = getattr(obj, name)
             expectation.method_type = method_type
-        override = _setattr(obj, name, types.MethodType(method_instance, obj))
+        if not _isclass(obj) or expectation.method_type in SPECIAL_METHODS:
+            method_instance = types.MethodType(method_instance, obj)
+        override = _setattr(obj, name, method_instance)
         expectation._local_override = override
         if (override and not _isclass(obj) and not isinstance(obj, Mock) and
                 hasattr(obj.__class__, name)):
