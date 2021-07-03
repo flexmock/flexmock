@@ -1,5 +1,5 @@
 """Flexmock tests."""
-# pylint: disable=missing-docstring,too-many-lines,broad-except,disallowed-name,no-member,invalid-name,no-self-use
+# pylint: disable=missing-docstring,too-many-lines,disallowed-name,no-member,invalid-name,no-self-use
 import re
 import sys
 import unittest
