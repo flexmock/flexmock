@@ -29,7 +29,7 @@ for pyexec in $PYEXECS; do
   if [[ "$RUNNERS" =~ unittest ]]; then
     echo unittest for $pyexec
     if test -f "`which $pyexec 2>/dev/null`"; then
-      $pyexec $TEST_PATH/flexmock_unittest_test.py
+      $pyexec $TEST_PATH/flexmock_test.py
       [[ $? -ne 0 ]] && EXIT_CODE=1
     else
       echo $pyexec NOT FOUND

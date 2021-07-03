@@ -1,4 +1,8 @@
-class SomeClass(object):
+"""Bogus module for testing."""
+# pylint: disable=missing-docstring,disallowed-name,invalid-name
+
+
+class SomeClass:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -7,5 +11,9 @@ class SomeClass(object):
         return self.x + self.y
 
 
-def foo(x, y):
+def foo_function(x, y):
     return x - y
+
+
+def kwargs_only_func(foo, *, bar, baz=5):
+    return foo + bar + baz
