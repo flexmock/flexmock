@@ -1,22 +1,20 @@
-from flexmock import MethodCallError
-from flexmock import flexmock_teardown
-from flexmock_test import assertRaises
-import flexmock
-import flexmock_test
+"""Test flexmock with pytest."""
+# pylint: disable=missing-docstring,redefined-outer-name,no-self-use
 import pytest
 
-
-pytestmark = pytest.mark.pytest
+from flexmock import MethodCallError, flexmock, flexmock_teardown
+from tests import flexmock_test
+from tests.flexmock_test import assert_raises
 
 
 def test_module_level_test_for_pytest():
-    flexmock(foo='bar').should_receive('foo').once
-    assertRaises(MethodCallError, flexmock_teardown)
+    flexmock(foo="bar").should_receive("foo").once()
+    assert_raises(MethodCallError, flexmock_teardown)
 
 
 @pytest.fixture()
 def runtest_hook_fixture():
-    return flexmock(foo='bar').should_receive('foo').once.mock()
+    return flexmock(foo="bar").should_receive("foo").once.mock()
 
 
 def test_runtest_hook_with_fixture_for_pytest(runtest_hook_fixture):
@@ -25,22 +23,20 @@ def test_runtest_hook_with_fixture_for_pytest(runtest_hook_fixture):
 
 class TestForPytest(flexmock_test.RegularClass):
     def test_class_level_test_for_pytest(self):
-        flexmock(foo='bar').should_receive('foo').once
-        assertRaises(MethodCallError, flexmock_teardown)
+        flexmock(foo="bar").should_receive("foo").once()
+        assert_raises(MethodCallError, flexmock_teardown)
 
 
 class TestUnittestClass(flexmock_test.TestFlexmockUnittest):
-
     def test_unittest(self):
-        a = flexmock(a=2)
-        a.should_receive('a').once
-        assertRaises(MethodCallError, flexmock_teardown)
+        mocked = flexmock(a=2)
+        mocked.should_receive("a").once()
+        assert_raises(MethodCallError, flexmock_teardown)
 
 
-class TestFailureOnException(object):
-
+class TestFailureOnException:
     def _setup_failing_expectation(self):
-        flexmock(foo='bar').should_receive('foo').once
+        flexmock(foo="bar").should_receive("foo").once()
 
     # Use xfail to ensure we process exceptions as returned by _hook_into_pytest
 
