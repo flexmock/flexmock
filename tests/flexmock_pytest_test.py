@@ -2,7 +2,9 @@
 # pylint: disable=missing-docstring,redefined-outer-name,no-self-use
 import pytest
 
-from flexmock import MethodCallError, flexmock, flexmock_teardown
+from flexmock import flexmock
+from flexmock.api import flexmock_teardown
+from flexmock.exceptions import MethodCallError
 from tests import flexmock_test
 from tests.flexmock_test import assert_raises
 

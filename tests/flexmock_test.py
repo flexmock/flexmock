@@ -4,7 +4,7 @@ import re
 import sys
 import unittest
 
-from flexmock import (
+from flexmock.api import (
     AT_LEAST,
     AT_MOST,
     EXACTLY,
@@ -854,7 +854,7 @@ class RegularClass:
                 pass
 
         flexmock(Foo).should_receive("__iter__").and_yield(1, 2, 3)
-        assert_equal([1, 2, 3], [x for x in Foo()])
+        assert_equal([1, 2, 3], list(Foo()))
 
     def test_flexmock_should_mock_iter_on_new_style_instances(self):
         class Foo:
@@ -867,16 +867,16 @@ class RegularClass:
         foo3 = Foo()
         flexmock(foo, __iter__=iter([1, 2, 3]))
         flexmock(foo2, __iter__=iter([3, 4, 5]))
-        assert_equal([1, 2, 3], [x for x in foo])
-        assert_equal([3, 4, 5], [x for x in foo2])
-        assert_equal([None], [x for x in foo3])
+        assert_equal([1, 2, 3], list(foo))
+        assert_equal([3, 4, 5], list(foo2))
+        assert_equal([None], list(foo3))
         assert_equal(False, foo.__iter__ is old)
         assert_equal(False, foo2.__iter__ is old)
         assert_equal(False, foo3.__iter__ is old)
         self._tear_down()
-        assert_equal([None], [x for x in foo])
-        assert_equal([None], [x for x in foo2])
-        assert_equal([None], [x for x in foo3])
+        assert_equal([None], list(foo))
+        assert_equal([None], list(foo2))
+        assert_equal([None], list(foo3))
         assert_equal(True, Foo.__iter__ == old, "%s != %s" % (Foo.__iter__, old))
 
     def test_flexmock_should_mock_private_methods_with_leading_underscores(self):
@@ -898,8 +898,8 @@ class RegularClass:
 
         gen = Gen()
         flexmock(gen).should_receive("foo").and_yield(*range(1, 10))
-        output = [val for val in gen.foo()]
-        assert_equal([val for val in range(1, 10)], output)
+        output = list(gen.foo())
+        assert_equal(list(range(1, 10)), output)
 
     def test_flexmock_should_verify_correct_spy_return_values(self):
         class User:
@@ -1038,7 +1038,7 @@ class RegularClass:
             def get_stuff():
                 return "ok!"
 
-            get_stuff = staticmethod(get_stuff)
+            get_stuff = staticmethod(get_stuff)  # pylint: disable=no-staticmethod-decorator
 
         assert_equal("ok!", User.get_stuff())
         flexmock(User).should_receive("get_stuff")
@@ -1716,7 +1716,7 @@ class RegularClass:
     def test_fake_object_supporting_iteration(self):
         foo = flexmock()
         foo.should_receive("__iter__").and_yield(1, 2, 3)
-        assert_equal([1, 2, 3], [i for i in foo])
+        assert_equal([1, 2, 3], list(foo))
 
     def test_with_args_for_single_named_arg_with_optional_args(self):
         class Foo:
