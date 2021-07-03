@@ -30,3 +30,43 @@ isort = "^5.9.1"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.messages_control]
+disable = [
+    "too-many-instance-attributes",
+    "too-few-public-methods",
+    "logging-fstring-interpolation",
+    "too-many-function-args",
+    "too-many-arguments",
+    "bad-continuation",
+    "too-many-locals",
+    "too-many-branches",
+]
+
+[tool.pylint.format]
+max-line-length = "100"
+
+[tool.isort]
+line_length = 100
+profile = "black"
+
+[tool.black]
+line_length = 100
+
+[tool.mypy]
+warn_redundant_casts = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+warn_return_any = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
