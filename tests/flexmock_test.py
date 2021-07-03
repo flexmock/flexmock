@@ -428,7 +428,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("bar").at_least().twice()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_LEAST, expectation.modifier)
+        assert_equal(AT_LEAST, expectation._modifier)
         mock.method_foo()
         assert_raises(MethodCallError, self._tear_down)
 
@@ -436,7 +436,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").at_least().once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_LEAST, expectation.modifier)
+        assert_equal(AT_LEAST, expectation._modifier)
         mock.method_foo()
         self._tear_down()
 
@@ -444,7 +444,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").at_least().once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_LEAST, expectation.modifier)
+        assert_equal(AT_LEAST, expectation._modifier)
         mock.method_foo()
         mock.method_foo()
         self._tear_down()
@@ -453,7 +453,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("bar").at_most().twice()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_MOST, expectation.modifier)
+        assert_equal(AT_MOST, expectation._modifier)
         mock.method_foo()
         self._tear_down()
 
@@ -461,7 +461,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").at_most().once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_MOST, expectation.modifier)
+        assert_equal(AT_MOST, expectation._modifier)
         mock.method_foo()
         self._tear_down()
 
@@ -469,7 +469,7 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").at_most().once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(AT_MOST, expectation.modifier)
+        assert_equal(AT_MOST, expectation._modifier)
         mock.method_foo()
         assert_raises(MethodCallError, mock.method_foo)
 
@@ -477,21 +477,21 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(1, expectation.expected_calls[EXACTLY])
+        assert_equal(1, expectation._expected_calls[EXACTLY])
         assert_raises(MethodCallError, self._tear_down)
 
     def test_flexmock_treats_twice_as_times_two(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").twice().and_return("value_bar")
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(2, expectation.expected_calls[EXACTLY])
+        assert_equal(2, expectation._expected_calls[EXACTLY])
         assert_raises(MethodCallError, self._tear_down)
 
     def test_flexmock_works_with_never_when_true(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").never()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_equal(0, expectation.expected_calls[EXACTLY])
+        assert_equal(0, expectation._expected_calls[EXACTLY])
         self._tear_down()
 
     def test_flexmock_works_with_never_when_false(self):
