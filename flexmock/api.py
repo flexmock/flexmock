@@ -1,70 +1,28 @@
-"""Copyright 2011-2015 Herman Sheremetyev, Slavek Kabrda. All rights reserved.
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-   1. Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-   2. Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
+"""Flexmock public API."""
 # pylint: disable=no-self-use,too-many-lines
 import inspect
 import re
 import sys
 import types
 
-__all__ = ["flexmock"]
-__version__ = "0.10.4"
+from flexmock.exceptions import (
+    CallOrderError,
+    ExceptionClassError,
+    ExceptionMessageError,
+    FlexmockError,
+    MethodCallError,
+    MethodSignatureError,
+    MockBuiltinError,
+    StateError,
+)
 
 AT_LEAST = "at least"
 AT_MOST = "at most"
 EXACTLY = "exactly"
+SPECIAL_METHODS = (classmethod, staticmethod)
+RE_TYPE = re.compile("")
 UPDATED_ATTRS = ["should_receive", "should_call", "new_instances"]
 DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("", (object,), {}))]
-RE_TYPE = re.compile("")
-SPECIAL_METHODS = (classmethod, staticmethod)
-
-
-class FlexmockError(Exception):
-    """FlexmockError"""
-
-
-class MockBuiltinError(Exception):
-    """MockBuiltinError"""
-
-
-class MethodSignatureError(FlexmockError):
-    """MethodSignatureError"""
-
-
-class ExceptionClassError(FlexmockError):
-    """ExceptionClassError"""
-
-
-class ExceptionMessageError(FlexmockError):
-    """ExceptionMessageError"""
-
-
-class StateError(FlexmockError):
-    """StateError"""
-
-
-class MethodCallError(FlexmockError):
-    """MethodCallError"""
-
-
-class CallOrderError(FlexmockError):
-    """CallOrderError"""
 
 
 class ReturnValue:
@@ -77,13 +35,11 @@ class ReturnValue:
     def __str__(self):
         if self.raises:
             return "%s(%s)" % (self.raises, _arg_to_str(self.value))
-        else:
-            if not isinstance(self.value, tuple):
-                return "%s" % _arg_to_str(self.value)
-            elif len(self.value) == 1:
-                return "%s" % _arg_to_str(self.value[0])
-            else:
-                return "(%s)" % ", ".join([_arg_to_str(x) for x in self.value])
+        if not isinstance(self.value, tuple):
+            return "%s" % _arg_to_str(self.value)
+        if len(self.value) == 1:
+            return "%s" % _arg_to_str(self.value[0])
+        return "(%s)" % ", ".join([_arg_to_str(x) for x in self.value])
 
 
 class FullArgSpec:
@@ -137,6 +93,7 @@ class FlexmockContainer:
             if found and found._ordered:
                 cls._verify_call_order(found, args)
             return found
+        return None
 
     @classmethod
     def _verify_call_order(cls, expectation, args):
@@ -222,16 +179,15 @@ class Expectation:
     def __getattribute__(self, name):
         if name == "once":
             return _getattr(self, "times")(1)
-        elif name == "twice":
+        if name == "twice":
             return _getattr(self, "times")(2)
-        elif name == "never":
+        if name == "never":
             return _getattr(self, "times")(0)
-        elif name in ("at_least", "at_most", "ordered", "one_by_one"):
+        if name in ("at_least", "at_most", "ordered", "one_by_one"):
             return _getattr(self, name)()
-        elif name == "mock":
+        if name == "mock":
             return _getattr(self, "mock")()
-        else:
-            return _getattr(self, name)
+        return _getattr(self, name)
 
     def __getattr__(self, name):
         self.__raise(
@@ -730,10 +686,8 @@ class Mock:
 
     def should_receive(self, name):
         """Replaces the specified attribute with a fake.
-
         Args:
           - name: string name of the attribute to replace
-
         Returns:
           - Expectation object which can be used to modify the expectations
             on the fake attribute
@@ -744,8 +698,8 @@ class Mock:
         obj = _getattr(self, "_object")
         if "." in name:
             name, chained_methods = name.split(".", 1)
-        name = _update_name_if_private(obj, name)
-        _ensure_object_has_named_attribute(obj, name)
+        name = self._update_name_if_private(obj, name)
+        self._ensure_object_has_named_attribute(obj, name)
         if chained_methods:
             if not isinstance(obj, Mock) and not hasattr(getattr(obj, name), "__call__"):
                 return_value = _create_partial_mock(getattr(obj, name))
@@ -753,8 +707,31 @@ class Mock:
                 return_value = Mock()
             self._create_expectation(obj, name, return_value)
             return return_value.should_receive(chained_methods)
-        else:
-            return self._create_expectation(obj, name)
+        return self._create_expectation(obj, name)
+
+    def _update_name_if_private(self, obj, name):
+        if name.startswith("__") and not name.endswith("__") and not inspect.ismodule(obj):
+            if inspect.isclass(obj):
+                class_name = obj.__name__
+            else:
+                class_name = obj.__class__.__name__
+            name = "_%s__%s" % (class_name.lstrip("_"), name.lstrip("_"))
+        return name
+
+    def _ensure_object_has_named_attribute(self, obj, name):
+        if not isinstance(obj, Mock) and not self._hasattr(obj, name):
+            exc_msg = "%s does not have attribute %s" % (obj, name)
+            if name == "__new__":
+                exc_msg = "old-style classes do not have a __new__() method"
+            raise FlexmockError(exc_msg)
+
+    def _hasattr(self, obj, name):
+        """Ensure hasattr checks don't create side-effects for properties."""
+        if not inspect.isclass(obj) and hasattr(obj, "__dict__") and name not in obj.__dict__:
+            if name in DEFAULT_CLASS_ATTRIBUTES:
+                return False  # avoid false positives for things like __call__
+            return hasattr(obj.__class__, name)
+        return hasattr(obj, name)
 
     def should_call(self, name):
         """Creates a spy.
@@ -787,8 +764,7 @@ class Mock:
         """
         if inspect.isclass(self._object):
             return self.should_receive("__new__").and_return(kargs).one_by_one
-        else:
-            raise FlexmockError("new_instances can only be called on a class mock")
+        raise FlexmockError("new_instances can only be called on a class mock")
 
     def _create_expectation(self, obj, name, return_value=None):
         if self not in FlexmockContainer.flexmock_objects:
@@ -839,11 +815,10 @@ class Mock:
                 and name in self.__dict__
             ):
                 return self.__dict__[name](*kargs, **kwargs)
-            else:
-                return original(self, *kargs, **kwargs)
+            return original(self, *kargs, **kwargs)
 
         setattr(obj.__class__, name, updated)
-        if _get_code(updated) != _get_code(original):
+        if updated.__code__ != original.__code__:
             self._create_placeholder_mock_for_proper_teardown(obj.__class__, name, original)
 
     def _create_placeholder_mock_for_proper_teardown(self, obj, name, original):
@@ -856,7 +831,7 @@ class Mock:
     def _update_method(self, expectation, name):
         method_instance = self._create_mock_method(name)
         obj = self._object
-        if _hasattr(obj, name) and not hasattr(expectation, "original"):
+        if self._hasattr(obj, name) and not hasattr(expectation, "original"):
             expectation._update_original(name, obj)
             method_type = type(_getattr(expectation, "original"))
             try:
@@ -884,7 +859,7 @@ class Mock:
     def _update_attribute(self, expectation, name, return_value=None):
         obj = self._object
         expectation._callable = False
-        if _hasattr(obj, name) and not hasattr(expectation, "original"):
+        if self._hasattr(obj, name) and not hasattr(expectation, "original"):
             expectation._update_original(name, obj)
         override = _setattr(obj, name, return_value)
         expectation._local_override = override
@@ -906,8 +881,7 @@ class Mock:
                 and name in self.__dict__
             ):
                 return self.__dict__[name]
-            else:
-                return getattr(self, new_name)
+            return getattr(self, new_name)
 
         setattr(obj, name, updated)
         if not hasattr(obj, new_name):
@@ -999,7 +973,7 @@ class Mock:
             _replace_with = _getattr(expectation, "_replace_with")
             if _pass_thru:
                 return pass_thru(expectation, runtime_self, *kargs, **kwargs)
-            elif _replace_with:
+            if _replace_with:
                 return _replace_with(*kargs, **kwargs)
             return_values = _getattr(expectation, "return_values")
             if return_values:
@@ -1013,10 +987,8 @@ class Mock:
                     raise return_value.raises(
                         *return_value.value["kargs"], **return_value.value["kwargs"]
                     )
-                else:
-                    raise return_value.raises  # pylint: disable=raising-bad-type
-            else:
-                return return_value.value
+                raise return_value.raises  # pylint: disable=raising-bad-type
+            return return_value.value
 
         def mock_method(runtime_self, *kargs, **kwargs):
             arguments = {"kargs": kargs, "kwargs": kwargs}
@@ -1046,150 +1018,8 @@ class Mock:
         return mock_method
 
 
-def _arg_to_str(arg):
-    if type(RE_TYPE) is type(arg):
-        return "/%s/" % arg.pattern
-    if isinstance(arg, str):
-        return '"%s"' % (arg,)
-    return "%s" % (arg,)
-
-
-def _format_args(name, arguments):
-    if arguments is None:
-        arguments = {"kargs": (), "kwargs": {}}
-    kargs = ", ".join(_arg_to_str(arg) for arg in arguments["kargs"])
-    kwargs = ", ".join("%s=%s" % (k, _arg_to_str(v)) for k, v in arguments["kwargs"].items())
-    if kargs and kwargs:
-        args = "%s, %s" % (kargs, kwargs)
-    else:
-        args = "%s%s" % (kargs, kwargs)
-    return "%s(%s)" % (name, args)
-
-
-def _create_partial_mock(obj_or_class, **kwargs):
-    matches = [x for x in FlexmockContainer.flexmock_objects if x._object is obj_or_class]
-    if matches:
-        mock = matches[0]
-    else:
-        mock = Mock()
-        mock._object = obj_or_class
-    for name, return_value in kwargs.items():
-        if hasattr(return_value, "__call__"):
-            mock.should_receive(name).replace_with(return_value)
-        else:
-            mock.should_receive(name).and_return(return_value)
-    if not matches:
-        FlexmockContainer.add_expectation(mock, Expectation(obj_or_class))
-    if _attach_flexmock_methods(mock, Mock, obj_or_class) and not inspect.isclass(mock._object):
-        mock = mock._object
-    return mock
-
-
-def _attach_flexmock_methods(mock, flexmock_class, obj):
-    try:
-        for attr in UPDATED_ATTRS:
-            if hasattr(obj, attr):
-                if _get_code(getattr(obj, attr)) is not _get_code(getattr(flexmock_class, attr)):
-                    return False
-        for attr in UPDATED_ATTRS:
-            _setattr(obj, attr, getattr(mock, attr))
-    except TypeError as exc:
-        raise MockBuiltinError(
-            "Python does not allow you to mock builtin objects or modules. "
-            "Consider wrapping it in a class you can mock instead"
-        ) from exc
-    except AttributeError as exc:
-        raise MockBuiltinError(
-            "Python does not allow you to mock instances of builtin objects. "
-            "Consider wrapping it in a class you can mock instead"
-        ) from exc
-    return True
-
-
-def _get_code(func):
-    if hasattr(func, "func_code"):
-        code = "func_code"
-    elif hasattr(func, "im_func"):
-        func = func.im_func
-        code = "func_code"
-    else:
-        code = "__code__"
-    return getattr(func, code)
-
-
-def _arguments_match(arg, expected_arg):
-    if expected_arg == arg:
-        return True
-    if inspect.isclass(expected_arg) and isinstance(arg, expected_arg):
-        return True
-    if type(RE_TYPE) is type(expected_arg) and expected_arg.search(arg):
-        return True
-    return False
-
-
-def _getattr(obj, name):
-    """Convenience wrapper to work around custom __getattribute__."""
-    return object.__getattribute__(obj, name)
-
-
-def _setattr(obj, name, value):
-    """Ensure we use local __dict__ where possible."""
-    name = str(name)  # name may be unicode but pypy demands dict keys to be str
-    local_override = False
-    if hasattr(obj, "__dict__") and isinstance(obj.__dict__, dict):
-        if name not in obj.__dict__:
-            local_override = True
-        obj.__dict__[name] = value
-    else:
-        setattr(obj, name, value)
-    return local_override
-
-
-def _hasattr(obj, name):
-    """Ensure hasattr checks don't create side-effects for properties."""
-    if not inspect.isclass(obj) and hasattr(obj, "__dict__") and name not in obj.__dict__:
-        if name in DEFAULT_CLASS_ATTRIBUTES:
-            return False  # avoid false positives for things like __call__
-        else:
-            return hasattr(obj.__class__, name)
-    else:
-        return hasattr(obj, name)
-
-
-def _isproperty(obj, name):
-    if isinstance(obj, Mock):
-        return False
-    if not inspect.isclass(obj) and hasattr(obj, "__dict__") and name not in obj.__dict__:
-        attr = getattr(obj.__class__, name)
-        if isinstance(attr, property):
-            return True
-    elif inspect.isclass(obj):
-        attr = getattr(obj, name)
-        if isinstance(attr, property):
-            return True
-    return False
-
-
-def _update_name_if_private(obj, name):
-    if name.startswith("__") and not name.endswith("__") and not inspect.ismodule(obj):
-        if inspect.isclass(obj):
-            class_name = obj.__name__
-        else:
-            class_name = obj.__class__.__name__
-        name = "_%s__%s" % (class_name.lstrip("_"), name.lstrip("_"))
-    return name
-
-
-def _ensure_object_has_named_attribute(obj, name):
-    if not isinstance(obj, Mock) and not _hasattr(obj, name):
-        exc_msg = "%s does not have attribute %s" % (obj, name)
-        if name == "__new__":
-            exc_msg = "old-style classes do not have a __new__() method"
-        raise FlexmockError(exc_msg)
-
-
 def flexmock_teardown():
-    """Performs lexmock-specific teardown tasks."""
+    """Performs flexmock-specific teardown tasks."""
     saved = {}
     instances = []
     classes = []
@@ -1207,11 +1037,11 @@ def flexmock_teardown():
         for attr in UPDATED_ATTRS:
             try:
                 obj_dict = obj.__dict__
-                if _get_code(obj_dict[attr]) is _get_code(Mock.__dict__[attr]):
+                if obj_dict[attr].__code__ is Mock.__dict__[attr].__code__:
                     del obj_dict[attr]
             except Exception:
                 try:
-                    if _get_code(getattr(obj, attr)) is _get_code(Mock.__dict__[attr]):
+                    if getattr(obj, attr).__code__ is Mock.__dict__[attr].__code__:
                         delattr(obj, attr)
                 except AttributeError:
                     pass
@@ -1256,116 +1086,104 @@ def flexmock(spec=None, **kwargs):
     return klass(**kwargs)
 
 
-# RUNNER INTEGRATION
+def _getattr(obj, name):
+    """Convenience wrapper to work around custom __getattribute__."""
+    return object.__getattribute__(obj, name)
 
 
-def _hook_into_pytest():
-    # pylint: disable=import-outside-toplevel
+def _arg_to_str(arg):
+    if type(RE_TYPE) is type(arg):
+        return "/%s/" % arg.pattern
+    if isinstance(arg, str):
+        return '"%s"' % (arg,)
+    return "%s" % (arg,)
+
+
+def _format_args(name, arguments):
+    if arguments is None:
+        arguments = {"kargs": (), "kwargs": {}}
+    kargs = ", ".join(_arg_to_str(arg) for arg in arguments["kargs"])
+    kwargs = ", ".join("%s=%s" % (k, _arg_to_str(v)) for k, v in arguments["kwargs"].items())
+    if kargs and kwargs:
+        args = "%s, %s" % (kargs, kwargs)
+    else:
+        args = "%s%s" % (kargs, kwargs)
+    return "%s(%s)" % (name, args)
+
+
+def _create_partial_mock(obj_or_class, **kwargs):
+    """Create partial mock."""
+    matches = [x for x in FlexmockContainer.flexmock_objects if x._object is obj_or_class]
+    if matches:
+        mock = matches[0]
+    else:
+        mock = Mock()
+        mock._object = obj_or_class
+    for name, return_value in kwargs.items():
+        if hasattr(return_value, "__call__"):
+            mock.should_receive(name).replace_with(return_value)
+        else:
+            mock.should_receive(name).and_return(return_value)
+    if not matches:
+        FlexmockContainer.add_expectation(mock, Expectation(obj_or_class))
+    if _attach_flexmock_methods(mock, Mock, obj_or_class) and not inspect.isclass(mock._object):
+        mock = mock._object
+    return mock
+
+
+def _attach_flexmock_methods(mock, flexmock_class, obj):
     try:
-        from _pytest import runner
-
-        saved = runner.call_runtest_hook
-
-        def call_runtest_hook(item, when, **kwargs):
-            ret = saved(item, when, **kwargs)
-            if when != "call" and ret.excinfo is None:
-                return ret
-            if hasattr(runner.CallInfo, "from_call"):
-                teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
-                teardown.duration = ret.duration
-            else:
-                teardown = runner.CallInfo(flexmock_teardown, when=when)
-                teardown.result = None
-            if ret.excinfo is not None:
-                teardown.excinfo = ret.excinfo
-            return teardown
-
-        runner.call_runtest_hook = call_runtest_hook
-
-    except ImportError:
-        pass
+        for attr in UPDATED_ATTRS:
+            if hasattr(obj, attr):
+                if getattr(obj, attr).__code__ is not getattr(flexmock_class, attr).__code__:
+                    return False
+        for attr in UPDATED_ATTRS:
+            _setattr(obj, attr, getattr(mock, attr))
+    except TypeError as exc:
+        raise MockBuiltinError(
+            "Python does not allow you to mock builtin objects or modules. "
+            "Consider wrapping it in a class you can mock instead"
+        ) from exc
+    except AttributeError as exc:
+        raise MockBuiltinError(
+            "Python does not allow you to mock instances of builtin objects. "
+            "Consider wrapping it in a class you can mock instead"
+        ) from exc
+    return True
 
 
-_hook_into_pytest()
+def _arguments_match(arg, expected_arg):
+    if expected_arg == arg:
+        return True
+    if inspect.isclass(expected_arg) and isinstance(arg, expected_arg):
+        return True
+    if type(RE_TYPE) is type(expected_arg) and expected_arg.search(arg):
+        return True
+    return False
 
 
-def _hook_into_doctest():
-    # pylint: disable=import-outside-toplevel
-    try:
-        from doctest import DocTestRunner
-
-        saved = DocTestRunner.run
-
-        def run(self, test, compileflags=None, out=None, clear_globs=True):
-            try:
-                return saved(self, test, compileflags, out, clear_globs)
-            finally:
-                flexmock_teardown()
-
-        DocTestRunner.run = run
-    except ImportError:
-        pass
+def _setattr(obj, name, value):
+    """Ensure we use local __dict__ where possible."""
+    name = str(name)  # name may be unicode but pypy demands dict keys to be str
+    local_override = False
+    if hasattr(obj, "__dict__") and isinstance(obj.__dict__, dict):
+        if name not in obj.__dict__:
+            local_override = True
+        obj.__dict__[name] = value
+    else:
+        setattr(obj, name, value)
+    return local_override
 
 
-_hook_into_doctest()
-
-
-def _patch_test_result(klass):
-    """Patches flexmock into any class that inherits unittest.TestResult.
-
-    This seems to work well for majority of test runners. In the case of nose
-    it's not even necessary as it doesn't override unittest.TestResults's
-    addSuccess and addFailure methods so simply patching unittest works
-    out of the box for nose.
-
-    For those that do inherit from unittest.TestResult and override its
-    stopTest and addSuccess methods, patching is pretty straightforward
-    (numerous examples below).
-
-    The reason we don't simply patch unittest's parent TestResult class
-    is stopTest and addSuccess in the child classes tend to add messages
-    into the output that we want to override in case flexmock generates
-    its own failures.
-    """
-    # pylint: disable=invalid-name
-    saved_addSuccess = klass.addSuccess
-    saved_stopTest = klass.stopTest
-
-    def addSuccess(self, _test):
-        self._pre_flexmock_success = True
-
-    def stopTest(self, test):
-        if _get_code(saved_stopTest) is not _get_code(stopTest):
-            # if parent class was for some reason patched, avoid calling
-            # flexmock_teardown() twice and delegate up the class hierarchy
-            # this doesn't help if there is a gap and only the parent's
-            # parent class was patched, but should cover most screw-ups
-            try:
-                flexmock_teardown()
-                saved_addSuccess(self, test)
-            except Exception:
-                if hasattr(self, "_pre_flexmock_success"):
-                    self.addFailure(test, sys.exc_info())
-            if hasattr(self, "_pre_flexmock_success"):
-                del self._pre_flexmock_success
-        return saved_stopTest(self, test)
-
-    if klass.stopTest is not stopTest:
-        klass.stopTest = stopTest
-
-    if klass.addSuccess is not addSuccess:
-        klass.addSuccess = addSuccess
-
-
-def _hook_into_unittest():
-    # pylint: disable=import-outside-toplevel
-    import unittest
-
-    try:
-        # only valid TestResult class for unittest is TextTestResult
-        _patch_test_result(unittest.TextTestResult)
-    except Exception:  # let's not take any chances
-        pass
-
-
-_hook_into_unittest()
+def _isproperty(obj, name):
+    if isinstance(obj, Mock):
+        return False
+    if not inspect.isclass(obj) and hasattr(obj, "__dict__") and name not in obj.__dict__:
+        attr = getattr(obj.__class__, name)
+        if isinstance(attr, property):
+            return True
+    elif inspect.isclass(obj):
+        attr = getattr(obj, name)
+        if isinstance(attr, property):
+            return True
+    return False
