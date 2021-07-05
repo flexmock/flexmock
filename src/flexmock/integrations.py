@@ -2,7 +2,9 @@
 # pylint: disable=import-outside-toplevel
 import sys
 import unittest
-from typing import Any, Literal, Optional, Type
+from typing import Any, Optional, Type
+
+from typing_extensions import Literal
 
 from flexmock.api import flexmock_teardown
 

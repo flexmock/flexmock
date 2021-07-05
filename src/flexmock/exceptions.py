@@ -1,4 +1,4 @@
-"""Flecmock exceptions."""
+"""Flexmock exceptions."""
 
 
 class FlexmockError(Exception):
