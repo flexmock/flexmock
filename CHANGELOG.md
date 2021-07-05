@@ -21,6 +21,7 @@ Types of changes:
 ### Removed
 
 - Drop Python 2.7, 3.4, 3.5 support.
+- Remove unittest2 integration. unittest2 is not maintained anymore.
 
 ## v0.10.4
 
