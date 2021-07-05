@@ -8,7 +8,11 @@ from flexmock.api import flexmock_teardown
 
 
 def hook_into_pytest() -> None:
-    """Hook flexmock into Pytest testing framework."""
+    """Hook flexmock into Pytest.
+
+    Pytest is a Python test framework:
+    https://github.com/pytest-dev/pytest
+    """
     try:
         from _pytest import runner
     except ImportError:
@@ -57,11 +61,77 @@ def hook_into_doctest() -> None:
 
 def hook_into_unittest() -> None:
     """Hook flexmock into unittest."""
+    # only valid TestResult class for unittest is TextTestResult
+    _patch_test_result(unittest.TextTestResult)
+
+
+def hook_into_teamcity_unittest() -> None:
+    """Hook into Teamcity unittests. This allows flexmock to be used within PyCharm."""
     try:
-        # only valid TestResult class for unittest is TextTestResult
-        _patch_test_result(unittest.TextTestResult)
-    except Exception:  # let's not take any chances
+        from tcunittest import TeamcityTestResult
+    except ImportError:
         pass
+    else:
+        _patch_test_result(TeamcityTestResult)
+
+
+def hook_into_testtools() -> None:
+    """Hook into teststools.
+
+    testtools is a set of extensions to the Python standard library's unit testing framework:
+    https://github.com/testing-cabal/testtools
+    """
+    try:
+        from testtools import testresult
+    except ImportError:
+        pass
+    else:
+        _patch_test_result(testresult.TestResult)
+
+
+def hook_into_zope() -> None:
+    """Hook into Zope testrunner.
+
+    Zope is an open-source web application server:
+    https://github.com/zopefoundation/Zope
+    """
+    try:
+        from zope import testrunner
+    except ImportError:
+        pass
+    else:
+        _patch_test_result(testrunner.runner.TestResult)
+
+
+def hook_into_subunit() -> None:
+    """Hook into subunit.
+
+    Subunit is a test reporting and controlling protocol.
+    https://github.com/testing-cabal/subunit
+    """
+    try:
+        import subunit
+    except ImportError:
+        pass
+    else:
+        _patch_test_result(subunit.TestProtocolClient)
+
+
+def hook_into_twisted() -> None:
+    """Hook into twisted.
+
+    Twisted is an event-based framework for internet applications:
+    https://github.com/twisted/twisted
+    """
+    try:
+        from twisted.trial import reporter
+    except ImportError:
+        pass
+    else:
+        _patch_test_result(reporter.MinimalReporter)
+        _patch_test_result(reporter.TextReporter)
+        _patch_test_result(reporter.VerboseTextReporter)
+        _patch_test_result(reporter.TreeReporter)
 
 
 def _patch_test_result(klass: Type[unittest.TextTestResult]) -> None:
