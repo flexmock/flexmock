@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flexmock"
-version = "0.10.4"
+version = "0.10.7"
 description = "flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes."
 authors = ["Slavek Kabrda", "Herman Sheremetyev"]
 maintainers = [
@@ -21,6 +21,19 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Testing",
 ]
+include = [
+    "CHANGELOG.md",
+    "docs/conf.py",
+    "docs/Makefile",
+    "docs/**/*.rst",
+    "LICENSE",
+    "README.md",
+    "src/**/*.py",
+    "tests/**/*.{py,sh}",
+]
+packages = [
+    { include = "flexmock", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
@@ -31,6 +44,7 @@ mypy = "^0.910"
 pylint = "^2.9.3"
 black = "^21.6b0"
 isort = "^5.9.1"
+typing-extensions = "^3.10.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
