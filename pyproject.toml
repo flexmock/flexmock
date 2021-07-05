@@ -2,7 +2,12 @@
 name = "flexmock"
 version = "0.10.4"
 description = "flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes."
-authors = ["Your Name <you@example.com>"]
+authors = ["Slavek Kabrda", "Herman Sheremetyev"]
+maintainers = [
+    "Adarsh Krishnan <adarshk7@gmail.com>",
+    "Christophe Riolo Uusivaara <riolo.christophe@gmail.com>",
+    "Olli Paakkunainen <olli@paakkunainen.fi>",
+]
 license = "BSD-2-Clause"
 repository = "https://github.com/flexmock/flexmock"
 documentation = "http://flexmock.readthedocs.org"
