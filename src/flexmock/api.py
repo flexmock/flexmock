@@ -91,8 +91,10 @@ class Mock:
 
     def should_receive(self, name: str) -> "Expectation":
         """Replaces the specified attribute with a fake.
+
         Args:
           - name: string name of the attribute to replace
+
         Returns:
           - Expectation object which can be used to modify the expectations
             on the fake attribute
