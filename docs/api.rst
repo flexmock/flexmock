@@ -1,7 +1,7 @@
 flexmock API
 ============
 
-.. module:: flexmock
+.. module:: flexmock.api
 
 .. autofunction:: flexmock
 
