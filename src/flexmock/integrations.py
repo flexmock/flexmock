@@ -2,6 +2,7 @@
 # pylint: disable=import-outside-toplevel
 import sys
 import unittest
+from contextlib import suppress
 from typing import Any, Optional, Type
 
 from typing_extensions import Literal
@@ -15,15 +16,12 @@ def hook_into_pytest() -> None:
     Pytest is a Python test framework:
     https://github.com/pytest-dev/pytest
     """
-    try:
+    with suppress(ImportError):
         from _pytest import runner
-    except ImportError:
-        pass
-    else:
         saved = runner.call_runtest_hook
 
         def call_runtest_hook(
-            item: runner.Item, when: Literal["setup", "call", "teardown"], **kwargs: Any
+            item: runner.Item, when: Literal["setup", "call", "teardown"], **kwargs: Any,
         ) -> runner.CallInfo[None]:
             ret = saved(item, when, **kwargs)
             if when != "call" and ret.excinfo is None:
@@ -39,11 +37,8 @@ def hook_into_pytest() -> None:
 
 def hook_into_doctest() -> None:
     """Hook flexmock into doctest."""
-    try:
+    with suppress(ImportError):
         from doctest import DocTest, DocTestRunner, TestResults
-    except ImportError:
-        pass
-    else:
         saved = DocTestRunner.run
 
         def run(
@@ -69,11 +64,8 @@ def hook_into_unittest() -> None:
 
 def hook_into_teamcity_unittest() -> None:
     """Hook into Teamcity unittests. This allows flexmock to be used within PyCharm."""
-    try:
+    with suppress(ImportError):
         from tcunittest import TeamcityTestResult
-    except ImportError:
-        pass
-    else:
         _patch_test_result(TeamcityTestResult)
 
 
@@ -83,11 +75,8 @@ def hook_into_testtools() -> None:
     testtools is a set of extensions to the Python standard library's unit testing framework:
     https://github.com/testing-cabal/testtools
     """
-    try:
+    with suppress(ImportError):
         from testtools import testresult
-    except ImportError:
-        pass
-    else:
         _patch_test_result(testresult.TestResult)
 
 
@@ -97,11 +86,8 @@ def hook_into_zope() -> None:
     Zope is an open-source web application server:
     https://github.com/zopefoundation/Zope
     """
-    try:
+    with suppress(ImportError):
         from zope import testrunner
-    except ImportError:
-        pass
-    else:
         _patch_test_result(testrunner.runner.TestResult)
 
 
@@ -111,11 +97,8 @@ def hook_into_subunit() -> None:
     Subunit is a test reporting and controlling protocol.
     https://github.com/testing-cabal/subunit
     """
-    try:
+    with suppress(ImportError):
         import subunit
-    except ImportError:
-        pass
-    else:
         _patch_test_result(subunit.TestProtocolClient)
 
 
@@ -125,11 +108,8 @@ def hook_into_twisted() -> None:
     Twisted is an event-based framework for internet applications:
     https://github.com/twisted/twisted
     """
-    try:
+    with suppress(ImportError):
         from twisted.trial import reporter
-    except ImportError:
-        pass
-    else:
         _patch_test_result(reporter.MinimalReporter)
         _patch_test_result(reporter.TextReporter)
         _patch_test_result(reporter.VerboseTextReporter)
