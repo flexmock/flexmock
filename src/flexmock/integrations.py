@@ -1,120 +1,14 @@
 """Flexmock test runner integrations."""
-# pylint: disable=import-outside-toplevel
+# pylint: disable=import-outside-toplevel, import-error
 import sys
 import unittest
 from contextlib import suppress
 from functools import wraps
-from typing import Any, Optional, Type
+from typing import Any, Type
 
 from typing_extensions import Literal
 
 from flexmock.api import flexmock_teardown
-
-
-def hook_into_pytest() -> None:
-    """Hook flexmock into Pytest.
-
-    Pytest is a Python test framework:
-    https://github.com/pytest-dev/pytest
-    """
-    with suppress(ImportError):
-        from _pytest import runner
-        saved = runner.call_runtest_hook
-
-        def call_runtest_hook(
-            item: runner.Item, when: Literal["setup", "call", "teardown"], **kwargs: Any,
-        ) -> runner.CallInfo[None]:
-            ret = saved(item, when, **kwargs)
-            if when != "call" and ret.excinfo is None:
-                return ret
-            teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
-            teardown.duration = ret.duration
-            if ret.excinfo is not None:
-                teardown.excinfo = ret.excinfo
-            return teardown
-
-        runner.call_runtest_hook = call_runtest_hook
-
-
-def hook_into_doctest() -> None:
-    """Hook flexmock into doctest."""
-    with suppress(ImportError):
-        from doctest import DocTest, DocTestRunner, TestResults
-        saved = DocTestRunner.run
-
-        def run(
-            self: DocTestRunner,
-            test: DocTest,
-            compileflags: Optional[int] = None,
-            out: Optional[Any] = None,
-            clear_globs: bool = True,
-        ) -> TestResults:
-            try:
-                return saved(self, test, compileflags, out, clear_globs)
-            finally:
-                flexmock_teardown()
-
-        DocTestRunner.run = run  # type: ignore
-
-
-def hook_into_unittest() -> None:
-    """Hook flexmock into unittest."""
-    # only valid TestResult class for unittest is TextTestResult
-    _patch_test_result(unittest.TextTestResult)
-
-
-def hook_into_teamcity_unittest() -> None:
-    """Hook into Teamcity unittests. This allows flexmock to be used within PyCharm."""
-    with suppress(ImportError):
-        from tcunittest import TeamcityTestResult
-        _patch_test_result(TeamcityTestResult)
-
-
-def hook_into_testtools() -> None:
-    """Hook into teststools.
-
-    testtools is a set of extensions to the Python standard library's unit testing framework:
-    https://github.com/testing-cabal/testtools
-    """
-    with suppress(ImportError):
-        from testtools import testresult
-        _patch_test_result(testresult.TestResult)
-
-
-def hook_into_zope() -> None:
-    """Hook into Zope testrunner.
-
-    Zope is an open-source web application server:
-    https://github.com/zopefoundation/Zope
-    """
-    with suppress(ImportError):
-        from zope import testrunner
-        _patch_test_result(testrunner.runner.TestResult)
-
-
-def hook_into_subunit() -> None:
-    """Hook into subunit.
-
-    Subunit is a test reporting and controlling protocol.
-    https://github.com/testing-cabal/subunit
-    """
-    with suppress(ImportError):
-        import subunit
-        _patch_test_result(subunit.TestProtocolClient)
-
-
-def hook_into_twisted() -> None:
-    """Hook into twisted.
-
-    Twisted is an event-based framework for internet applications:
-    https://github.com/twisted/twisted
-    """
-    with suppress(ImportError):
-        from twisted.trial import reporter
-        _patch_test_result(reporter.MinimalReporter)
-        _patch_test_result(reporter.TextReporter)
-        _patch_test_result(reporter.VerboseTextReporter)
-        _patch_test_result(reporter.TreeReporter)
 
 
 def _patch_test_result(klass: Type[unittest.TextTestResult]) -> None:
@@ -133,16 +27,20 @@ def _patch_test_result(klass: Type[unittest.TextTestResult]) -> None:
     is stopTest and addSuccess in the child classes tend to add messages
     into the output that we want to override in case flexmock generates
     its own failures.
+
+    Args:
+        klass: the class whose stopTest method needs to be decorated.
     """
     # pylint: disable=invalid-name
-    _patch_stopTest(klass)
-    _patch_addSuccess(klass)
+    _patch_stop_test(klass)
+    _patch_add_success(klass)
 
-def _patch_stopTest(klass: Type[unittest.TextTestResult]):
+
+def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
     """Add call to teardown in klass.stopTest method.
 
     Args:
-        - klass: the class whose stopTest method needs to be decorated.
+        klass: the class whose stopTest method needs to be decorated.
     """
     saved_add_success = klass.addSuccess
     saved_stop_test = klass.stopTest
@@ -168,15 +66,139 @@ def _patch_stopTest(klass: Type[unittest.TextTestResult]):
         klass.stopTest = decorated  # type: ignore
 
 
-def _patch_addSuccess(klass: Type[unittest.TextTestResult]):
+def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
     """Modify the addSuccess method of the klass for flexmock.
 
     Args:
-        - klass: the class whose stopTest method needs to be decorated.
+        klass: the class whose stopTest method needs to be decorated.
     """
+
     @wraps(klass.addSuccess)
     def decorated(self: unittest.TextTestResult, _test: unittest.TestCase) -> None:
         self._pre_flexmock_success = True  # type: ignore
 
     if klass.addSuccess is not decorated:
         klass.addSuccess = decorated  # type: ignore
+
+
+# Hook flexmock into Pytest.
+# Pytest is a Python test framework:
+# https://github.com/pytest-dev/pytest
+
+with suppress(ImportError):
+    from _pytest import runner
+
+    saved_pytest = runner.call_runtest_hook
+
+    @wraps(saved_pytest)
+    def call_runtest_hook(
+        item: runner.Item,
+        when: Literal["setup", "call", "teardown"],
+        **kwargs: Any,
+    ) -> runner.CallInfo[None]:
+        """Call the teardown at the end of the tests.
+
+        Args:
+            item: The runner
+            when: The moment this runs
+            kwargs: additional arguments
+
+        Returns:
+            The teardown function
+        """
+        ret = saved_pytest(item, when, **kwargs)
+        if when != "call" and ret.excinfo is None:
+            return ret
+        teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
+        teardown.duration = ret.duration
+        if ret.excinfo is not None:
+            teardown.excinfo = ret.excinfo
+        return teardown
+
+    runner.call_runtest_hook = call_runtest_hook
+
+
+# Hook flexmock into doctest.
+
+with suppress(ImportError):
+    from doctest import DocTestRunner, TestResults
+
+    saved_doctest = DocTestRunner.run
+
+    @wraps(saved_doctest)
+    def run(
+        *args: Any,
+        **kwargs: Any,
+    ) -> TestResults:
+        """Call the teardown at the end of the tests.
+
+        Args:
+            args: the arguments passed to the runner
+            kwargs: the keyword arguments passed to the runner
+
+        Returns:
+            The test results
+
+        """
+        try:
+            return saved_doctest(*args, **kwargs)
+        finally:
+            flexmock_teardown()
+
+    DocTestRunner.run = run  # type: ignore
+
+
+# Hook flexmock into unittest.
+# only valid TestResult class for unittest is TextTestResult
+_patch_test_result(unittest.TextTestResult)
+
+
+# Hook into Teamcity unittests.
+# This allows flexmock to be used within PyCharm.
+with suppress(ImportError):
+    from tcunittest import TeamcityTestResult
+
+    _patch_test_result(TeamcityTestResult)
+
+
+# Hook into teststools.
+# testtools is a set of extensions to the Python standard library's unit testing framework:
+# https://github.com/testing-cabal/testtools
+
+with suppress(ImportError):
+    from testtools import testresult
+
+    _patch_test_result(testresult.TestResult)
+
+
+# Hook into Zope testrunner.
+# Zope is an open-source web application server:
+# https://github.com/zopefoundation/Zope
+
+with suppress(ImportError):
+    from zope import testrunner
+
+    _patch_test_result(testrunner.runner.TestResult)
+
+
+# Hook into subunit.
+# Subunit is a test reporting and controlling protocol.
+# https://github.com/testing-cabal/subunit
+
+with suppress(ImportError):
+    import subunit
+
+    _patch_test_result(subunit.TestProtocolClient)
+
+
+# Hook into twisted.
+# Twisted is an event-based framework for internet applications:
+# https://github.com/twisted/twisted
+
+with suppress(ImportError):
+    from twisted.trial import reporter
+
+    _patch_test_result(reporter.MinimalReporter)
+    _patch_test_result(reporter.TextReporter)
+    _patch_test_result(reporter.VerboseTextReporter)
+    _patch_test_result(reporter.TreeReporter)
