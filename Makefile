@@ -1,7 +1,7 @@
 
 color := $(shell tput setaf 2)
 off := $(shell tput sgr0)
-TARGETS = flexmock tests
+TARGETS = src tests
 
 .PHONY: all
 all: lint test
