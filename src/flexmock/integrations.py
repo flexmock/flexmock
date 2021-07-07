@@ -6,8 +6,6 @@ from contextlib import suppress
 from functools import wraps
 from typing import Any, Type
 
-from typing_extensions import Literal
-
 from flexmock.api import flexmock_teardown
 
 
@@ -93,7 +91,7 @@ with suppress(ImportError):
     @wraps(saved_pytest)
     def call_runtest_hook(
         item: runner.Item,
-        when: Literal["setup", "call", "teardown"],
+        when: str,
         **kwargs: Any,
     ) -> runner.CallInfo[None]:
         """Call the teardown at the end of the tests.
