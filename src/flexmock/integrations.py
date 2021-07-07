@@ -3,6 +3,7 @@
 import sys
 import unittest
 from contextlib import suppress
+from functools import wraps
 from typing import Any, Optional, Type
 
 from typing_extensions import Literal
@@ -134,30 +135,48 @@ def _patch_test_result(klass: Type[unittest.TextTestResult]) -> None:
     its own failures.
     """
     # pylint: disable=invalid-name
-    saved_addSuccess = klass.addSuccess
-    saved_stopTest = klass.stopTest
+    _patch_stopTest(klass)
+    _patch_addSuccess(klass)
 
-    def addSuccess(self: unittest.TextTestResult, _test: unittest.TestCase) -> None:
-        self._pre_flexmock_success = True  # type: ignore
+def _patch_stopTest(klass: Type[unittest.TextTestResult]):
+    """Add call to teardown in klass.stopTest method.
 
-    def stopTest(self: unittest.TextTestResult, test: unittest.TestCase) -> None:
-        if saved_stopTest.__code__ is not stopTest.__code__:
+    Args:
+        - klass: the class whose stopTest method needs to be decorated.
+    """
+    saved_add_success = klass.addSuccess
+    saved_stop_test = klass.stopTest
+
+    @wraps(saved_stop_test)
+    def decorated(self: unittest.TextTestResult, test: unittest.TestCase) -> None:
+        if saved_stop_test.__code__ is not decorated.__code__:
             # if parent class was for some reason patched, avoid calling
             # flexmock_teardown() twice and delegate up the class hierarchy
             # this doesn't help if there is a gap and only the parent's
             # parent class was patched, but should cover most screw-ups
             try:
                 flexmock_teardown()
-                saved_addSuccess(self, test)
+                saved_add_success(self, test)
             except Exception:
                 if hasattr(self, "_pre_flexmock_success"):
                     self.addFailure(test, sys.exc_info())
             if hasattr(self, "_pre_flexmock_success"):
                 del self._pre_flexmock_success  # type: ignore
-        return saved_stopTest(self, test)
+        return saved_stop_test(self, test)
 
-    if klass.stopTest is not stopTest:
-        klass.stopTest = stopTest  # type: ignore
+    if klass.stopTest is not decorated:
+        klass.stopTest = decorated  # type: ignore
 
-    if klass.addSuccess is not addSuccess:
-        klass.addSuccess = addSuccess  # type: ignore
+
+def _patch_addSuccess(klass: Type[unittest.TextTestResult]):
+    """Modify the addSuccess method of the klass for flexmock.
+
+    Args:
+        - klass: the class whose stopTest method needs to be decorated.
+    """
+    @wraps(klass.addSuccess)
+    def decorated(self: unittest.TextTestResult, _test: unittest.TestCase) -> None:
+        self._pre_flexmock_success = True  # type: ignore
+
+    if klass.addSuccess is not decorated:
+        klass.addSuccess = decorated  # type: ignore
