@@ -31,9 +31,7 @@ include = [
     "src/**/*.py",
     "tests/**/*.{py,sh}",
 ]
-packages = [
-    { include = "flexmock", from = "src" }
-]
+packages = [{ include="flexmock", from="src" }]
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
@@ -45,6 +43,7 @@ pylint = "^2.9.3"
 black = "^21.6b0"
 isort = "^5.9.1"
 Sphinx = "^4.0.3"
+tox = "^3.23.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -94,3 +93,14 @@ no_implicit_optional = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 ignore_errors = true
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+envlist = pypy3, py36, py37, py38, py39, py310
+
+[testenv]
+deps = pytest >= 3.0.0, <4
+commands = pytest
+"""

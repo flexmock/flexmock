@@ -24,6 +24,8 @@ EXACTLY = "exactly"
 SPECIAL_METHODS = (classmethod, staticmethod)
 UPDATED_ATTRS = ["should_receive", "should_call", "new_instances"]
 DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("", (object,), {}))]
+# Fix Python 3.6 does not have re.Pattern type
+RE_TYPE = type(re.compile(""))
 
 
 class ReturnValue:
@@ -322,7 +324,7 @@ class Mock:
                 if inspect.isclass(expected):
                     if expected is not raised and expected not in raised.__bases__:
                         raise ExceptionClassError("expected %s, raised %s" % (expected, raised))
-                    if args["kargs"] and isinstance(args["kargs"][0], re.Pattern):
+                    if args["kargs"] and isinstance(args["kargs"][0], RE_TYPE):
                         if not args["kargs"][0].search(message):
                             raise (
                                 ExceptionMessageError(
@@ -1103,7 +1105,7 @@ def _getattr(obj: object, name: str) -> Any:
 
 
 def _arg_to_str(arg: Any) -> str:
-    if isinstance(arg, re.Pattern):
+    if isinstance(arg, RE_TYPE):
         return f"/{arg.pattern}/"
     if isinstance(arg, str):
         return f'"{arg}"'
@@ -1168,7 +1170,7 @@ def _arguments_match(arg: Any, expected_arg: Any) -> bool:
         return True
     if inspect.isclass(expected_arg) and isinstance(arg, expected_arg):
         return True
-    if isinstance(expected_arg, re.Pattern) and expected_arg.search(arg):
+    if isinstance(expected_arg, RE_TYPE) and expected_arg.search(arg):
         return True
     return False
 
