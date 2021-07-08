@@ -104,10 +104,10 @@ with suppress(ImportError):
         Returns:
             The teardown function
         """
-        ret = saved_pytest(item, when, **kwargs)
+        ret = saved_pytest(item, when, **kwargs)  # type: ignore
         if when != "call" and ret.excinfo is None:
             return ret
-        teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)
+        teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)  # type: ignore
         teardown.duration = ret.duration
         if ret.excinfo is not None:
             teardown.excinfo = ret.excinfo
