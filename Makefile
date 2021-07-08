@@ -10,11 +10,22 @@ all: lint test
 lint: isort black mypy pylint
 
 .PHONY: test
-test:
+test: pytest unittest
+
+
+.PHONY: pytest
+pytest:
 	@printf '\n\n*****************\n'
-	@printf '$(color)Running tests$(off)\n'
+	@printf '$(color)Running pytest$(off)\n'
 	@printf '*****************\n'
-	pytest
+	pytest tests/flexmock_pytest_test.py
+
+.PHONY: unittest
+unittest:
+	@printf '\n\n*****************\n'
+	@printf '$(color)Running unittest$(off)\n'
+	@printf '*****************\n'
+	PYTHONPATH=$(shell pwd) python tests/flexmock_test.py
 
 .PHONY: mypy
 mypy:
