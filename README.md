@@ -24,3 +24,7 @@ https://flexmock.readthedocs.org
 To report bugs or file feature requests:
 
 https://github.com/flexmock/flexmock/issues
+
+## Contributing
+
+Contributions are absolutely welcome and encouraged! See [CONTRIBUTING.md](https://github.com/flexmock/flexmock/blob/master/CONTRIBUTING.md) to get started.
