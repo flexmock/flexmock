@@ -25,7 +25,7 @@ unittest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running unittest$(off)\n'
 	@printf '*****************\n'
-	PYTHONPATH=$(shell pwd) python tests/flexmock_test.py
+	python -m unittest tests/flexmock_test.py
 
 .PHONY: mypy
 mypy:
