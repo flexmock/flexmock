@@ -130,8 +130,6 @@ class Mock:
     def _ensure_object_has_named_attribute(self, obj: Any, name: str) -> None:
         if not isinstance(obj, Mock) and not self._hasattr(obj, name):
             exc_msg = "%s does not have attribute %s" % (obj, name)
-            if name == "__new__":
-                exc_msg = "old-style classes do not have a __new__() method"
             raise FlexmockError(exc_msg)
 
     def _hasattr(self, obj: Any, name: str) -> bool:

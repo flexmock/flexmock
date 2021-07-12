@@ -70,6 +70,11 @@ class RegularClass:
     def _tear_down(self):
         return flexmock_teardown()
 
+    def test_print_expectation(self):
+        mock = flexmock()
+        expectation = mock.should_receive("foo")
+        assert str(expectation) == "foo() -> ()"
+
     def test_flexmock_should_create_mock_object(self):
         mock = flexmock()
         assert isinstance(mock, Mock)
@@ -531,6 +536,18 @@ class RegularClass:
         assert_equal("instance", user.method())
         assert_equal("class", user2.method())
 
+    def test_should_call_with_class_default_attributes(self):
+        """Flexmock should not allow mocking class default attributes like
+        __call__ on an instance.
+        """
+
+        class WithCall:
+            def __call__(self, a):
+                return a
+
+        instance = WithCall()
+        assert_raises(FlexmockError, flexmock(instance).should_call, "__call__")
+
     def test_should_call_on_class_mock(self):
         class User:
             def __init__(self):
@@ -753,6 +770,30 @@ class RegularClass:
         assert_equal(1, foo.method1())
         assert_equal(2, foo.method1())
 
+    def test_flexmock_should_accept_multiple_return_values_with_one_by_one(self):
+        mocked = flexmock()
+        flexmock(mocked).should_receive("method1").and_return(2).and_return(3).one_by_one()
+        assert_equal(2, mocked.method1())
+        assert_equal(3, mocked.method1())
+        assert_equal(2, mocked.method1())
+        assert_equal(3, mocked.method1())
+
+    def test_one_by_one_called_before_and_return_multiple_values(self):
+        mocked = flexmock()
+        mocked.should_receive("method1").one_by_one().and_return(3, 4)
+        assert_equal(3, mocked.method1())
+        assert_equal(4, mocked.method1())
+        assert_equal(3, mocked.method1())
+        assert_equal(4, mocked.method1())
+
+    def test_one_by_one_called_before_and_return_one_value(self):
+        mocked = flexmock()
+        mocked.should_receive("method1").one_by_one().and_return(4).and_return(5)
+        assert_equal(4, mocked.method1())
+        assert_equal(5, mocked.method1())
+        assert_equal(4, mocked.method1())
+        assert_equal(5, mocked.method1())
+
     def test_flexmock_should_mix_multiple_return_values_with_exceptions(self):
         class Foo:
             def method1(self):
@@ -880,6 +921,13 @@ class RegularClass:
         flexmock(Foo).should_receive("__iter__").and_yield(1, 2, 3)
         assert_equal([1, 2, 3], list(Foo()))
 
+    def test_flexmock_should_yield_self_when_iterated(self):
+        class ClassNoIter:
+            pass
+
+        foo = flexmock(ClassNoIter)
+        assert foo is list(foo)[0]
+
     def test_flexmock_should_mock_iter_on_new_style_instances(self):
         class Foo:
             def __iter__(self):
@@ -904,16 +952,31 @@ class RegularClass:
         assert_equal(True, Foo.__iter__ == old, "%s != %s" % (Foo.__iter__, old))
 
     def test_flexmock_should_mock_private_methods_with_leading_underscores(self):
-        class _Foo:
-            def __stuff(self):
+        class ClassWithPrivateMethods:
+            def __private_instance_method(self):
                 pass
 
-            def public_method(self):
-                return self.__stuff()
+            @classmethod
+            def __private_class_method(cls):
+                # pylint: disable=unused-private-member
+                # pylint bug https://github.com/PyCQA/pylint/issues/4681
+                pass
 
-        foo = _Foo()
-        flexmock(foo).should_receive("__stuff").and_return("bar")
-        assert_equal("bar", foo.public_method())
+            def instance_method(self):
+                return self.__private_instance_method()
+
+            @classmethod
+            def class_method(cls):
+                return cls.__private_class_method()
+
+        # Instance
+        instance = ClassWithPrivateMethods()
+        flexmock(instance).should_receive("__private_instance_method").and_return("bar")
+        assert_equal("bar", instance.instance_method())
+
+        # Class
+        flexmock(ClassWithPrivateMethods).should_receive("__private_class_method").and_return("baz")
+        assert_equal("baz", ClassWithPrivateMethods.class_method())
 
     def test_flexmock_should_mock_generators(self):
         class Gen:
@@ -1497,14 +1560,21 @@ class RegularClass:
 
         radio = Radio()
         flexmock(radio)
+
+        def radio_is_on():
+            return radio.is_on
+
         radio.should_receive("select_channel").once().when(lambda: radio.is_on)
-        radio.should_call("adjust_volume").once().with_args(5).when(lambda: radio.is_on)
+        radio.should_call("adjust_volume").once().with_args(5).when(radio_is_on)
 
         assert_raises(StateError, radio.select_channel)
         assert_raises(StateError, radio.adjust_volume, 5)
         radio.is_on = True
         radio.select_channel()
         radio.adjust_volume(5)
+
+    def test_when_parameter_should_be_callable(self):
+        assert_raises(FlexmockError, flexmock().should_receive("something").when, 1)
 
     def test_support_at_least_and_at_most_together(self):
         class Foo:
@@ -1857,6 +1927,21 @@ class RegularClass:
         flexmock(foo, bar=lambda: "baz")
         assert_equal("baz", foo.bar())
 
+    def test_mock_multiple_properties(self):
+        class Foo:
+            @property
+            def prop1(self):
+                return "prop1"
+
+            @property
+            def prop2(self):
+                return "prop2"
+
+        mocked = Foo()
+        flexmock(mocked, prop1="mocked1", prop2="mocked2")
+        assert_equal("mocked1", mocked.prop1)
+        assert_equal("mocked2", mocked.prop2)
+
     def test_mock_property_with_attribute_on_instance(self):
         class Foo:
             @property
@@ -1982,6 +2067,21 @@ class TestPy3Features(unittest.TestCase):
             flexmock(some_module).should_receive("kwargs_only_func").with_args,
             1,
         )
+
+
+class TestReturnValue(unittest.TestCase):
+    def test_return_value_to_str(self):
+        r_val = ReturnValue(value=1)
+        assert str(r_val) == "1"
+
+        r_val = ReturnValue(value=(1,))
+        assert str(r_val) == "1"
+
+        r_val = ReturnValue(value=(1, 2))
+        assert str(r_val) == "(1, 2)"
+
+        r_val = ReturnValue(value=1, raises=RuntimeError)
+        assert str(r_val) == "<class 'RuntimeError'>(1)"
 
 
 if __name__ == "__main__":
