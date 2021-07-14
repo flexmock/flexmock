@@ -10,17 +10,19 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
-[Unreleased]
-------------
+
+Release 0.11.0
+--------------
 
 Added
 #####
 
-- Add Python 3.6, 3.7, 3.8, 3.9, 3.10 support.
-- Improve error message on unmatched method signature expectation.
+- Add Python 3.8, 3.9, 3.10 support.
+- Add type annotations.
 
 Changed
 #######
+
 - Flexmock needs to be imported explicitly using ``from flexmock import flexmock``.
 
 Removed
@@ -28,6 +30,25 @@ Removed
 
 - Drop Python 2.7, 3.4, 3.5 support.
 - Remove unittest2 integration. unittest2 is not maintained anymore.
+
+
+Infrastructure
+##############
+
+- Run linters and tests using Github Actions.
+
+Documentation
+#############
+
+- Add contribution documentation.
+
+Release 0.10.5
+--------------
+
+Added
+#####
+
+- Improve error message on unmatched method signature expectation.
 
 Fixed
 #####
