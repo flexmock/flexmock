@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "flexmock-plus"
+name = "flexmock"
 version = "0.10.7"
 description = "flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes."
 authors = ["Slavek Kabrda", "Herman Sheremetyev"]
@@ -37,7 +37,7 @@ include = [
     "src/**/*.py",
     "tests/**/*.{py,sh}",
 ]
-packages = [{ include="flexmock", from="src" }]
+packages = [{ include = "flexmock", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
