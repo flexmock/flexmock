@@ -19,6 +19,10 @@ Added
 - Add Python 3.6, 3.7, 3.8, 3.9, 3.10 support.
 - Improve error message on unmatched method signature expectation.
 
+Changed
+#######
+- Flexmock needs to be imported explicitly using ``from flexmock import flexmock``.
+
 Removed
 #######
 
@@ -28,8 +32,8 @@ Removed
 Fixed
 #####
 
-- Fix using `should_call` passes wrong `runtime_self`.
-- Fix pytest `--durations` flag when flexmock is installed.
+- Fix using ``should_call`` passes wrong ``runtime_self``.
+- Fix pytest ``--durations`` flag when flexmock is installed.
 
 Release 0.10.4
 --------------
