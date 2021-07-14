@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flexmock"
-version = "0.10.7"
+version = "0.11.0"
 description = "flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes."
 authors = ["Slavek Kabrda", "Herman Sheremetyev"]
 maintainers = [
