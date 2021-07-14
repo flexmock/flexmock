@@ -29,8 +29,7 @@ function:
 
 ::
 
-  plane = flexmock(
-                   operational=True,
+  plane = flexmock(operational=True,
                    model="MIG-21")
 
 
@@ -38,8 +37,7 @@ It is also possible to add methods to this object using the same notation and Py
 
 ::
 
-  plane = flexmock(
-                   operational=True,
+  plane = flexmock(operational=True,
                    model="MIG-21",
                    fly=lambda: None)
 
@@ -54,8 +52,7 @@ fake ones. flexmock makes this easy as well:
 
 ::
 
-  flexmock(
-           Train,  # this can be an instance, a class, or a module
+  flexmock(Train,  # this can be an instance, a class, or a module
            get_destination="Tokyo",
            get_speed=200)
 

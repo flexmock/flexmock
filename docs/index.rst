@@ -8,11 +8,11 @@
  :Contribute: `flexmock on Github`_
  :Download: `http://pypi.python.org/pypi/flexmock <http://pypi.python.org/pypi/flexmock>`_
  :License: `FreeBSD-style License`_
- :Issue tracker: `Issue Tracker <http://github.com/bkabrda/flexmock/issues>`_
+ :Issue tracker: `Issue Tracker <http://github.com/flexmock/flexmock/issues>`_
 
- .. _flexmock on Github: http://github.com/bkabrda/flexmock
+ .. _flexmock on Github: http://github.com/flexmock/flexmock
  .. _flexmock Homepage: http://flexmock.readthedocs.org
- .. _FreeBSD-style License: http://github.com/bkabrda/flexmock/blob/master/LICENSE
+ .. _FreeBSD-style License: http://github.com/flexmock/flexmock/blob/master/LICENSE
 
 flexmock is a testing library for Python.
 
@@ -37,13 +37,7 @@ Installation
 
 ::
 
-    $ sudo easy_install flexmock
-
-Or download the tarball, unpack it and run:
-
-::
-
-    $ sudo python setup.py install
+    $ pip install flexmock
 
 
 Compatibility
@@ -51,20 +45,18 @@ Compatibility
 
 Tested to work with:
 
-- python 2.7
-- python 3.4
-- python 3.5
-- python 3.6
-- python 3.7
-- pypy
-- pypy3
+- Python 3.6
+- Python 3.7
+- Python 3.8
+- Python 3.9
+- Python 3.10
+- PyPy3
 
 Automatically integrates with all major test runners, including:
 
 - unittest
-- unittest2
 - nose
-- py.test
+- pytest
 - django
 - twisted / trial
 - doctest

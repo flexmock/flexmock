@@ -70,11 +70,6 @@ Setup
 This will include flexmock in your test and make the necessary runner modifications
 so no further setup or cleanup is necessary.
 
-Since version 0.10.0, it's also possible to call flexmock module directly, so you
-can just do::
-
-  import flexmock
-
 
 Fake objects
 ------------
@@ -426,8 +421,6 @@ Another approach, if you're familiar with how instance instatiation is done in P
 
 In fact, the new_instances command is simply shorthand for `should_receive('__new__').and_return()` under the hood.
 
-Note, that `Python issue 25731 <http://bugs.python.org/issue25731>`_ causes a problem with restoring the original `__new__` method. It has been already fixed upstream, but all versions of Python 3 lower than 3.5.2 are affected and will probably never receieve a bug fix for this. If you're using some of the affected versions and are getting `TypeError: object() takes no parameters`, you're hitting this issue (original bug report is at `flexmock issue 13 <https://github.com/bkabrda/flexmock/issues/13>`_.
-
 Generators
 ----------
 
@@ -624,10 +617,7 @@ Builtin functions
 -----------------
 
 Mocking or stubbing out builtin functions, such as open(), can be slightly tricky.
-The "builtins" module is accessed differently in interactive Python sessions versus
-running applications and named differently in Python 3.0 and above.
-
-It is also not always obvious when the builtin function you are trying to mock might be
+It is not always obvious when the builtin function you are trying to mock might be
 internally called by the test runner and cause unexpected behavior in the test.
 As a result, the recommended way to mock out builtin functions is to always specify
 a fall-through with should_call() first and use with_args() to limit the scope of
@@ -635,14 +625,6 @@ your mock or stub to just the specific invocation you are trying to replace:
 
 ::
 
-   # python 2.4+
-   mock = flexmock(sys.modules['__builtin__'])
-   mock.should_call('open')  # set the fall-through
-   (mock.should_receive('open')
-       .with_args('/your/file')
-       .and_return( flexmock(read=lambda: 'file contents') ))
-
-   # python 3.0+
    mock = flexmock(sys.modules['builtins'])
    mock.should_call('open')  # set the fall-through
    (mock.should_receive('open')
