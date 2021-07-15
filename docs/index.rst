@@ -55,7 +55,6 @@ Tested to work with:
 Automatically integrates with all major test runners, including:
 
 - unittest
-- nose
 - pytest
 - django
 - twisted / trial
