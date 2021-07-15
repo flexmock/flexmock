@@ -11,7 +11,7 @@ all: lint test
 lint: isort black mypy pylint
 
 .PHONY: test
-test: pytest unittest
+test: twisted unittest pytest
 
 
 .PHONY: pytest
@@ -28,8 +28,6 @@ unittest:
 	@printf '*****************\n'
 	$(PYTHON) -m unittest tests/flexmock_test.py
 
-<<<<<<< HEAD
-=======
 .PHONY: twisted
 twisted:
 	@printf '\n\n*****************\n'
@@ -37,7 +35,6 @@ twisted:
 	@printf '*****************\n'
 	$(PYTHON) -c "from twisted.scripts.trial import run; run();" tests/flexmock_pytest_test.py
 
->>>>>>> 80bdcf1 (fixup! Update RPM specfile)
 .PHONY: mypy
 mypy:
 	@printf '\n\n*****************\n'

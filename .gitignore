@@ -12,3 +12,4 @@ dist/
 .mypy_cache
 poetry.toml
 .tox
+_trial_temp
