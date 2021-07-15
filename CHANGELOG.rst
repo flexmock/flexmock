@@ -29,7 +29,7 @@ Removed
 #######
 
 - Drop Python 2.7, 3.4, 3.5 support.
-- Remove unittest2 integration. unittest2 is not maintained anymore.
+- Remove unittest2 and nose integrations. unittest2 and nose are not maintained anymore.
 
 
 Infrastructure
