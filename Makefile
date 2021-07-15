@@ -1,6 +1,7 @@
 
 color := $(shell tput setaf 2)
 off := $(shell tput sgr0)
+PYTHON := $(if $(shell command -v python3),python3,python)
 TARGETS = src tests
 
 .PHONY: all
@@ -25,8 +26,18 @@ unittest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running unittest$(off)\n'
 	@printf '*****************\n'
-	python -m unittest tests/flexmock_test.py
+	$(PYTHON) -m unittest tests/flexmock_test.py
 
+<<<<<<< HEAD
+=======
+.PHONY: twisted
+twisted:
+	@printf '\n\n*****************\n'
+	@printf '$(color)Running twisted tests$(off)\n'
+	@printf '*****************\n'
+	$(PYTHON) -c "from twisted.scripts.trial import run; run();" tests/flexmock_pytest_test.py
+
+>>>>>>> 80bdcf1 (fixup! Update RPM specfile)
 .PHONY: mypy
 mypy:
 	@printf '\n\n*****************\n'
