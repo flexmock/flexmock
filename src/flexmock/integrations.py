@@ -9,7 +9,7 @@ from typing import Any, Type
 from flexmock.api import flexmock_teardown
 
 
-def _patch_test_result(klass: Type[unittest.TextTestResult]) -> None:
+def _patch_test_result(klass: Type[Any]) -> None:
     """Patches flexmock into any class that inherits unittest.TestResult.
 
     This seems to work well for majority of test runners. In the case of nose
@@ -174,7 +174,7 @@ with suppress(ImportError):
 # https://github.com/zopefoundation/Zope
 
 with suppress(ImportError):
-    from zope import testrunner
+    from zope import testrunner  # pylint: disable=no-name-in-module
 
     _patch_test_result(testrunner.runner.TestResult)
 
