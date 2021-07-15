@@ -10,7 +10,7 @@ maintainers = [
 ]
 license = "BSD-2-Clause"
 repository = "https://github.com/flexmock/flexmock"
-documentation = "http://flexmock.readthedocs.org"
+documentation = "https://flexmock.readthedocs.io"
 readme = "README.md"
 keywords = ["mock", "testing", "test", "unittest", "pytest"]
 classifiers = [

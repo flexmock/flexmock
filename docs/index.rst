@@ -2,17 +2,17 @@
  flexmock - Testing Library
 ====================================
 
- :Authors: `Slavek Kabrda <http://github.com/bkabrda>`_, `Herman Sheremetyev <http://github.com/has207>`_
+ :Authors: `Slavek Kabrda <https://github.com/bkabrda>`_, `Herman Sheremetyev <https://github.com/has207>`_
  :Version: |version|
  :Homepage: `flexmock Homepage`_
  :Contribute: `flexmock on Github`_
- :Download: `http://pypi.python.org/pypi/flexmock <http://pypi.python.org/pypi/flexmock>`_
+ :Download: `https://pypi.python.org/pypi/flexmock <https://pypi.python.org/pypi/flexmock>`_
  :License: `FreeBSD-style License`_
- :Issue tracker: `Issue Tracker <http://github.com/flexmock/flexmock/issues>`_
+ :Issue tracker: `Issue Tracker <https://github.com/flexmock/flexmock/issues>`_
 
- .. _flexmock on Github: http://github.com/flexmock/flexmock
- .. _flexmock Homepage: http://flexmock.readthedocs.org
- .. _FreeBSD-style License: http://github.com/flexmock/flexmock/blob/master/LICENSE
+ .. _flexmock on Github: https://github.com/flexmock/flexmock
+ .. _flexmock Homepage: https://flexmock.readthedocs.io/
+ .. _FreeBSD-style License: https://github.com/flexmock/flexmock/blob/master/LICENSE
 
 flexmock is a testing library for Python.
 
