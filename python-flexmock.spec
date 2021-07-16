@@ -1,6 +1,6 @@
 Name:           python-flexmock
 Version:        0.11.0
-Release:        5%{?dist}
+Release:        1%{?dist}
 Summary:        Testing library that makes it easy to create mocks, stubs and fakes
 
 License:        BSD
