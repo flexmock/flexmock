@@ -1,0 +1,31 @@
+summary: Run tests and linters on Fedora Linux
+provision:
+    how: local
+/plans/linters:
+    summary: Run linters installed from Fedora Linux
+    prepare:
+    - name: packages
+      how: install
+      package:
+      - pylint
+      - black
+      - python3-mypy
+      - python3-isort
+      - make
+      # you can check package names in fedora ecosystem by doing `podman run --rm fedora:34 dnf search $project`
+    # run this command to invoke the tests
+    execute:
+        how: tmt
+        script: make lint
+/plans/upstream:
+    summary: Run upstream tests inside Fedora Linux environment
+    prepare:
+    - name: packages
+      how: install
+      package:
+      - python3-pytest
+      - python3-twisted
+      - make
+    execute:
+        how: tmt
+        script: make test

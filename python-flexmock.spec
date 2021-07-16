@@ -25,10 +25,6 @@ Summary:        %{summary}
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 
-# for testing with various runners (twisted contains trial)
-BuildRequires:  python3-pytest
-BuildRequires:  python3-twisted
-
 %{?python_provide:%python_provide python3-flexmock}
 
 %description -n python3-flexmock %_description
@@ -46,10 +42,6 @@ BuildRequires:  python3-twisted
 %py3_install
 
 
-%check
-# make test
-
- 
 %files -n python3-flexmock
 %license LICENSE
 %doc README.md CHANGELOG.rst docs/
