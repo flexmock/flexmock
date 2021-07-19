@@ -1,3 +1,29 @@
+This project follows semantic versioning.
+
+Types of changes:
+
+- **Added**: New features.
+- **Changed**: Changes in existing functionality.
+- **Deprecated**: Soon-to-be removed features.
+- **Removed**: Removed features.
+- **Fixed**: Bug fixes.
+- **Infrastructure**: Changes in build or deployment infrastructure.
+- **Documentation**: Changes in documentation.
+
+Release 0.10.5
+--------------
+
+Added
+#####
+
+- Improve error message on unmatched method signature expectation.
+
+Fixed
+#####
+
+- Fix using ``should_call`` passes wrong ``runtime_self``.
+- Fix pytest ``--durations`` flag when flexmock is installed.
+
 Release 0.10.4
 --------------
 
