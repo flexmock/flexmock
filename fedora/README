@@ -1,0 +1,7 @@
+# These files are used to build RPM packages out of flexmock and run tests using the package on Fedora Linux
+
+RPM packaging: https://rpm-packaging-guide.github.io/
+
+Testing framework: http://tmt.readthedocs.io/
+
+CI system: https://packit.dev/testing-farm/

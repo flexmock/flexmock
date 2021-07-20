@@ -1,0 +1,28 @@
+# CI configuration to run upstream tests in Fedora ecosystem
+# More info:
+# Testing framework: http://tmt.readthedocs.io/
+# CI system docs: https://packit.dev/testing-farm/
+
+summary: Run tests on Fedora Linux
+
+discover:
+    how: shell
+    tests:
+      - name: Upstream test suite
+        test: make test
+
+# this is overriden in CI, but we want to run locally via CLI
+provision:
+    how: local
+
+prepare:
+  - name: packages
+    how: install
+    package:
+      - python3-pytest
+      - python3-twisted
+      - make
+
+# make sure the tests are actually executed, the default way
+execute:
+    how: tmt
