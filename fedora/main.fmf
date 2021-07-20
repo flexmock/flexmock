@@ -1,7 +1,7 @@
-summary: Run tests and linters on Fedora Linux
+summary: Run tests on Fedora Linux
 provision:
     how: local
-/plans/upstream:
+/upstream:
     summary: Run upstream tests inside Fedora Linux environment
     prepare:
     - name: packages
@@ -12,4 +12,4 @@ provision:
       - make
     execute:
         how: tmt
-        script: make test
+        script: pwd && ls -lha && make -C ../tests test
