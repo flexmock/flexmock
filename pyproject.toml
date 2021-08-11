@@ -59,7 +59,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint.messages_control]
 disable = [
-    "bad-continuation",
     "too-many-locals",
     "too-many-branches",
     "too-many-statements",
