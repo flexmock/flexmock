@@ -1,5 +1,11 @@
 """Flexmock tests."""
-# pylint: disable=missing-docstring,too-many-lines,disallowed-name,no-member,invalid-name,no-self-use
+# pylint: disable=missing-docstring
+# pylint: disable=too-many-lines
+# pylint: disable=disallowed-name
+# pylint: disable=no-member
+# pylint: disable=invalid-name
+# pylint: disable=no-self-use
+# pylint: disable=too-few-public-methods
 import random
 import re
 import sys

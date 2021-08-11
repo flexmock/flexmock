@@ -59,7 +59,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint.messages_control]
 disable = [
-    "too-few-public-methods",
     "logging-fstring-interpolation",
     "too-many-function-args",
     "too-many-arguments",

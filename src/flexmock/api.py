@@ -28,7 +28,7 @@ DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("
 RE_TYPE = type(re.compile(""))
 
 
-class ReturnValue:
+class ReturnValue:  # pylint: disable=too-few-public-methods
     """ReturnValue"""
 
     def __init__(self, value: Optional[Any] = None, raises: Optional[Exception] = None) -> None:
