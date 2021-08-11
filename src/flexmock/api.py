@@ -486,6 +486,8 @@ class Expectation:
     raise.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
         mock: Mock,
