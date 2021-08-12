@@ -1,6 +1,7 @@
 """Flexmock public API."""
 # pylint: disable=no-self-use,too-many-lines
 import inspect
+import itertools
 import re
 import sys
 import types
@@ -443,20 +444,20 @@ class Mock:
 
 def flexmock_teardown() -> None:
     """Performs flexmock-specific teardown tasks."""
-    saved = {}
-    instances = []
-    classes = []
-    for mock_object, expectations in FlexmockContainer.flexmock_objects.items():
-        saved[mock_object] = expectations[:]
-        for expectation in expectations:
-            _getattr(expectation, "reset")()
-    for mock in saved:
-        obj = mock._object
-        if not isinstance(obj, Mock) and not inspect.isclass(obj):
-            instances.append(obj)
-        if inspect.isclass(obj):
-            classes.append(obj)
-    for obj in instances + classes:
+    saved_flexmock_objects = FlexmockContainer.flexmock_objects
+    all_expectations = list(itertools.chain.from_iterable(saved_flexmock_objects.values()))
+    for expectation in all_expectations[:]:
+        expectation.reset()
+
+    def _is_instance_or_class(obj: Any) -> bool:
+        return bool(
+            (not isinstance(obj, Mock) and not inspect.isclass(obj)) or inspect.isclass(obj)
+        )
+
+    mocked_objects = [
+        mock._object for mock in saved_flexmock_objects if _is_instance_or_class(mock._object)
+    ]
+    for obj in mocked_objects:
         for attr in UPDATED_ATTRS:
             try:
                 obj_dict = obj.__dict__
@@ -473,9 +474,8 @@ def flexmock_teardown() -> None:
 
     # make sure this is done last to keep exceptions here from breaking
     # any of the previous steps that cleanup all the changes
-    for mock_object, expectations in saved.items():
-        for expectation in expectations:
-            _getattr(expectation, "verify")()
+    for expectation in all_expectations:
+        expectation.verify()
 
 
 class Expectation:
