@@ -90,10 +90,10 @@ with suppress(ImportError):
 
     @wraps(saved_pytest)
     def call_runtest_hook(
-        item: runner.Item,
+        item: Any,
         when: str,
         **kwargs: Any,
-    ) -> runner.CallInfo[None]:
+    ) -> runner.CallInfo:
         """Call the teardown at the end of the tests.
 
         Args:
@@ -108,7 +108,9 @@ with suppress(ImportError):
         if when != "call" and ret.excinfo is None:
             return ret
         teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)  # type: ignore
-        teardown.duration = ret.duration
+        if hasattr(runner.CallInfo, "duration"):
+            # CallInfo.duration only available in Pytest 6+
+            teardown.duration = ret.duration
         if ret.excinfo is not None:
             teardown.excinfo = ret.excinfo
         return teardown
