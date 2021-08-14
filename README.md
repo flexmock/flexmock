@@ -1,5 +1,11 @@
 # flexmock
 
+[![PyPI](https://img.shields.io/pypi/v/flexmock)](https://pypi.org/project/flexmock/)
+[![CI](https://github.com/flexmock/flexmock/actions/workflows/ci.yml/badge.svg)](https://github.com/flexmock/flexmock/actions/workflows/ci.yml)
+[![docs](https://img.shields.io/readthedocs/flexmock)](https://flexmock.readthedocs.io/)
+[![codecov](https://codecov.io/gh/flexmock/flexmock/branch/master/graph/badge.svg?token=wRgtiGxhiL)](https://codecov.io/gh/flexmock/flexmock)
+[![PyPI - License](https://img.shields.io/pypi/l/flexmock)](./LICENSE)
+
 flexmock is a testing library for Python that makes it easy to create mocks, stubs and fakes.
 
 ```python
