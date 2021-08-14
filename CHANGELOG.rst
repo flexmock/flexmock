@@ -11,8 +11,8 @@ Types of changes:
 - **Documentation**: Changes in documentation.
 
 
-Release 0.11.0
---------------
+Unreleased
+----------
 
 Added
 #####
@@ -29,6 +29,7 @@ Removed
 #######
 
 - Drop Python 2.7, 3.4, 3.5 support.
+- Drop Pytest 4.x support.
 - Remove unittest2 and nose integrations. unittest2 and nose are not maintained anymore.
 
 
