@@ -36,6 +36,7 @@ Infrastructure
 ##############
 
 - Run linters and tests using Github Actions.
+- Add coverage reporting using Codecov.
 
 Documentation
 #############
