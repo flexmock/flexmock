@@ -10,6 +10,14 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+Release 0.10.6
+--------------
+
+Fixed
+#####
+
+- Fix flexmock broken with Pytest 4 & 5.
+
 Release 0.10.5
 --------------
 
