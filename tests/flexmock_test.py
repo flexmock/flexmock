@@ -562,6 +562,25 @@ class RegularClass:
         flexmock(User).should_call("bar").once()
         assert_equal("value", user1.bar())
 
+    def test_with_args_with_instance_method(self):
+        flexmock(SomeClass).should_receive("instance_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("instance_method").with_args("blue").once()
+        instance = SomeClass()
+        instance.instance_method("red")
+        instance.instance_method("blue")
+
+    def test_with_args_with_class_method(self):
+        flexmock(SomeClass).should_receive("class_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("class_method").with_args("blue").once()
+        SomeClass.class_method("red")
+        SomeClass.class_method("blue")
+
+    def test_with_args_with_static_method(self):
+        flexmock(SomeClass).should_receive("static_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("static_method").with_args("blue").once()
+        SomeClass.static_method("red")
+        SomeClass.static_method("blue")
+
     def test_flexmock_should_not_blow_up_on_should_call_for_class_methods(self):
         class User:
             @classmethod
