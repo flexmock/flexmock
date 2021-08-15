@@ -33,7 +33,6 @@ import re
 import sys
 import types
 
-
 AT_LEAST = 'at least'
 AT_MOST = 'at most'
 EXACTLY = 'exactly'
@@ -834,19 +833,22 @@ class Mock(object):
     def _update_method(self, expectation, name):
         method_instance = self._create_mock_method(name)
         obj = self._object
-        if _hasattr(obj, name) and not hasattr(expectation, 'original'):
-            expectation._update_original(name, obj)
-            method_type = type(_getattr(expectation, 'original'))
-            try:
-                # TODO(herman): this is awful, fix this properly.
-                # When a class/static method is mocked out on an *instance*
-                # we need to fetch the type from the class
-                method_type = type(_getattr(obj.__class__, name))
-            except:
-                pass
-            if method_type in SPECIAL_METHODS:
-                expectation.original_function = getattr(obj, name)
-            expectation.method_type = method_type
+        if _hasattr(obj, name):
+            if hasattr(expectation, 'original'):
+                expectation.method_type = type(_getattr(expectation, 'original'))
+            else:
+                expectation._update_original(name, obj)
+                method_type = type(_getattr(expectation, 'original'))
+                try:
+                    # TODO(herman): this is awful, fix this properly.
+                    # When a class/static method is mocked out on an *instance*
+                    # we need to fetch the type from the class
+                    method_type = type(_getattr(obj.__class__, name))
+                except:
+                    pass
+                if method_type in SPECIAL_METHODS:
+                    expectation.original_function = getattr(obj, name)
+                expectation.method_type = method_type
         if (
             not _isclass(obj)
             or expectation.method_type in SPECIAL_METHODS
