@@ -244,19 +244,22 @@ class Mock:
     def _update_method(self, expectation: "Expectation", name: str) -> None:
         method_instance = self._create_mock_method(name)
         obj = self._object
-        if self._hasattr(obj, name) and not hasattr(expectation, "_original"):
-            expectation._update_original(name, obj)
-            method_type = type(_getattr(expectation, "_original"))
-            try:
-                # TODO(herman): this is awful, fix this properly.
-                # When a class/static method is mocked out on an *instance*
-                # we need to fetch the type from the class
-                method_type = type(_getattr(obj.__class__, name))
-            except Exception:
-                pass
-            if method_type in SPECIAL_METHODS:
-                expectation._original_function = getattr(obj, name)
-            expectation._method_type = method_type
+        if self._hasattr(obj, name):
+            if hasattr(expectation, "_original"):
+                expectation._method_type = type(_getattr(expectation, "_original"))
+            else:
+                expectation._update_original(name, obj)
+                method_type = type(_getattr(expectation, "_original"))
+                try:
+                    # TODO(herman): this is awful, fix this properly.
+                    # When a class/static method is mocked out on an *instance*
+                    # we need to fetch the type from the class
+                    method_type = type(_getattr(obj.__class__, name))
+                except Exception:
+                    pass
+                if method_type in SPECIAL_METHODS:
+                    expectation._original_function = getattr(obj, name)
+                expectation._method_type = method_type
         if not inspect.isclass(obj) or expectation._method_type in SPECIAL_METHODS:
             method_instance = types.MethodType(method_instance, obj)
         override = _setattr(obj, name, method_instance)
