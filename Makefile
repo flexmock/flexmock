@@ -11,7 +11,18 @@ all: lint test
 lint: isort black mypy pylint
 
 .PHONY: test
-test: twisted unittest pytest
+test: install twisted unittest pytest
+
+.PHONY: install
+install:
+	@printf '\n\n*****************\n'
+	@printf '$(color)Install flexmock$(off)\n'
+	@printf '*****************\n'
+ifeq (${VIRTUAL_ENV},)
+	@printf 'Skipping install. VIRTUAL_ENV is not set.\n'
+else
+	pip install .
+endif
 
 
 .PHONY: pytest
