@@ -17,6 +17,7 @@ Fixed
 #####
 
 - Fix flexmock broken with Pytest 4 & 5.
+- Fix new_instances method not working with Python 2.7.
 
 Release 0.10.5
 --------------
