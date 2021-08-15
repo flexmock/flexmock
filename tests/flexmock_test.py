@@ -35,12 +35,17 @@ def module_level_function(some, args):
 MODULE_LEVEL_ATTRIBUTE = "test"
 
 
-class OldStyleClass:
-    pass
+class SomeClass:
+    @classmethod
+    def class_method(cls, a):
+        pass
 
+    @staticmethod
+    def static_method(a):
+        pass
 
-class NewStyleClass:
-    pass
+    def instance_method(self, a):
+        pass
 
 
 def assert_raises(exception, method, *kargs, **kwargs):
@@ -1064,21 +1069,13 @@ class RegularClass:
         flexmock(mod).should_receive("module_level_function").with_args(1, args="expected")
         assert_raises(FlexmockError, module_level_function, 1, args="not expected")
 
-    def test_flexmock_should_support_mocking_old_style_classes_as_functions(self):
+    def test_flexmock_should_support_mocking_classes_as_functions(self):
         if "tests.flexmock_test" in sys.modules:
             mod = sys.modules["tests.flexmock_test"]
         else:
             mod = sys.modules["__main__"]
-        flexmock(mod).should_receive("OldStyleClass").and_return("yay")
-        assert_equal("yay", OldStyleClass())
-
-    def test_flexmock_should_support_mocking_new_style_classes_as_functions(self):
-        if "tests.flexmock_test" in sys.modules:
-            mod = sys.modules["tests.flexmock_test"]
-        else:
-            mod = sys.modules["__main__"]
-        flexmock(mod).should_receive("NewStyleClass").and_return("yay")
-        assert_equal("yay", NewStyleClass())
+        flexmock(mod).should_receive("SomeClass").and_return("yay")
+        assert_equal("yay", SomeClass())
 
     def test_flexmock_should_properly_restore_class_methods(self):
         class User:
