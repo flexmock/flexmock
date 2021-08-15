@@ -32,6 +32,18 @@ def module_level_function(some, args):
 
 module_level_attribute = 'test'
 
+class SomeClass:
+    @classmethod
+    def class_method(cls, a):
+        pass
+
+    @staticmethod
+    def static_method(a):
+        pass
+
+    def instance_method(self, a):
+        pass
+
 
 class OldStyleClass:
     pass
@@ -544,6 +556,27 @@ class RegularClass(object):
         flexmock(User).should_call('bar').once()
         assertEqual('value', user1.bar())
 
+    def test_with_args_on_class_mock(self):
+        # Instance method
+        flexmock(SomeClass).should_receive("instance_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("instance_method").with_args("blue").once()
+        instance = SomeClass()
+        instance.instance_method("red")
+        instance.instance_method("blue")
+        self._tear_down()
+
+        # Class method
+        flexmock(SomeClass).should_receive("class_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("class_method").with_args("blue").once()
+        SomeClass.class_method("red")
+        SomeClass.class_method("blue")
+        self._tear_down()
+
+        # Static method
+        flexmock(SomeClass).should_receive("static_method").with_args("red").once()
+        flexmock(SomeClass).should_receive("static_method").with_args("blue").once()
+        SomeClass.static_method("red")
+        SomeClass.static_method("blue")
 
     def test_flexmock_should_not_blow_up_on_should_call_for_class_methods(self):
         class User:
