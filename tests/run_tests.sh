@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PYTHON_IMPLEMENTATIONS=${PYTHON_IMPLEMENTATIONS:-"python pypy jython"}
-python_VERSIONS=${PYTHON_VERSIONS:-"2.7 3.3 3.4 3.5"}
+python_VERSIONS=${PYTHON_VERSIONS:-"2.7 3.3 3.4 3.5 3.6 3.7 3.8 3.9"}
 pypy_VERSIONS=${PYPY_VERSIONS:-"nover 3"}
 jython_VERSIONS=${JYTHON_VERSIONS:-"nover"}
 
