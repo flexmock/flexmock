@@ -44,6 +44,16 @@ Documentation
 
 - Add contribution documentation.
 
+Release 0.10.6
+--------------
+
+Fixed
+#####
+
+- Fix flexmock broken with Pytest 4 & 5.
+- Fix new_instances method not working with Python 2.7.
+- Fix multiple expectations for the same classmethod are not matched.
+
 Release 0.10.5
 --------------
 
