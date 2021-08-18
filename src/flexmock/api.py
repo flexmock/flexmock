@@ -4,7 +4,7 @@ import inspect
 import re
 import sys
 import types
-from types import TracebackType
+from types import BuiltinMethodType, TracebackType
 from typing import Any, Callable, Dict, Iterator, List, NoReturn, Optional, Tuple, Type
 
 from flexmock.exceptions import (
@@ -431,7 +431,7 @@ class Mock:
                         name, expectation._args
                     )
             # make sure to clean up expectations to ensure none of them
-            # interfere with the runner's error reporing mechanism
+            # interfere with the runner's error reporting mechanism
             # e.g. open()
             for _, expectations in FlexmockContainer.flexmock_objects.items():
                 for expectation in expectations:
@@ -560,26 +560,25 @@ class Expectation:
         if isinstance(self._mock, Mock):
             return  # no sense in enforcing this for fake objects
         allowed = self._argspec
-        # we consider object a method for purposes or not counting "self"/"cls" as argument if:
-        #  - one of inspect.ismethod, inspect.isfunction, _isclass return True
-        #    (in Python 3 it's sometimes impossible to tell whether callable is method or not,
-        #     so we try both inspect.ismethod and inspect.isfunction; classes are callable too -
-        #     they have __init__)
-        #  - it's not a static method
-        #  - the mocked object is a module - module "methods" are in fact plain functions;
-        #    unless they're classes, which means they still have __init__
-        is_method = (
-            (
-                inspect.ismethod(self._original)
-                or inspect.isfunction(self._original)
-                or inspect.isclass(self._original)
-            )
-            and self._method_type is not staticmethod
-            and (not isinstance(self._mock, types.ModuleType) or inspect.isclass(self._original))
-        )
         args_len = len(allowed.args)
-        if is_method:
+
+        # Builtin methods take `self` as the first argument but `inspect.ismethod` returns False
+        # so we need to check for them explicitly
+        is_builtin_method = isinstance(self._original, BuiltinMethodType)
+        # Methods take `self` if not a staticmethod
+        is_method = inspect.ismethod(self._original) and self._method_type is not staticmethod
+        # Class init takes `self`
+        is_class = inspect.isclass(self._original)
+        # When calling class methods or instance methods on a class method takes `cls`
+        is_class_method = (
+            inspect.isfunction(self._original)
+            and inspect.isclass(self._mock)
+            and self._method_type is not staticmethod
+        )
+        if is_builtin_method or is_method or is_class or is_class_method:
+            # Do not count `self` or `cls`.
             args_len -= 1
+
         minimum = args_len - (allowed.defaults and len(allowed.defaults) or 0)
         maximum = None
         if allowed.varargs is None and allowed.varkw is None:
