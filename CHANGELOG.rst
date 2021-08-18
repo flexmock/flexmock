@@ -32,6 +32,10 @@ Removed
 - Drop Pytest 4.x support.
 - Remove unittest2 and nose integrations. unittest2 and nose are not maintained anymore.
 
+Fixed
+#####
+
+- Fix `with_args` not working built-in functions and methods.
 
 Infrastructure
 ##############
