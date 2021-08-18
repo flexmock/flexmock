@@ -246,21 +246,23 @@ class Expectation(object):
         if isinstance(self._mock, Mock):
             return  # no sense in enforcing this for fake objects
         allowed = self.argspec
-        # we consider object a method for purposes or not counting "self"/"cls" as argument if:
-        #  - one of inspect.ismethod, inspect.isfunction, _isclass return True
-        #    (in Python 3 it's sometimes impossible to tell whether callable is method or not,
-        #     so we try both inspect.ismethod and inspect.isfunction; classes are callable too -
-        #     they have __init__)
-        #  - it's not a static method
-        #  - the mocked object is a module - module "methods" are in fact plain functions;
-        #    unless they're classes, which means they still have __init__
-        is_method = ((inspect.ismethod(self.original) or inspect.isfunction(self.original)
-                      or _isclass(self.original)) and
-                     self.method_type is not staticmethod and
-                     (not isinstance(self._mock, types.ModuleType) or
-                      _isclass(self.original)))
         args_len = len(allowed.args)
-        if is_method:
+
+        # Builtin methods take `self` as the first argument but `inspect.ismethod` returns False
+        # so we need to check for them explicitly
+        is_builtin_method = isinstance(self.original, types.BuiltinMethodType)
+        # Methods take `self` if not a staticmethod
+        is_method = inspect.ismethod(self.original) and self.method_type is not staticmethod
+        # Class init takes `self`
+        is_class = inspect.isclass(self.original)
+        # When calling class methods or instance methods on a class method takes `cls`
+        is_class_method = (
+            inspect.isfunction(self.original)
+            and inspect.isclass(self._mock)
+            and self.method_type is not staticmethod
+        )
+        if is_builtin_method or is_method or is_class or is_class_method:
+            # Do not count `self` or `cls`.
             args_len -= 1
         minimum = args_len - (allowed.defaults and len(allowed.defaults) or 0)
         maximum = None
@@ -998,7 +1000,7 @@ class Mock(object):
                 for e in expectations:
                     error_msg += '\nDid not match expectation %s' % _format_args(name, e.args)
             # make sure to clean up expectations to ensure none of them
-            # interfere with the runner's error reporing mechanism
+            # interfere with the runner's error reporting mechanism
             # e.g. open()
             for _, expectations in FlexmockContainer.flexmock_objects.items():
                 for expectation in expectations:
