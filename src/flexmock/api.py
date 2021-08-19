@@ -250,6 +250,7 @@ class Mock:
                 expectation._update_original(name, obj)
                 method_type = type(_getattr(expectation, "_original"))
                 try:
+                    # pylint: disable=fixme
                     # TODO(herman): this is awful, fix this properly.
                     # When a class/static method is mocked out on an *instance*
                     # we need to fetch the type from the class
