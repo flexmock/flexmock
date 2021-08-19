@@ -73,7 +73,7 @@ def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
 
     @wraps(klass.addSuccess)
     def decorated(self: unittest.TextTestResult, _test: unittest.TestCase) -> None:
-        self._pre_flexmock_success = True  # type: ignore
+        self._pre_flexmock_success = True  # type: ignore # pylint: disable=protected-access
 
     if klass.addSuccess is not decorated:
         klass.addSuccess = decorated  # type: ignore

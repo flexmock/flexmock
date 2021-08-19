@@ -1,5 +1,6 @@
 """Flexmock tests."""
 # pylint: disable=missing-docstring
+# pylint: disable=protected-access
 # pylint: disable=too-many-lines
 # pylint: disable=disallowed-name
 # pylint: disable=no-member

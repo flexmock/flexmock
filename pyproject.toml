@@ -60,7 +60,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pylint.messages_control]
 disable = [
     "too-many-statements",
-    "protected-access",
     "broad-except",
     "fixme",
 ]
