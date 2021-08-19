@@ -12,6 +12,8 @@ import re
 import sys
 import unittest
 
+import pytest
+
 from flexmock.api import (
     AT_LEAST,
     AT_MOST,
@@ -54,17 +56,6 @@ class SomeClass:
 
     def instance_method(self, a):
         pass
-
-
-def assert_raises(exception, method, *kargs, **kwargs):
-    try:
-        method(*kargs, **kwargs)
-    except exception:
-        return
-    except Exception:
-        instance = sys.exc_info()[1]
-        print("%s" % instance)
-    raise Exception("%s not raised" % exception.__name__)
 
 
 def assert_equal(expected, received, msg=""):
@@ -179,7 +170,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").times(1)
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
-        assert_raises(MethodCallError, expectation.verify)
+        with pytest.raises(MethodCallError):
+            expectation.verify()
         mock.method_foo()
         expectation.verify()
 
@@ -190,7 +182,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
             pass
 
         mock.should_receive("method_foo").and_raise(FakeException)
-        assert_raises(FakeException, mock.method_foo)
+        with pytest.raises(FakeException):
+            mock.method_foo()
         assert_equal(
             1,
             FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
@@ -205,7 +198,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         mock.should_receive("method_foo").and_raise(FakeException(1, arg2=2))
-        assert_raises(FakeException, mock.method_foo)
+        with pytest.raises(FakeException):
+            mock.method_foo()
         assert_equal(
             1,
             FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
@@ -220,7 +214,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         mock.should_receive("method_foo").and_raise(FakeException, 1, arg2=2)
-        assert_raises(FakeException, mock.method_foo)
+        with pytest.raises(FakeException):
+            mock.method_foo()
         assert_equal(
             1,
             FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
@@ -238,7 +233,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
     def test_flexmock_should_fail_to_match_exactly_no_args_when_calling_with_args(self):
         mock = flexmock()
         mock.should_receive("method_foo").with_args()
-        assert_raises(MethodSignatureError, mock.method_foo, "baz")
+        with pytest.raises(MethodSignatureError):
+            mock.method_foo("baz")
 
     def test_flexmock_should_match_exactly_no_args(self):
         class Foo:
@@ -319,7 +315,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         mock.should_receive("method_foo").with_args(int).and_return("got an int")
         assert_equal("got a string", mock.method_foo("string!"))
         assert_equal("got an int", mock.method_foo(23))
-        assert_raises(MethodSignatureError, mock.method_foo, 2.0)
+        with pytest.raises(MethodSignatureError):
+            mock.method_foo(2.0)
 
     def test_with_args_should_work_with_builtin_c_functions_and_methods(self):
         flexmock(sys.stdout).should_call("write")  # set fall-through
@@ -338,7 +335,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         mock.should_receive("method_foo").with_args(Foo).and_return("got a Foo")
         assert_equal("got a Foo", mock.method_foo(Foo()))
-        assert_raises(MethodSignatureError, mock.method_foo, 1)
+        with pytest.raises(MethodSignatureError):
+            mock.method_foo(1)
 
     def test_flexmock_configures_global_mocks_dict(self):
         mock = flexmock(name="temp")
@@ -350,7 +348,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
     def test_flexmock_teardown_verifies_mocks(self):
         mock = flexmock(name="temp")
         mock.should_receive("verify_expectations").times(1)
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_teardown_does_not_verify_stubs(self):
         mock = flexmock(name="temp")
@@ -457,7 +456,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
         assert_equal(AT_LEAST, expectation._modifier)
         mock.method_foo()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_respects_at_least_when_called_requested_number(self):
         mock = flexmock(name="temp")
@@ -498,21 +498,24 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
         assert_equal(AT_MOST, expectation._modifier)
         mock.method_foo()
-        assert_raises(MethodCallError, mock.method_foo)
+        with pytest.raises(MethodCallError):
+            mock.method_foo()
 
     def test_flexmock_treats_once_as_times_one(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").once()
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
         assert_equal(1, expectation._expected_calls[EXACTLY])
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_treats_twice_as_times_two(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").twice().and_return("value_bar")
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo")
         assert_equal(2, expectation._expected_calls[EXACTLY])
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_works_with_never_when_true(self):
         mock = flexmock(name="temp")
@@ -524,7 +527,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
     def test_flexmock_works_with_never_when_false(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("value_bar").never()
-        assert_raises(MethodCallError, mock.method_foo)
+        with pytest.raises(MethodCallError):
+            mock.method_foo()
 
     def test_flexmock_get_flexmock_expectation_should_work_with_args(self):
         mock = flexmock(name="temp")
@@ -563,7 +567,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 return a
 
         instance = WithCall()
-        assert_raises(FlexmockError, flexmock(instance).should_call, "__call__")
+        with pytest.raises(FlexmockError):
+            flexmock(instance).should_call("__call__")
 
     def test_should_call_on_class_mock(self):
         class User:
@@ -580,14 +585,16 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         user1 = User()
         user2 = User()
         flexmock(User).should_call("foo").once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
         flexmock(User).should_call("foo").twice()
         assert_equal("class", user1.foo())
         assert_equal("class", user2.foo())
 
         # Access instance attributes
         flexmock(User).should_call("bar").once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
         flexmock(User).should_call("bar").twice()
         assert_equal("value", user1.bar())
         assert_equal("value", user2.bar())
@@ -687,7 +694,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(User)
         Group.should_receive("method1").once()
         User.should_receive("method2").once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
         for method in UPDATED_ATTRS:
             assert method not in dir(Group)
         for method in UPDATED_ATTRS:
@@ -719,12 +727,14 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         group = Group()
         flexmock(group).should_call("method1").at_least().once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
         flexmock(group)
         group.should_call("method2").with_args("a").once()
         group.should_receive("method2").with_args("not a")
         group.method2("not a")
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_doesnt_error_on_properly_ordered_expectations(self):
         class Foo:
@@ -761,7 +771,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(foo)
         foo.should_receive("method1").with_args("a").ordered()
         foo.should_receive("method1").with_args("b").ordered()
-        assert_raises(CallOrderError, foo.method1, "b")
+        with pytest.raises(CallOrderError):
+            foo.method1("b")
 
     def test_flexmock_should_accept_multiple_return_values(self):
         class Foo:
@@ -819,9 +830,11 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         foo = Foo()
         flexmock(foo).should_receive("method1").and_return(1).and_raise(Exception)
         assert_equal(1, foo.method1())
-        assert_raises(Exception, foo.method1)
+        with pytest.raises(Exception):
+            foo.method1()
         assert_equal(1, foo.method1())
-        assert_raises(Exception, foo.method1)
+        with pytest.raises(Exception):
+            foo.method1()
 
     def test_flexmock_should_match_types_on_multiple_arguments(self):
         class Foo:
@@ -831,11 +844,14 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         foo = Foo()
         flexmock(foo).should_receive("method1").with_args(str, int).and_return("ok")
         assert_equal("ok", foo.method1("some string", 12))
-        assert_raises(MethodSignatureError, foo.method1, 12, 32)
+        with pytest.raises(MethodSignatureError):
+            foo.method1(12, 32)
         flexmock(foo).should_receive("method1").with_args(str, int).and_return("ok")
-        assert_raises(MethodSignatureError, foo.method1, 12, "some string")
+        with pytest.raises(MethodSignatureError):
+            foo.method1(12, "some string")
         flexmock(foo).should_receive("method1").with_args(str, int).and_return("ok")
-        assert_raises(MethodSignatureError, foo.method1, "string", 12, 14)
+        with pytest.raises(MethodSignatureError):
+            foo.method1("string", 12, 14)  # pylint: disable=too-many-function-args
 
     def test_flexmock_should_match_types_on_multiple_arguments_generic(self):
         class Foo:
@@ -848,9 +864,11 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         assert_equal("ok", foo.method1((1,), None, 12))
         assert_equal("ok", foo.method1(12, 14, []))
         assert_equal("ok", foo.method1("some string", "another one", False))
-        assert_raises(MethodSignatureError, foo.method1, "string", 12)
+        with pytest.raises(MethodSignatureError):
+            foo.method1("string", 12)  # pylint: disable=no-value-for-parameter
         flexmock(foo).should_receive("method1").with_args(object, object, object).and_return("ok")
-        assert_raises(MethodSignatureError, foo.method1, "string", 12, 13, 14)
+        with pytest.raises(MethodSignatureError):
+            foo.method1("string", 12, 13, 14)  # pylint: disable=too-many-function-args
 
     def test_flexmock_should_match_types_on_multiple_arguments_classes(self):
         class Foo:
@@ -864,9 +882,11 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         bar = Bar()
         flexmock(foo).should_receive("method1").with_args(object, Bar).and_return("ok")
         assert_equal("ok", foo.method1("some string", bar))
-        assert_raises(MethodSignatureError, foo.method1, bar, "some string")
+        with pytest.raises(MethodSignatureError):
+            foo.method1(bar, "some string")
         flexmock(foo).should_receive("method1").with_args(object, Bar).and_return("ok")
-        assert_raises(MethodSignatureError, foo.method1, 12, "some string")
+        with pytest.raises(MethodSignatureError):
+            foo.method1(12, "some string")
 
     def test_flexmock_should_match_keyword_arguments(self):
         class Foo:
@@ -879,11 +899,14 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         foo.method1(1, arg3=3, arg2=2)
         self._tear_down()
         flexmock(foo).should_receive("method1").with_args(1, arg3=3, arg2=2)
-        assert_raises(MethodSignatureError, foo.method1, arg2=2, arg3=3)
+        with pytest.raises(MethodSignatureError):
+            foo.method1(arg2=2, arg3=3)  # pylint: disable=no-value-for-parameter
         flexmock(foo).should_receive("method1").with_args(1, arg3=3, arg2=2)
-        assert_raises(MethodSignatureError, foo.method1, 1, arg2=2, arg3=4)
+        with pytest.raises(MethodSignatureError):
+            foo.method1(1, arg2=2, arg3=4)
         flexmock(foo).should_receive("method1").with_args(1, arg3=3, arg2=2)
-        assert_raises(MethodSignatureError, foo.method1, 1)
+        with pytest.raises(MethodSignatureError):
+            foo.method1(1)
 
     def test_flexmock_should_call_should_match_keyword_arguments(self):
         class Foo:
@@ -1055,7 +1078,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         user = User()
         flexmock(user).should_call("get_stuff").and_raise(FakeException, "2", "1")
-        assert_raises(ExceptionMessageError, user.get_stuff)
+        with pytest.raises(ExceptionMessageError):
+            user.get_stuff()
 
     def test_flexmock_should_verify_spy_matches_exception_regexp(self):
         class User:
@@ -1074,7 +1098,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         user = User()
         flexmock(user).should_call("get_stuff").and_raise(Exception, re.compile("^asdf"))
-        assert_raises(ExceptionMessageError, user.get_stuff)
+        with pytest.raises(ExceptionMessageError):
+            user.get_stuff()
 
     def test_flexmock_should_blow_up_on_wrong_spy_exception_type(self):
         class User:
@@ -1083,7 +1108,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         user = User()
         flexmock(user).should_call("get_stuff").and_raise(MethodCallError)
-        assert_raises(ExceptionClassError, user.get_stuff)
+        with pytest.raises(ExceptionClassError):
+            user.get_stuff()
 
     def test_flexmock_should_match_spy_exception_parent_type(self):
         class User:
@@ -1104,9 +1130,11 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         user = User()
         flexmock(user).should_call("get_stuff").and_return("other", "stuff")
-        assert_raises(MethodSignatureError, user.get_stuff)
+        with pytest.raises(MethodSignatureError):
+            user.get_stuff()
         flexmock(user).should_call("get_more_stuff").and_return()
-        assert_raises(MethodSignatureError, user.get_more_stuff)
+        with pytest.raises(MethodSignatureError):
+            user.get_more_stuff()
 
     def test_flexmock_should_mock_same_class_twice(self):
         class Foo:
@@ -1166,7 +1194,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         else:
             mod = sys.modules["__main__"]
         flexmock(mod).should_receive("module_level_function").with_args(1, args="expected")
-        assert_raises(FlexmockError, module_level_function, 1, args="not expected")
+        with pytest.raises(FlexmockError):
+            module_level_function(1, args="not expected")
 
     def test_flexmock_should_support_mocking_classes_as_functions(self):
         if "tests.flexmock_test" in sys.modules:
@@ -1227,17 +1256,22 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(foo).should_call("bar").and_return("bar").once()
         flexmock(foo).should_call("baz").and_return("bar").once()
         flexmock(foo).should_call("quux").and_return("bar").once()
-        assert_raises(FlexmockError, foo.foo)
-        assert_raises(FlexmockError, foo.bar)
-        assert_raises(FlexmockError, foo.baz)
-        assert_raises(FlexmockError, foo.quux)
+        with pytest.raises(FlexmockError):
+            foo.foo()
+        with pytest.raises(FlexmockError):
+            foo.bar()
+        with pytest.raises(FlexmockError):
+            foo.baz()
+        with pytest.raises(FlexmockError):
+            foo.quux()
 
     def test_new_instances_should_blow_up_on_should_receive(self):
         class User:
             pass
 
         mock = flexmock(User).new_instances(None).mock
-        assert_raises(FlexmockError, mock.should_receive, "foo")
+        with pytest.raises(FlexmockError):
+            mock.should_receive("foo")
 
     def test_should_call_alias_should_create_a_spy(self):
         class Foo:
@@ -1246,14 +1280,16 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         flexmock(foo).should_call("get_stuff").and_return("yay").once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_flexmock_should_fail_mocking_nonexistent_methods(self):
         class User:
             pass
 
         user = User()
-        assert_raises(FlexmockError, flexmock(user).should_receive, "nonexistent")
+        with pytest.raises(FlexmockError):
+            flexmock(user).should_receive("nonexistent")
 
     def test_flexmock_should_not_explode_on_unicode_formatting(self):
         formatted = _format_args("method", {"kargs": (chr(0x86C7),), "kwargs": {}})
@@ -1300,13 +1336,16 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(foo).should_call("method").with_args("foo").once()
         flexmock(foo).should_call("method").with_args("bar").once()
         foo.method("foo")
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_should_give_reasonable_error_for_builtins(self):
-        assert_raises(MockBuiltinError, flexmock, object)
+        with pytest.raises(MockBuiltinError):
+            flexmock(object)
 
     def test_should_give_reasonable_error_for_instances_of_builtins(self):
-        assert_raises(MockBuiltinError, flexmock, object())
+        with pytest.raises(MockBuiltinError):
+            flexmock(object())
 
     def test_mock_chained_method_calls_works_with_one_level(self):
         class Foo:
@@ -1337,7 +1376,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         assert_equal("bar", foo.method1().method2("foo"))
         self._tear_down()
         flexmock(foo).should_receive("method1.method2").with_args("foo").and_return("bar").once()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
     def test_mock_chained_method_calls_works_with_more_than_one_level(self):
         class Baz:
@@ -1374,7 +1414,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         expectation = flexmock(foo).should_receive("method").replace_with(lambda x: x == 5)
-        assert_raises(FlexmockError, expectation.replace_with, lambda x: x == 3)
+        with pytest.raises(FlexmockError):
+            expectation.replace_with(lambda x: x == 3)
 
     def test_flexmock_should_mock_the_same_method_multiple_times(self):
         class Foo:
@@ -1406,7 +1447,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         flexmock(foo)
-        assert_raises(FlexmockError, foo.new_instances, "bar")
+        with pytest.raises(FlexmockError):
+            foo.new_instances("bar")
 
     def test_new_instances_works_with_multiple_return_values(self):
         class Foo:
@@ -1423,7 +1465,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         flexmock(foo)
-        assert_raises(FlexmockError, foo.should_receive, "should_receive")
+        with pytest.raises(FlexmockError):
+            foo.should_receive("should_receive")
 
     def test_flexmock_should_not_add_methods_if_they_already_exist(self):
         class Foo:
@@ -1499,7 +1542,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(foo).should_receive("foo").with_args(
             re.compile("^arg1.*asdf$"), arg2=re.compile("a")
         ).and_return("mocked")
-        assert_raises(MethodSignatureError, foo.foo, "arg1somejunkasdfa", arg2="a")
+        with pytest.raises(MethodSignatureError):
+            foo.foo("arg1somejunkasdfa", arg2="a")
 
     def test_arg_matching_with_regexp_fails_when_regexp_doesnt_match_kwarg(self):
         class Foo:
@@ -1510,7 +1554,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(foo).should_receive("foo").with_args(
             re.compile("^arg1.*asdf$"), arg2=re.compile("a")
         ).and_return("mocked")
-        assert_raises(MethodSignatureError, foo.foo, "arg1somejunkasdf", arg2="b")
+        with pytest.raises(MethodSignatureError):
+            foo.foo("arg1somejunkasdf", arg2="b")
 
     def test_flexmock_class_returns_same_object_on_repeated_calls(self):
         class Foo:
@@ -1534,7 +1579,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         foo.should_receive("bar")
         foo.should_receive("bar").with_args("a").ordered()
         foo.should_receive("bar").with_args("b").ordered()
-        assert_raises(CallOrderError, foo.bar, "b")
+        with pytest.raises(CallOrderError):
+            foo.bar("b")
 
     def test_flexmock_ordered_works_with_same_args(self):
         foo = flexmock()
@@ -1584,14 +1630,17 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         radio.should_receive("select_channel").once().when(lambda: radio.is_on)
         radio.should_call("adjust_volume").once().with_args(5).when(radio_is_on)
 
-        assert_raises(StateError, radio.select_channel)
-        assert_raises(StateError, radio.adjust_volume, 5)
+        with pytest.raises(StateError):
+            radio.select_channel()
+        with pytest.raises(StateError):
+            radio.adjust_volume(5)
         radio.is_on = True
         radio.select_channel()
         radio.adjust_volume(5)
 
     def test_when_parameter_should_be_callable(self):
-        assert_raises(FlexmockError, flexmock().should_receive("something").when, 1)
+        with pytest.raises(FlexmockError):
+            flexmock().should_receive("something").when(1)
 
     def test_support_at_least_and_at_most_together(self):
         class Foo:
@@ -1600,12 +1649,14 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         flexmock(foo).should_call("bar").at_least().once().at_most().twice()
-        assert_raises(MethodCallError, self._tear_down)
+        with pytest.raises(MethodCallError):
+            self._tear_down()
 
         flexmock(foo).should_call("bar").at_least().once().at_most().twice()
         foo.bar()
         foo.bar()
-        assert_raises(MethodCallError, foo.bar)
+        with pytest.raises(MethodCallError):
+            foo.bar()
 
         flexmock(foo).should_call("bar").at_least().once().at_most().twice()
         foo.bar()
@@ -1699,7 +1750,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
         flexmock(s)
         s.should_call("startswith").with_args("asdf", 0, 4).ordered()
         s.should_call("endswith").ordered()
-        assert_raises(CallOrderError, s.endswith, "c")
+        with pytest.raises(CallOrderError):
+            s.endswith("c")
 
     def test_fake_object_takes_properties(self):
         foo = flexmock(bar=property(lambda self: "baz"))
@@ -1765,16 +1817,26 @@ class RegularClass:  # pylint: disable=too-many-public-methods
 
         foo = Foo()
         e = flexmock(foo).should_receive("bar").and_return(2)
-        assert_raises(FlexmockError, e.times, 1)
-        assert_raises(FlexmockError, e.with_args, ())
-        assert_raises(FlexmockError, e.replace_with, lambda x: x)
-        assert_raises(FlexmockError, e.and_raise, Exception)
-        assert_raises(FlexmockError, e.when, lambda x: x)
-        assert_raises(FlexmockError, e.and_yield, 1)
-        assert_raises(FlexmockError, object.__getattribute__(e, "ordered"))
-        assert_raises(FlexmockError, object.__getattribute__(e, "at_least"))
-        assert_raises(FlexmockError, object.__getattribute__(e, "at_most"))
-        assert_raises(FlexmockError, object.__getattribute__(e, "one_by_one"))
+        with pytest.raises(FlexmockError):
+            e.times(1)
+        with pytest.raises(FlexmockError):
+            e.with_args(())
+        with pytest.raises(FlexmockError):
+            e.replace_with(lambda x: x)
+        with pytest.raises(FlexmockError):
+            e.and_raise(Exception)
+        with pytest.raises(FlexmockError):
+            e.when(lambda x: x)
+        with pytest.raises(FlexmockError):
+            e.and_yield(1)
+        with pytest.raises(FlexmockError):
+            object.__getattribute__(e, "ordered")()
+        with pytest.raises(FlexmockError):
+            object.__getattribute__(e, "at_least")()
+        with pytest.raises(FlexmockError):
+            object.__getattribute__(e, "at_most")()
+        with pytest.raises(FlexmockError):
+            object.__getattribute__(e, "one_by_one")()
 
     def test_and_return_defaults_to_none_with_no_arguments(self):
         foo = flexmock()
@@ -1849,7 +1911,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         e = flexmock(Foo).should_receive("bar")
-        assert_raises(MethodSignatureError, e.with_args, 1)
+        with pytest.raises(MethodSignatureError):
+            e.with_args(1)
 
     def test_with_args_blows_up_on_too_few_args_with_kwargs(self):
         class Foo:
@@ -1857,7 +1920,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         e = flexmock(Foo).should_receive("bar")
-        assert_raises(MethodSignatureError, e.with_args, 1, c=2)
+        with pytest.raises(MethodSignatureError):
+            e.with_args(1, c=2)
 
     def test_with_args_blows_up_on_too_many_args(self):
         class Foo:
@@ -1865,7 +1929,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         e = flexmock(Foo).should_receive("bar")
-        assert_raises(MethodSignatureError, e.with_args, 1, 2, 3, 4)
+        with pytest.raises(MethodSignatureError):
+            e.with_args(1, 2, 3, 4)
 
     def test_with_args_blows_up_on_kwarg_overlapping_positional(self):
         class Foo:
@@ -1873,7 +1938,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         e = flexmock(Foo).should_receive("bar")
-        assert_raises(MethodSignatureError, e.with_args, 1, 2, 3, c=2)
+        with pytest.raises(MethodSignatureError):
+            e.with_args(1, 2, 3, c=2)
 
     def test_with_args_blows_up_on_invalid_kwarg(self):
         class Foo:
@@ -1881,7 +1947,8 @@ class RegularClass:  # pylint: disable=too-many-public-methods
                 pass
 
         e = flexmock(Foo).should_receive("bar")
-        assert_raises(MethodSignatureError, e.with_args, 1, 2, d=2)
+        with pytest.raises(MethodSignatureError):
+            e.with_args(1, 2, d=2)
 
     def test_with_args_ignores_invalid_args_on_flexmock_instances(self):
         foo = flexmock(bar=lambda x: x)

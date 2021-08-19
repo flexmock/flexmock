@@ -53,7 +53,7 @@ def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
             try:
                 flexmock_teardown()
                 saved_add_success(self, test)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 if hasattr(self, "_pre_flexmock_success"):
                     self.addFailure(test, sys.exc_info())
             if hasattr(self, "_pre_flexmock_success"):

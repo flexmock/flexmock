@@ -254,7 +254,7 @@ class Mock:
                     # When a class/static method is mocked out on an *instance*
                     # we need to fetch the type from the class
                     method_type = type(_getattr(obj.__class__, name))
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     pass
                 if method_type in SPECIAL_METHODS:
                     expectation._original_function = getattr(obj, name)
@@ -372,7 +372,7 @@ class Mock:
                         return_values = original(runtime_self, *kargs, **kwargs)
                 else:
                     return_values = original(*kargs, **kwargs)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 return _handle_exception_matching(expectation)
             expected_values = _getattr(expectation, "_return_values")
             if expected_values and not match_return_values(expected_values[0].value, return_values):
@@ -463,7 +463,7 @@ def flexmock_teardown() -> None:
                 obj_dict = obj.__dict__
                 if obj_dict[attr].__code__ is Mock.__dict__[attr].__code__:
                     del obj_dict[attr]
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 try:
                     if getattr(obj, attr).__code__ is Mock.__dict__[attr].__code__:
                         delattr(obj, attr)
@@ -553,7 +553,7 @@ class Expectation:
                 name = source.split("when(")[1].split(")")[0]
             elif "def " in source:
                 name = source.split("def ")[1].split("(")[0]
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # couldn't get the source, oh well
             pass
         return name
