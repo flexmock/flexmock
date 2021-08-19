@@ -73,7 +73,7 @@ def assert_equal(expected, received, msg=""):
         raise AssertionError("%s != %s : %s" % (expected, received, msg))
 
 
-class RegularClass:
+class RegularClass:  # pylint: disable=too-many-public-methods
     def _tear_down(self):
         return flexmock_teardown()
 
