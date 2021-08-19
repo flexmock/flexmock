@@ -313,75 +313,62 @@ class Mock:
     def _create_mock_method(self, name: str) -> Callable[..., Any]:
         def _handle_exception_matching(expectation: Expectation) -> None:
             # pylint: disable=misplaced-bare-raise
-            return_values = _getattr(expectation, "_return_values")
-            if return_values:
-                raised, instance = sys.exc_info()[:2]
-                assert raised, "no exception was raised"
-                message = "%s" % instance
-                expected = return_values[0].raises
-                if not expected:
-                    raise
-                args = return_values[0].value
-                expected_instance = expected(*args["kargs"], **args["kwargs"])
-                expected_message = "%s" % expected_instance
-                if inspect.isclass(expected):
-                    if expected is not raised and expected not in raised.__bases__:
-                        raise ExceptionClassError("expected %s, raised %s" % (expected, raised))
-                    if args["kargs"] and isinstance(args["kargs"][0], RE_TYPE):
-                        if not args["kargs"][0].search(message):
-                            raise (
-                                ExceptionMessageError(
-                                    'expected /%s/, raised "%s"'
-                                    % (args["kargs"][0].pattern, message)
-                                )
-                            )
-                    elif expected_message and expected_message != message:
+            return_values = expectation._return_values
+            if not return_values:
+                raise
+            raised, instance = sys.exc_info()[:2]
+            assert raised, "no exception was raised"
+            message = "%s" % instance
+            expected = return_values[0].raises
+            if not expected:
+                raise
+            args = return_values[0].value
+            expected_message = "%s" % expected(*args["kargs"], **args["kwargs"])
+            if inspect.isclass(expected):
+                if expected is not raised and expected not in raised.__bases__:
+                    raise ExceptionClassError("expected %s, raised %s" % (expected, raised))
+                if args["kargs"] and isinstance(args["kargs"][0], RE_TYPE):
+                    if not args["kargs"][0].search(message):
                         raise (
                             ExceptionMessageError(
-                                'expected "%s", raised "%s"' % (expected_message, message)
+                                'expected /%s/, raised "%s"' % (args["kargs"][0].pattern, message)
                             )
                         )
-                elif expected is not raised:
-                    raise ExceptionClassError('expected "%s", raised "%s"' % (expected, raised))
-            else:
-                raise
+                elif expected_message and expected_message != message:
+                    raise (
+                        ExceptionMessageError(
+                            'expected "%s", raised "%s"' % (expected_message, message)
+                        )
+                    )
+            elif expected is not raised:
+                raise ExceptionClassError('expected "%s", raised "%s"' % (expected, raised))
 
         def match_return_values(expected: Any, received: Any) -> bool:
-            if not isinstance(expected, tuple):
-                expected = (expected,)
-            if not isinstance(received, tuple):
-                received = (received,)
-            if len(received) != len(expected):
-                return False
-            for i, val in enumerate(received):
-                if not _arguments_match(val, expected[i]):
-                    return False
-            return True
+            expected = (expected,) if not isinstance(expected, tuple) else expected
+            received = (received,) if not isinstance(received, tuple) else received
+            return len(received) == len(expected) and all(
+                _arguments_match(r, e) for r, e in zip(received, expected)
+            )
 
         def pass_thru(
             expectation: Expectation, runtime_self: Any, *kargs: Any, **kwargs: Any
         ) -> Any:
-            return_values = None
             try:
-                original = _getattr(expectation, "_original")
-                _mock = _getattr(expectation, "_mock")
-                if inspect.isclass(_mock):
-                    if type(original) in SPECIAL_METHODS:
-                        original = _getattr(expectation, "_original_function")
-                        return_values = original(*kargs, **kwargs)
-                    else:
-                        return_values = original(runtime_self, *kargs, **kwargs)
-                else:
-                    return_values = original(*kargs, **kwargs)
+                return_values = (
+                    (
+                        expectation._original_function(*kargs, **kwargs)
+                        if type(expectation._original) in SPECIAL_METHODS
+                        else expectation._original(runtime_self, *kargs, **kwargs)
+                    )
+                    if inspect.isclass(expectation._mock)
+                    else expectation._original(*kargs, **kwargs)
+                )
             except Exception:  # pylint: disable=broad-except
                 return _handle_exception_matching(expectation)
-            expected_values = _getattr(expectation, "_return_values")
+            expected_values = expectation._return_values
             if expected_values and not match_return_values(expected_values[0].value, return_values):
-                raise (
-                    MethodSignatureError(
-                        "expected to return %s, returned %s"
-                        % (expected_values[0].value, return_values)
-                    )
+                raise MethodSignatureError(
+                    "expected to return %s, returned %s" % (expected_values[0].value, return_values)
                 )
             return return_values
 
@@ -394,26 +381,20 @@ class Mock:
                 )
             expectation.times_called += 1
             expectation.verify(final=False)
-            _pass_thru = _getattr(expectation, "_pass_thru")
-            _replace_with = _getattr(expectation, "_replace_with")
-            if _pass_thru:
+            if expectation._pass_thru:
                 return pass_thru(expectation, runtime_self, *kargs, **kwargs)
-            if _replace_with:
-                return _replace_with(*kargs, **kwargs)
-            return_values = _getattr(expectation, "_return_values")
-            if return_values:
-                return_value = return_values[0]
-                del return_values[0]
-                return_values.append(return_value)
-            else:
-                return_value = ReturnValue()
-            if return_value.raises:
-                if inspect.isclass(return_value.raises):
-                    raise return_value.raises(
-                        *return_value.value["kargs"], **return_value.value["kwargs"]
-                    )
-                raise return_value.raises  # pylint: disable=raising-bad-type
-            return return_value.value
+            if expectation._replace_with:
+                return expectation._replace_with(*kargs, **kwargs)
+            return_values = expectation._return_values or [ReturnValue()]
+            return_value = return_values.pop(0)
+            return_values.append(return_value)
+            if not return_value.raises:
+                return return_value.value
+            if inspect.isclass(return_value.raises):
+                raise return_value.raises(
+                    *return_value.value["kargs"], **return_value.value["kwargs"]
+                )
+            raise return_value.raises  # pylint: disable=raising-bad-type
 
         def mock_method(runtime_self: Any, *kargs: Any, **kwargs: Any) -> Any:
             arguments = {"kargs": kargs, "kwargs": kwargs}
@@ -421,23 +402,18 @@ class Mock:
             if expectation:
                 return _handle_matched_expectation(expectation, runtime_self, *kargs, **kwargs)
             # inform the user which expectation(s) for the method were _not_ matched
-            expectations = [
-                expectation
+            error_msg = _format_args(name, arguments) + "\n".join(
+                "\nDid not match expectation %s" % _format_args(name, expectation._args)
                 for expectation in reversed(FlexmockContainer.flexmock_objects.get(self, []))
                 if expectation.name == name
-            ]
-            error_msg = _format_args(name, arguments)
-            if expectations:
-                for expectation in expectations:
-                    error_msg += "\nDid not match expectation %s" % _format_args(
-                        name, expectation._args
-                    )
+            )
             # make sure to clean up expectations to ensure none of them
             # interfere with the runner's error reporting mechanism
             # e.g. open()
-            for _, expectations in FlexmockContainer.flexmock_objects.items():
-                for expectation in expectations:
-                    _getattr(expectation, "reset")()
+            for expectation in itertools.chain.from_iterable(
+                FlexmockContainer.flexmock_objects.values()
+            ):
+                expectation.reset()
             raise MethodSignatureError(error_msg)
 
         return mock_method
