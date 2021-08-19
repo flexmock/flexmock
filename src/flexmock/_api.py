@@ -104,36 +104,44 @@ class Mock:
         """
         if name in UPDATED_ATTRS:
             raise FlexmockError("unable to replace flexmock methods")
+
         chained_methods = None
-        obj = _getattr(self, "_object")
         if "." in name:
             name, chained_methods = name.split(".", 1)
-        name = self._update_name_if_private(obj, name)
-        self._ensure_object_has_named_attribute(obj, name)
+        name = self._update_name_if_mangled(name)
+        self._ensure_object_has_named_attribute(name)
+
         if chained_methods:
-            if not isinstance(obj, Mock) and not hasattr(getattr(obj, name), "__call__"):
-                return_value = _create_partial_mock(getattr(obj, name))
+            if not isinstance(self._object, Mock) and not hasattr(
+                getattr(self._object, name), "__call__"
+            ):
+                # Create a partial mock if the given name is callable
+                # this allows chaining attributes
+                return_value = _create_partial_mock(getattr(self._object, name))
             else:
                 return_value = Mock()
-            self._create_expectation(obj, name, return_value)
+            self._create_expectation(name, return_value)
             return return_value.should_receive(chained_methods)
-        return self._create_expectation(obj, name)
 
-    def _update_name_if_private(self, obj: Any, name: str) -> str:
-        if name.startswith("__") and not name.endswith("__") and not inspect.ismodule(obj):
-            if inspect.isclass(obj):
-                class_name = obj.__name__
+        return self._create_expectation(name)
+
+    def _update_name_if_mangled(self, name: str) -> str:
+        """This allows flexmock to mock methods with name mangling."""
+        if name.startswith("__") and not name.endswith("__") and not inspect.ismodule(self._object):
+            class_name: str
+            if inspect.isclass(self._object):
+                class_name = self._object.__name__
             else:
-                class_name = obj.__class__.__name__
+                class_name = self._object.__class__.__name__
             name = f"_{class_name.lstrip('_')}__{name.lstrip('_')}"
         return name
 
-    def _ensure_object_has_named_attribute(self, obj: Any, name: str) -> None:
-        if not isinstance(obj, Mock) and not self._hasattr(obj, name):
-            if hasattr(obj, "__name__"):
-                obj_name = obj.__name__
+    def _ensure_object_has_named_attribute(self, name: str) -> None:
+        if not isinstance(self._object, Mock) and not self._hasattr(self._object, name):
+            if hasattr(self._object, "__name__"):
+                obj_name = self._object.__name__
             else:
-                obj_name = str(obj)
+                obj_name = str(self._object)
             raise FlexmockError(f"{obj_name} does not have attribute '{name}'")
 
     def _hasattr(self, obj: Any, name: str) -> bool:
@@ -177,38 +185,37 @@ class Mock:
             return self.should_receive("__new__").and_return(kargs).one_by_one()
         raise FlexmockError("new_instances can only be called on a class mock")
 
-    def _create_expectation(
-        self, obj: Any, name: str, return_value: Optional[Any] = None
-    ) -> "Expectation":
-        if self not in FlexmockContainer.flexmock_objects:
-            FlexmockContainer.flexmock_objects[self] = []
-        expectation = self._save_expectation(name, return_value)
+    def _create_expectation(self, name: str, return_value: Optional[Any] = None) -> "Expectation":
+        expectation = self._get_or_create_expectation(name, return_value)
         FlexmockContainer.add_expectation(self, expectation)
-        if _isproperty(obj, name):
-            self._update_property(expectation, name, return_value)
+
+        if _isproperty(self._object, name):
+            self._update_property(expectation, name)
         elif (
-            isinstance(obj, Mock)
-            or hasattr(getattr(obj, name), "__call__")
-            or inspect.isclass(getattr(obj, name))
+            isinstance(self._object, Mock)
+            or hasattr(getattr(self._object, name), "__call__")
+            or inspect.isclass(getattr(self._object, name))
         ):
             self._update_method(expectation, name)
         else:
             self._update_attribute(expectation, name, return_value)
         return expectation
 
-    def _save_expectation(self, name: str, return_value: Optional[Any] = None) -> "Expectation":
-        if name in [x.name for x in FlexmockContainer.flexmock_objects[self]]:
-            expectation = [x for x in FlexmockContainer.flexmock_objects[self] if x.name == name][0]
-            expectation = Expectation(
+    def _get_or_create_expectation(
+        self, name: str, return_value: Optional[Any] = None
+    ) -> "Expectation":
+        saved_expectations = FlexmockContainer.get_expectations_with_name(self, name)
+        if saved_expectations:
+            # If there is already an expectation for the same name, get the
+            # original object from the FIRST saved expectation.
+            return Expectation(
                 self._object,
                 name=name,
                 return_value=return_value,
-                original=expectation.__dict__.get("_original"),
-                method_type=expectation.__dict__.get("_method_type"),
+                original=saved_expectations[0].__dict__.get("_original"),
+                method_type=saved_expectations[0].__dict__.get("_method_type"),
             )
-        else:
-            expectation = Expectation(self._object, name=name, return_value=return_value)
-        return expectation
+        return Expectation(self._object, name=name, return_value=return_value)
 
     def _update_class_for_magic_builtins(self, obj: Any, name: str) -> None:
         """Fixes MRO for builtin methods on new-style objects.
@@ -303,14 +310,12 @@ class Mock:
         override = _setattr(obj, name, return_value)
         expectation._local_override = override
 
-    def _update_property(
-        self, expectation: "Expectation", name: str, return_value: Optional[Any] = None
-    ) -> None:
-        del return_value
+    def _update_property(self, expectation: "Expectation", name: str) -> None:
         new_name = f"_flexmock__{name}"
         obj = self._object
         if not inspect.isclass(obj):
             obj = obj.__class__
+
         expectation._callable = False
         original = getattr(obj, name)
 
@@ -322,6 +327,7 @@ class Mock:
                 and name in self.__dict__
             ):
                 return self.__dict__[name]
+            # Return original for instances that are not mocked
             return getattr(self, new_name)
 
         setattr(obj, name, updated)
@@ -461,19 +467,15 @@ class Mock:
             if expectation:
                 return _handle_matched_expectation(expectation, runtime_self, *kargs, **kwargs)
             # inform the user which expectation(s) for the method were _not_ matched
-            expectations = [
-                expectation
-                for expectation in reversed(FlexmockContainer.flexmock_objects.get(self, []))
-                if expectation.name == name
-            ]
+            saved_expectations = reversed(FlexmockContainer.get_expectations_with_name(self, name))
             error_msg = (
                 f"Arguments for call {name} did not match expectations:\n"
                 f"  Received call:\t{_format_args(name, arguments)}\n"
             )
-            if expectations:
+            if saved_expectations:
                 error_msg += "\n".join(
                     f"  Expected call[{index}]:\t{_format_args(name, expectation._args)}"
-                    for index, expectation in enumerate(expectations, 1)
+                    for index, expectation in enumerate(saved_expectations, 1)
                 )
             raise MethodSignatureError(error_msg)
 
@@ -1050,7 +1052,7 @@ class FlexmockContainer:
     """Holds global hash of object/expectation mappings."""
 
     flexmock_objects: Dict[Mock, List[Expectation]] = {}
-    properties: Dict[Mock, List[str]] = {}
+    properties: Dict[Any, List[str]] = {}
     ordered: List[Expectation] = []
     last: Optional[Expectation] = None
 
@@ -1106,7 +1108,12 @@ class FlexmockContainer:
             cls.flexmock_objects[obj] = [expectation]
 
     @classmethod
-    def add_teardown_property(cls, obj: Mock, name: str) -> None:
+    def get_expectations_with_name(cls, obj: Mock, name: str) -> List[Expectation]:
+        """Get all expectations for given name."""
+        return [x for x in FlexmockContainer.flexmock_objects.get(obj, []) if x.name == name]
+
+    @classmethod
+    def add_teardown_property(cls, obj: Any, name: str) -> None:
         """Add teardown property."""
         if obj in cls.properties:
             cls.properties[obj].append(name)
