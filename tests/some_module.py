@@ -15,5 +15,9 @@ def foo_function(x, y):
     return x - y
 
 
-def kwargs_only_func(foo, *, bar, baz=5):
+def kwargs_only_func1(foo, *, bar, baz=5):
+    return foo + bar + baz
+
+
+def kwargs_only_func2(foo, *, bar, baz):
     return foo + bar + baz

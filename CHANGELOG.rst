@@ -24,6 +24,7 @@ Changed
 #######
 
 - Flexmock needs to be imported explicitly using ``from flexmock import flexmock``.
+- Many error messages have been improved.
 
 Removed
 #######

@@ -129,8 +129,11 @@ class Mock:
 
     def _ensure_object_has_named_attribute(self, obj: Any, name: str) -> None:
         if not isinstance(obj, Mock) and not self._hasattr(obj, name):
-            exc_msg = "%s does not have attribute %s" % (obj, name)
-            raise FlexmockError(exc_msg)
+            if hasattr(obj, "__name__"):
+                obj_name = obj.__name__
+            else:
+                obj_name = str(obj)
+            raise FlexmockError(f"{obj_name} does not have attribute '{name}'")
 
     def _hasattr(self, obj: Any, name: str) -> bool:
         """Ensure hasattr checks don't create side-effects for properties."""
@@ -321,22 +324,28 @@ class Mock:
                     raise
                 args = return_values[0].value
                 expected_instance = expected(*args["kargs"], **args["kwargs"])
-                expected_message = "%s" % expected_instance
+                expected_message = str(expected_instance)
                 if inspect.isclass(expected):
                     if expected is not raised and expected not in raised.__bases__:
-                        raise ExceptionClassError("expected %s, raised %s" % (expected, raised))
+                        raise ExceptionClassError(
+                            f"Raised exception for call {expectation.name} "
+                            "did not match expectation:\n"
+                            f"  Expected:\t{expected}\n"
+                            f"  Raised:\t{raised}"
+                        )
                     if args["kargs"] and isinstance(args["kargs"][0], RE_TYPE):
                         if not args["kargs"][0].search(message):
-                            raise (
-                                ExceptionMessageError(
-                                    'expected /%s/, raised "%s"'
-                                    % (args["kargs"][0].pattern, message)
-                                )
+                            raise ExceptionMessageError(
+                                f"Error message mismatch with raised {expected.__name__}:\n"
+                                f"  Expected pattern:\n\t/{args['kargs'][0].pattern}/\n"
+                                f"  Received message:\n\t'{message}'"
                             )
                     elif expected_message and expected_message != message:
                         raise (
                             ExceptionMessageError(
-                                'expected "%s", raised "%s"' % (expected_message, message)
+                                f"Error message mismatch with raised {expected.__name__}:\n"
+                                f"  Expected message:\n\t'{message}'\n"
+                                f"  Received message:\n\t'{expected_message}'"
                             )
                         )
                 elif expected is not raised:
@@ -375,10 +384,17 @@ class Mock:
                 return _handle_exception_matching(expectation)
             expected_values = _getattr(expectation, "_return_values")
             if expected_values and not match_return_values(expected_values[0].value, return_values):
+                expected_value = expected_values[0].value
+                # Display strings with quotes in the error message
+                if isinstance(return_values, str):
+                    return_values = repr(return_values)
+                if isinstance(expected_value, str):
+                    expected_value = repr(expected_value)
                 raise (
                     MethodSignatureError(
-                        "expected to return %s, returned %s"
-                        % (expected_values[0].value, return_values)
+                        f"Returned values for call {expectation.name} did not match expectation:\n"
+                        f"  Expected:\t{expected_value}\n"
+                        f"  Returned:\t{return_values}"
                     )
                 )
             return return_values
@@ -424,12 +440,15 @@ class Mock:
                 for expectation in reversed(FlexmockContainer.flexmock_objects.get(self, []))
                 if expectation.name == name
             ]
-            error_msg = _format_args(name, arguments)
+            error_msg = (
+                f"Arguments for call {name} did not match expectations:\n"
+                f"  Received call:\t{_format_args(name, arguments)}\n"
+            )
             if expectations:
-                for expectation in expectations:
-                    error_msg += "\nDid not match expectation %s" % _format_args(
-                        name, expectation._args
-                    )
+                error_msg += "\n".join(
+                    f"  Expected call[{index}]:\t{_format_args(name, expectation._args)}"
+                    for index, expectation in enumerate(expectations, 1)
+                )
             # make sure to clean up expectations to ensure none of them
             # interfere with the runner's error reporting mechanism
             # e.g. open()
@@ -595,29 +614,29 @@ class Expectation:
         if allowed.defaults and total_positional == minimum and named_optionals:
             minimum += len(named_optionals)
         if total_positional < minimum:
+            arguments = "argument" if minimum == 1 else "arguments"
             raise MethodSignatureError(
-                "%s requires at least %s arguments, expectation provided %s"
-                % (self.name, minimum, total_positional)
+                f"{self.name} requires at least {minimum} {arguments}, "
+                f"expectation provided {total_positional}"
             )
         if maximum is not None and total_positional > maximum:
+            arguments = "argument" if maximum == 1 else "arguments"
             raise MethodSignatureError(
-                "%s requires at most %s arguments, expectation provided %s"
-                % (self.name, maximum, total_positional)
+                f"{self.name} requires at most {maximum} {arguments}, "
+                f"expectation provided {total_positional}"
             )
         if args_len == len(kargs) and any(a for a in kwargs if a in allowed.args):
+            given_args = [a for a in kwargs if a in allowed.args]
+            arguments = "argument" if len(given_args) == 1 else "arguments"
             raise MethodSignatureError(
-                "%s already given as positional arguments to %s"
-                % ([a for a in kwargs if a in allowed.args], self.name)
+                f"{given_args} already given as positional {arguments} to {self.name}"
             )
         if not allowed.varkw and any(
             a for a in kwargs if a not in allowed.args + allowed.kwonlyargs
         ):
+            invalid_arg = [a for a in kwargs if a not in allowed.args + allowed.kwonlyargs][0]
             raise MethodSignatureError(
-                "%s is not a valid keyword argument to %s"
-                % (
-                    [a for a in kwargs if a not in allowed.args + allowed.kwonlyargs][0],
-                    self.name,
-                )
+                f"{invalid_arg} is not a valid keyword argument to {self.name}"
             )
         # check that kwonlyargs that don't have default value specified are provided
         required_kwonlyargs = [
@@ -625,9 +644,10 @@ class Expectation:
         ]
         missing_kwonlyargs = [a for a in required_kwonlyargs if a not in kwargs]
         if missing_kwonlyargs:
+            arguments = "argument" if len(missing_kwonlyargs) == 1 else "arguments"
+            missing_args = '", "'.join(missing_kwonlyargs)
             raise MethodSignatureError(
-                '%s requires keyword-only argument(s) "%s"'
-                % (self.name, '", "'.join(missing_kwonlyargs))
+                f'{self.name} requires keyword-only {arguments} "{missing_args}"'
             )
 
     def _update_original(self, name: str, obj: Any) -> None:
@@ -941,8 +961,11 @@ class Expectation:
             self._verified = True
             self.__raise(
                 MethodCallError,
-                "%s expected to be called %s times, called %s times"
-                % (_format_args(str(self.name), self._args), message, self.times_called),
+                (
+                    f"{_format_args(str(self.name), self._args)} expected to be called "
+                    f"{message}, called {self.times_called} "
+                    f"{'time' if self.times_called == 1 else 'times'}"
+                ),
             )
 
     def _verify_number_of_calls(self, final: bool) -> Tuple[bool, str]:
@@ -951,24 +974,27 @@ class Expectation:
         expected_calls = _getattr(self, "_expected_calls")
         times_called = _getattr(self, "times_called")
         if expected_calls[EXACTLY] is not None:
-            message = "exactly %s" % expected_calls[EXACTLY]
+            message = f"exactly {expected_calls[EXACTLY]}"
             if final:
                 if times_called != expected_calls[EXACTLY]:
                     failed = True
             else:
                 if times_called > expected_calls[EXACTLY]:
                     failed = True
+            message += " time" if expected_calls[EXACTLY] == 1 else " times"
         else:
             if final and expected_calls[AT_LEAST] is not None:
-                message = "at least %s" % expected_calls[AT_LEAST]
+                message = f"at least {expected_calls[AT_LEAST]}"
                 if times_called < expected_calls[AT_LEAST]:
                     failed = True
+                message += " time" if expected_calls[AT_LEAST] == 1 else " times"
             if expected_calls[AT_MOST] is not None:
                 if message:
                     message += " and "
-                message += "at most %s" % expected_calls[AT_MOST]
+                message += f"at most {expected_calls[AT_MOST]}"
                 if times_called > expected_calls[AT_MOST]:
                     failed = True
+                message += " time" if expected_calls[AT_MOST] == 1 else " times"
         return failed, message
 
     def reset(self) -> None:
@@ -1039,11 +1065,8 @@ class FlexmockContainer:
             cls.last = next_method
         if expectation is not next_method and next_method is not None:
             raise CallOrderError(
-                "%s called before %s"
-                % (
-                    _format_args(str(expectation.name), args),
-                    _format_args(str(next_method.name), next_method._args),
-                )
+                f"{_format_args(str(expectation.name), args)} called before "
+                f"{_format_args(str(next_method.name), next_method._args)}"
             )
 
     @classmethod
