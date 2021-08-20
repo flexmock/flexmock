@@ -1,5 +1,6 @@
 """Flexmock tests."""
 # pylint: disable=missing-docstring,too-many-lines,disallowed-name,no-member,invalid-name,no-self-use
+import functools
 import os
 import random
 import re
@@ -1921,6 +1922,15 @@ class RegularClass:
     def test_when_parameter_should_be_callable(self):
         with assert_raises(FlexmockError, "when() parameter must be callable"):
             flexmock().should_receive("something").when(1)
+
+    def test_flexmock_should_not_blow_up_with_builtin_in_when(self):
+        # It is not possible to get source for builtins. Flexmock should handle
+        # this gracefully.
+        mock = flexmock()
+        mock.should_receive("something").when(functools.partial(lambda: False))
+        with assert_raises(StateError, "something expected to be called when condition is True"):
+            # Should not raise TypeError
+            mock.something()
 
     def test_support_at_least_and_at_most_together(self):
         class Foo:
