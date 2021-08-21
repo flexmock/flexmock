@@ -219,9 +219,9 @@ class RegularClass:
         with assert_raises(
             MethodCallError, "method_foo() expected to be called exactly 1 time, called 0 times"
         ):
-            expectation.verify()
+            expectation._verify()
         mock.method_foo()
-        expectation.verify()
+        expectation._verify()
 
     def test_flexmock_should_check_raised_exceptions(self):
         mock = flexmock(name="temp")
