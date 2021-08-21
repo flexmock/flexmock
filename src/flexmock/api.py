@@ -488,7 +488,7 @@ def flexmock_teardown() -> None:
     for mock_object, expectations in FlexmockContainer.flexmock_objects.items():
         saved[mock_object] = expectations[:]
         for expectation in expectations:
-            _getattr(expectation, "reset")()
+            _getattr(expectation, "_reset")()
         for expectation in expectations:
             # Remove method type attributes set by flexmock. This needs to be done after
             # resetting all the expectations because method type is needed in expectation teardown.
@@ -719,7 +719,7 @@ class Expectation:
         open() might be stubbed out and the resulting runner errors are very
         difficult to diagnose.
         """
-        self.reset()
+        self._reset()
         raise exception(message)
 
     def _match_args(self, given_args: Any) -> bool:
@@ -1025,7 +1025,7 @@ class Expectation:
                 message += " time" if expected_calls[AT_MOST] == 1 else " times"
         return failed, message
 
-    def reset(self) -> None:
+    def _reset(self) -> None:
         """Returns the methods overriden by this expectation to their originals."""
         _mock = _getattr(self, "_mock")
         if not isinstance(_mock, Mock):
