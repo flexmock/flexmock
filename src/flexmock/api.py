@@ -324,9 +324,9 @@ class Mock:
                 if not expected:
                     raise
                 args = return_values[0].value
-                expected_instance = expected(*args["kargs"], **args["kwargs"])
-                expected_message = str(expected_instance)
                 if inspect.isclass(expected):
+                    expected_instance = expected(*args["kargs"], **args["kwargs"])
+                    expected_message = str(expected_instance)
                     if expected is not raised and expected not in raised.__bases__:
                         raise ExceptionClassError(
                             f"Raised exception for call {expectation.name} "
@@ -350,7 +350,13 @@ class Mock:
                             )
                         )
                 elif expected is not raised:
-                    raise ExceptionClassError(f'expected "{expected}", raised "{raised}"')
+                    raise ExceptionClassError(
+                        f"Raised exception for call {expectation.name} did not match expectation:\n"
+                        f"  Expected:\t{repr(expected)}\n"
+                        f"  Raised:\t{raised}\n\n"
+                        "Did you try to call and_raise with an instance?\n"
+                        'Instead of and_raise(Exception("arg")), try and_raise(Exception, "arg")'
+                    )
             else:
                 raise
 
