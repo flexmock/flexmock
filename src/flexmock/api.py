@@ -433,7 +433,7 @@ class Mock:
                     f"{name} expected to be called when {expectation._get_runnable()} is True"
                 )
             expectation.times_called += 1
-            expectation.verify(final=False)
+            expectation._verify(final=False)
             _pass_thru = _getattr(expectation, "_pass_thru")
             _replace_with = _getattr(expectation, "_replace_with")
             if _pass_thru:
@@ -522,7 +522,7 @@ def flexmock_teardown() -> None:
     # any of the previous steps that cleanup all the changes
     for mock_object, expectations in saved.items():
         for expectation in expectations:
-            _getattr(expectation, "verify")()
+            _getattr(expectation, "_verify")()
 
 
 class Expectation:
@@ -974,7 +974,7 @@ class Expectation:
             self.__raise(FlexmockError, "can't use and_yield() with attribute stubs")
         return self.and_return(iter(kargs))
 
-    def verify(self, final: bool = True) -> None:
+    def _verify(self, final: bool = True) -> None:
         """Verify that this expectation has been met.
 
         Args:
