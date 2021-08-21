@@ -25,6 +25,7 @@ Changed
 
 - Flexmock needs to be imported explicitly using ``from flexmock import flexmock``.
 - Many error messages have been improved.
+- Undocumented methods `Expectation.reset`, `Expectation.verify`, and `Expectation.match_args` that were unintentionally left public are now private methods.
 
 Removed
 #######
