@@ -37,12 +37,13 @@ class ReturnValue:
 
     def __str__(self) -> str:
         if self.raises:
-            return "%s(%s)" % (self.raises, _arg_to_str(self.value))
+            return f"{self.raises}({_arg_to_str(self.value)})"
         if not isinstance(self.value, tuple):
-            return "%s" % _arg_to_str(self.value)
+            return str(_arg_to_str(self.value))
         if len(self.value) == 1:
-            return "%s" % _arg_to_str(self.value[0])
-        return "(%s)" % ", ".join([_arg_to_str(x) for x in self.value])
+            return str(_arg_to_str(self.value[0]))
+        values = ", ".join([_arg_to_str(x) for x in self.value])
+        return f"({values})"
 
 
 class Mock:
@@ -124,7 +125,7 @@ class Mock:
                 class_name = obj.__name__
             else:
                 class_name = obj.__class__.__name__
-            name = "_%s__%s" % (class_name.lstrip("_"), name.lstrip("_"))
+            name = f"_{class_name.lstrip('_')}__{name.lstrip('_')}"
         return name
 
     def _ensure_object_has_named_attribute(self, obj: Any, name: str) -> None:
@@ -287,7 +288,7 @@ class Mock:
         self, expectation: "Expectation", name: str, return_value: Optional[Any] = None
     ) -> None:
         del return_value
-        new_name = "_flexmock__%s" % name
+        new_name = f"_flexmock__{name}"
         obj = self._object
         if not inspect.isclass(obj):
             obj = obj.__class__
@@ -318,7 +319,7 @@ class Mock:
             if return_values:
                 raised, instance = sys.exc_info()[:2]
                 assert raised, "no exception was raised"
-                message = "%s" % instance
+                message = str(instance)
                 expected = return_values[0].raises
                 if not expected:
                     raise
@@ -349,7 +350,7 @@ class Mock:
                             )
                         )
                 elif expected is not raised:
-                    raise ExceptionClassError('expected "%s", raised "%s"' % (expected, raised))
+                    raise ExceptionClassError(f'expected "{expected}", raised "{raised}"')
             else:
                 raise
 
@@ -404,7 +405,7 @@ class Mock:
         ) -> Any:
             if not expectation._runnable():
                 raise StateError(
-                    "%s expected to be called when %s is True" % (name, expectation._get_runnable())
+                    f"{name} expected to be called when {expectation._get_runnable()} is True"
                 )
             expectation.times_called += 1
             expectation.verify(final=False)
@@ -535,10 +536,9 @@ class Expectation:
         self._local_override = False
 
     def __str__(self) -> str:
-        return "%s -> (%s)" % (
-            _format_args(str(self.name), self._args),
-            ", ".join(["%s" % x for x in self._return_values]),
-        )
+        args = _format_args(str(self.name), self._args)
+        return_values = ", ".join(str(x) for x in self._return_values)
+        return f"{args} -> ({return_values})"
 
     def __call__(self) -> "Expectation":
         return self
@@ -558,7 +558,7 @@ class Expectation:
 
     def __getattr__(self, name: str) -> NoReturn:
         self.__raise(
-            AttributeError, "'%s' object has not attribute '%s'" % (self.__class__.__name__, name)
+            AttributeError, f"'{self.__class__.__name__}' object has not attribute '{name}'"
         )
 
     def _get_runnable(self) -> str:
@@ -1141,12 +1141,12 @@ def _format_args(name: str, arguments: Optional[Dict[str, Any]]) -> str:
     if arguments is None:
         arguments = {"kargs": (), "kwargs": {}}
     kargs = ", ".join(_arg_to_str(arg) for arg in arguments["kargs"])
-    kwargs = ", ".join("%s=%s" % (k, _arg_to_str(v)) for k, v in arguments["kwargs"].items())
+    kwargs = ", ".join(f"{k}={_arg_to_str(v)}" for k, v in arguments["kwargs"].items())
     if kargs and kwargs:
-        args = "%s, %s" % (kargs, kwargs)
+        args = f"{kargs}, {kwargs}"
     else:
-        args = "%s%s" % (kargs, kwargs)
-    return "%s(%s)" % (name, args)
+        args = f"{kargs}{kwargs}"
+    return f"{name}({args})"
 
 
 def _create_partial_mock(obj_or_class: Any, **kwargs: Any) -> Mock:
