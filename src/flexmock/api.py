@@ -722,7 +722,7 @@ class Expectation:
         self.reset()
         raise exception(message)
 
-    def match_args(self, given_args: Any) -> bool:
+    def _match_args(self, given_args: Any) -> bool:
         """Check if the set of given arguments matches this expectation."""
         expected_args = self._args
         given_args = self._normalize_named_args(*given_args["kargs"], **given_args["kwargs"])
@@ -1076,7 +1076,7 @@ class FlexmockContainer:
         if name and obj in cls.flexmock_objects:
             found = None
             for expectation in reversed(cls.flexmock_objects[obj]):
-                if expectation.name == name and expectation.match_args(args):
+                if expectation.name == name and expectation._match_args(args):
                     if expectation in cls.ordered or not expectation._ordered and not found:
                         found = expectation
             if found and found._ordered:
