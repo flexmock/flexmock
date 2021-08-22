@@ -108,7 +108,7 @@ with suppress(ImportError):
         if when != "call" and ret.excinfo is None:
             return ret
         teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)  # type: ignore
-        if hasattr(runner.CallInfo, "duration"):
+        if hasattr(teardown, "duration"):
             # CallInfo.duration only available in Pytest 6+
             teardown.duration = ret.duration
         if ret.excinfo is not None:
