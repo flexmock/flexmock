@@ -3,7 +3,7 @@
 import pytest
 
 from flexmock import flexmock
-from flexmock.api import flexmock_teardown
+from flexmock._api import flexmock_teardown
 from flexmock.exceptions import MethodCallError
 from tests import flexmock_test
 from tests.flexmock_test import assert_raises

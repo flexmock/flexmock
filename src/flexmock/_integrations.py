@@ -6,7 +6,7 @@ from contextlib import suppress
 from functools import wraps
 from typing import Any, Type
 
-from flexmock.api import flexmock_teardown
+from flexmock._api import flexmock_teardown
 
 
 def _patch_test_result(klass: Type[Any]) -> None:
