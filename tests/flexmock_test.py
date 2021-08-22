@@ -9,7 +9,7 @@ import unittest
 from contextlib import contextmanager
 from typing import Type, Union
 
-from flexmock.api import (
+from flexmock._api import (
     AT_LEAST,
     AT_MOST,
     EXACTLY,
