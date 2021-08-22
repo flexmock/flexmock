@@ -36,6 +36,7 @@ Fixed
 #####
 
 - Fix `with_args` not working built-in functions and methods.
+- Fix pytest ``--durations`` flag when flexmock is installed.
 
 Infrastructure
 ##############
