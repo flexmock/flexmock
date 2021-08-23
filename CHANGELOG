@@ -10,6 +10,15 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+Release 0.10.7
+--------------
+
+Fixed
+#####
+
+- Fix ``with_args`` not working built-in functions and methods.
+- Fix previous pytest ``--durations`` fix not working.
+
 Release 0.10.6
 --------------
 
