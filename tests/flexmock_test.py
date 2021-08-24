@@ -1,5 +1,6 @@
 """Flexmock tests."""
 # pylint: disable=missing-docstring,too-many-lines,disallowed-name,no-member,invalid-name,no-self-use
+import os
 import random
 import re
 import sys
@@ -314,10 +315,18 @@ class RegularClass:
         assert_equal("got an int", mock.method_foo(23))
         assert_raises(MethodSignatureError, mock.method_foo, 2.0)
 
-    def test_with_args_should_work_with_builtin_c_functions_and_methods(self):
+    def test_with_args_should_work_with_builtin_c_methods(self):
         flexmock(sys.stdout).should_call("write")  # set fall-through
         flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test").once()
         sys.stdout.write("flexmock_builtin_test")
+
+    def test_with_args_should_work_with_builtin_c_functions(self):
+        mocked = flexmock(sys)
+        mocked.should_receive("exit").with_args(1).once()
+        mocked.exit(1)
+        self._tear_down()
+        flexmock(os).should_receive("remove").with_args("path").once()
+        os.remove("path")
 
     def test_with_args_should_work_with_builtin_python_methods(self):
         flexmock(random).should_receive("randint").with_args(1, 10).once()
