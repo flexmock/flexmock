@@ -2,7 +2,7 @@
 # pylint: disable=missing-docstring,disallowed-name,invalid-name
 
 
-class SomeClass:
+class ModuleClass:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -11,7 +11,7 @@ class SomeClass:
         return self.x + self.y
 
 
-def foo_function(x, y):
+def module_function(x, y):
     return x - y
 
 
