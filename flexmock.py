@@ -248,9 +248,11 @@ class Expectation(object):
         allowed = self.argspec
         args_len = len(allowed.args)
 
+        # self is the first expected argument
+        has_self = allowed.args and allowed.args[0] == "self"
         # Builtin methods take `self` as the first argument but `inspect.ismethod` returns False
         # so we need to check for them explicitly
-        is_builtin_method = isinstance(self.original, types.BuiltinMethodType)
+        is_builtin_method = isinstance(self.original, types.BuiltinMethodType) and has_self
         # Methods take `self` if not a staticmethod
         is_method = inspect.ismethod(self.original) and self.method_type is not staticmethod
         # Class init takes `self`
