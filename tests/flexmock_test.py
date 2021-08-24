@@ -19,6 +19,7 @@ from flexmock import _format_args
 from flexmock import _isproperty
 import flexmock
 import random
+import os
 import re
 import sys
 import unittest
@@ -309,10 +310,19 @@ class RegularClass(object):
         assertEqual('got an int', mock.method_foo(23))
         assertRaises(MethodSignatureError, mock.method_foo, 2.0)
 
-    def test_with_args_should_work_with_builtin_c_functions_and_methods(self):
-        flexmock(sys.stdout).should_call("write")  # set fall-through
-        flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test").once()
-        sys.stdout.write("flexmock_builtin_test")
+    def test_with_args_should_work_with_builtin_c_methods(self):
+        if sys.version_info > (3, 0):
+            flexmock(sys.stdout).should_call("write")  # set fall-through
+            flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test").once()
+            sys.stdout.write("flexmock_builtin_test")
+
+    def test_with_args_should_work_with_builtin_c_functions(self):
+        mocked = flexmock(sys)
+        mocked.should_receive("exit").with_args(1).once()
+        mocked.exit(1)
+        self._tear_down()
+        flexmock(os).should_receive("remove").with_args("path").once()
+        os.remove("path")
 
     def test_with_args_should_work_with_builtin_python_methods(self):
         flexmock(random).should_receive("randint").with_args(1, 10).once()

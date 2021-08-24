@@ -10,3 +10,5 @@ tags
 MANIFEST
 .project
 .ropeproject
+.tox
+_trial_temp
