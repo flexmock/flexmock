@@ -176,13 +176,13 @@ class Expectation(object):
     raise.
     """
 
-    def __init__(self, mock, name=None, return_value=None, original=None):
+    def __init__(self, mock, name=None, return_value=None, original=None, method_type=None):
         self.name = name
         self.modifier = EXACTLY
         if original is not None:
             self.original = original
         self.args = None
-        self.method_type = types.MethodType
+        self.method_type = method_type
         self.argspec = None
         value = ReturnValue(return_value)
         self.return_values = return_values = []
@@ -659,7 +659,7 @@ class Expectation(object):
                 if (hasattr(_mock, '__dict__') and
                         name in _mock.__dict__ and
                         self._local_override):
-                    del _mock.__dict__[name]
+                    delattr(_mock, name)
                 elif (hasattr(_mock, '__dict__') and
                         name in _mock.__dict__ and
                         type(_mock.__dict__) is dict):
@@ -798,7 +798,8 @@ class Mock(object):
                            if x.name == name][0]
             expectation = Expectation(
                 self._object, name=name, return_value=return_value,
-                original=expectation.__dict__.get('original'))
+                original=expectation.__dict__.get('original'),
+                method_type=expectation.__dict__.get("method_type"))
         else:
             expectation = Expectation(
                 self._object, name=name, return_value=return_value)
@@ -837,22 +838,11 @@ class Mock(object):
     def _update_method(self, expectation, name):
         method_instance = self._create_mock_method(name)
         obj = self._object
-        if _hasattr(obj, name):
-            if hasattr(expectation, 'original'):
-                expectation.method_type = type(_getattr(expectation, 'original'))
-            else:
-                expectation._update_original(name, obj)
-                method_type = type(_getattr(expectation, 'original'))
-                try:
-                    # TODO(herman): this is awful, fix this properly.
-                    # When a class/static method is mocked out on an *instance*
-                    # we need to fetch the type from the class
-                    method_type = type(_getattr(obj.__class__, name))
-                except:
-                    pass
-                if method_type in SPECIAL_METHODS:
-                    expectation.original_function = getattr(obj, name)
-                expectation.method_type = method_type
+        if _hasattr(obj, name) and not hasattr(expectation, "original"):
+            expectation._update_original(name, obj)
+            expectation.method_type = self._get_method_type(obj, name, expectation.original)
+            if expectation.method_type in SPECIAL_METHODS:
+                expectation.original_function = getattr(obj, name)
         if (
             not _isclass(obj)
             or expectation.method_type in SPECIAL_METHODS
@@ -864,6 +854,42 @@ class Mock(object):
         if (override and not _isclass(obj) and not isinstance(obj, Mock) and
                 hasattr(obj.__class__, name)):
             self._update_class_for_magic_builtins(obj, name)
+
+    def _get_method_type(self, obj, name, method):
+        """Get method type of the original method.
+
+        Method type is saved because after mocking the base class, it is difficult to determine
+        the original method type.
+        """
+        if not inspect.isclass(obj) and not hasattr(obj, "__class__"):
+            return type(method)
+
+        method_type = self._get_saved_method_type(obj, name, method)
+        if method_type is not None:
+            return method_type
+        if _is_class_method(method, name):
+            method_type = classmethod
+        elif _is_static_method(obj, name):
+            method_type = staticmethod
+        else:
+            method_type = type(method)
+        setattr(obj, "%s__flexmock__method_type" % name, method_type)
+        return method_type
+
+    def _get_saved_method_type(self, obj, name, method):
+        """Check method type of the original method if it was saved to the class or base class."""
+        bound_to = getattr(method, "__self__", None)
+        if bound_to is not None and inspect.isclass(bound_to):
+            # Check if the method type was saved in a base class
+            for cls in inspect.getmro(bound_to):
+                method_type = vars(cls).get("%s__flexmock__method_type" % name)
+                if method_type:
+                    return method_type
+        elif inspect.isclass(obj):
+            method_type = vars(obj).get("%s__flexmock__method_type" % name)
+            if method_type:
+                return method_type
+        return None
 
     def _update_attribute(self, expectation, name, return_value=None):
         obj = self._object
@@ -942,7 +968,7 @@ class Mock(object):
                 original = _getattr(expectation, 'original')
                 _mock = _getattr(expectation, '_mock')
                 if _isclass(_mock):
-                    if type(original) in SPECIAL_METHODS:
+                    if expectation.method_type in SPECIAL_METHODS:
                         original = _getattr(expectation, 'original_function')
                         return_values = original(*kargs, **kwargs)
                     else:
@@ -1001,12 +1027,6 @@ class Mock(object):
             if expectations:
                 for e in expectations:
                     error_msg += '\nDid not match expectation %s' % _format_args(name, e.args)
-            # make sure to clean up expectations to ensure none of them
-            # interfere with the runner's error reporting mechanism
-            # e.g. open()
-            for _, expectations in FlexmockContainer.flexmock_objects.items():
-                for expectation in expectations:
-                    _getattr(expectation, 'reset')()
             raise MethodSignatureError(error_msg)
 
         return mock_method
@@ -1115,9 +1135,13 @@ def _setattr(obj, name, value):
     local_override = False
     if hasattr(obj, '__dict__') and type(obj.__dict__) is dict:
         if name not in obj.__dict__:
+            # Overriding attribute locally on an instance.
             local_override = True
         obj.__dict__[name] = value
     else:
+        if inspect.isclass(obj) and not vars(obj).get(name):
+            # Overriding derived attribute locally on a child class.
+            local_override = True
         setattr(obj, name, value)
     return local_override
 
@@ -1172,6 +1196,25 @@ def _ensure_object_has_named_attribute(obj, name):
             exc_msg = 'old-style classes do not have a __new__() method'
         raise FlexmockError(exc_msg)
 
+def _is_class_method(method, name):
+    """Check if a method is a classmethod.
+
+    This function checks all the classes in the class method resolution in order
+    to get the correct result for derived methods as well.
+    """
+    bound_to = getattr(method, "__self__", None)
+    if not inspect.isclass(bound_to):
+        return False
+    for cls in inspect.getmro(bound_to):
+        descriptor = vars(cls).get(name)
+        if descriptor is not None:
+            return isinstance(descriptor, classmethod)
+    return False
+
+def _is_static_method(obj, name):
+    if sys.version_info < (3, 0):
+        return isinstance(getattr(obj, name), types.FunctionType)
+    return isinstance(inspect.getattr_static(obj, name), staticmethod)
 
 def flexmock_teardown():
     """Performs lexmock-specific teardown tasks."""
@@ -1182,6 +1225,14 @@ def flexmock_teardown():
         saved[mock_object] = expectations[:]
         for expectation in expectations:
             _getattr(expectation, 'reset')()
+        for expectation in expectations:
+            # Remove method type attributes set by flexmock. This needs to be done after
+            # resetting all the expectations because method type is needed in expectation teardown.
+            if inspect.isclass(mock_object) or hasattr(mock_object, "__class__"):
+                try:
+                    delattr(mock_object._object, "%s__flexmock__method_type" % expectation.name)
+                except (AttributeError, TypeError):
+                    pass
     for mock in saved.keys():
         obj = mock._object
         if not isinstance(obj, Mock) and not _isclass(obj):

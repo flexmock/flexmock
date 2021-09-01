@@ -17,6 +17,8 @@ from flexmock import ReturnValue
 from flexmock import flexmock_teardown
 from flexmock import _format_args
 from flexmock import _isproperty
+from flexmock import _is_class_method
+from flexmock import _is_static_method
 import flexmock
 import random
 import os
@@ -36,16 +38,30 @@ module_level_attribute = 'test'
 
 class SomeClass:
     @classmethod
-    def class_method(cls, a):
-        pass
+    def class_method(cls):
+        return "class_method"
+
+    @classmethod
+    def class_method_with_args(cls, a):
+        return a
 
     @staticmethod
-    def static_method(a):
-        pass
+    def static_method():
+        return "static_method"
 
-    def instance_method(self, a):
-        pass
+    @staticmethod
+    def static_method_with_args(a):
+        return a
 
+    def instance_method(self):
+        return "instance_method"
+
+    def instance_method_with_args(self, a):
+        return a
+
+
+class DerivedClass(SomeClass):
+    pass
 
 class OldStyleClass:
     pass
@@ -313,7 +329,7 @@ class RegularClass(object):
     def test_with_args_should_work_with_builtin_c_methods(self):
         if sys.version_info > (3, 0):
             flexmock(sys.stdout).should_call("write")  # set fall-through
-            flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test").once()
+            flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test")
             sys.stdout.write("flexmock_builtin_test")
 
     def test_with_args_should_work_with_builtin_c_functions(self):
@@ -327,6 +343,121 @@ class RegularClass(object):
     def test_with_args_should_work_with_builtin_python_methods(self):
         flexmock(random).should_receive("randint").with_args(1, 10).once()
         random.randint(1, 10)
+
+    def test_with_args_with_instance_method(self):
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args("blue").once()
+        instance = SomeClass()
+        instance.instance_method_with_args("red")
+        instance.instance_method_with_args("blue")
+
+    def test_with_args_with_class_method(self):
+        flexmock(SomeClass).should_receive("class_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("class_method_with_args").with_args("blue").once()
+        SomeClass.class_method_with_args("red")
+        SomeClass.class_method_with_args("blue")
+
+    def test_with_args_with_static_method(self):
+        flexmock(SomeClass).should_receive("static_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("static_method_with_args").with_args("blue").once()
+        SomeClass.static_method_with_args("red")
+        SomeClass.static_method_with_args("blue")
+
+    def test_mock_class_method_on_derived_class(self):
+        flexmock(DerivedClass).should_receive("class_method").and_return(2).twice()
+        assert DerivedClass().class_method() == 2
+        assert DerivedClass.class_method() == 2
+
+    def test_mock_class_method_on_derived_class_after_mocking_base_class(self):
+        flexmock(SomeClass).should_receive("class_method").and_return(1).once()
+        assert SomeClass.class_method() == 1
+        flexmock(DerivedClass).should_receive("class_method").and_return(2).twice()
+        assert DerivedClass().class_method() == 2
+        assert DerivedClass.class_method() == 2
+
+    def test_mock_static_method_on_derived_class(self):
+        flexmock(DerivedClass).should_receive("static_method").and_return(4).twice()
+        assert DerivedClass().static_method() == 4
+        assert DerivedClass.static_method() == 4
+
+    def test_mock_static_method_on_derived_class_after_mocking_base_class(self):
+        flexmock(SomeClass).should_receive("static_method").and_return(3).once()
+        assert SomeClass.static_method() == 3
+        flexmock(DerivedClass).should_receive("static_method").and_return(4).twice()
+        assert DerivedClass().static_method() == 4
+        assert DerivedClass.static_method() == 4
+
+    def test_mock_class_method_with_args_on_derived_class(self):
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(2).and_return(
+            3
+        ).twice()
+        assert DerivedClass().class_method_with_args(2) == 3
+        assert DerivedClass.class_method_with_args(2) == 3
+
+    def test_mock_class_method_with_args_on_derived_class_after_mocking_base_class(self):
+        flexmock(SomeClass).should_receive("class_method_with_args").with_args(1).and_return(
+            2
+        ).once()
+        assert SomeClass.class_method_with_args(1) == 2
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(2).and_return(
+            3
+        ).twice()
+        assert DerivedClass().class_method_with_args(2) == 3
+        assert DerivedClass.class_method_with_args(2) == 3
+
+    def test_mock_static_method_with_args_on_derived_class(self):
+        flexmock(DerivedClass).should_receive("static_method_with_args").with_args(4).and_return(
+            5
+        ).twice()
+        assert DerivedClass().static_method_with_args(4) == 5
+        assert DerivedClass.static_method_with_args(4) == 5
+
+    def test_mock_static_method_with_args_on_derived_class_after_mocking_base_class(self):
+        flexmock(SomeClass).should_receive("static_method_with_args").with_args(2).and_return(
+            3
+        ).once()
+        assert SomeClass.static_method_with_args(2) == 3
+        flexmock(DerivedClass).should_receive("static_method_with_args").with_args(4).and_return(
+            5
+        ).twice()
+        assert DerivedClass().static_method_with_args(4) == 5
+        assert DerivedClass.static_method_with_args(4) == 5
+
+    def test_spy_class_method_on_derived_class(self):
+        flexmock(DerivedClass).should_call("class_method").and_return("class_method").twice()
+        assert DerivedClass().class_method() == "class_method"
+        assert DerivedClass.class_method() == "class_method"
+
+    def test_spy_class_method_on_derived_class_after_spying_base_class(self):
+        flexmock(SomeClass).should_call("class_method").and_return("class_method").times(3)
+        assert SomeClass.class_method() == "class_method"
+        flexmock(DerivedClass).should_call("class_method").and_return("class_method").twice()
+        assert DerivedClass().class_method() == "class_method"
+        assert DerivedClass.class_method() == "class_method"
+
+    def test_spy_static_method_on_derived_class(self):
+        flexmock(DerivedClass).should_call("static_method").and_return("static_method").twice()
+        assert DerivedClass().static_method() == "static_method"
+        assert DerivedClass.static_method() == "static_method"
+
+    def test_spy_static_method_on_derived_class_after_spying_base_class(self):
+        flexmock(SomeClass).should_call("static_method").and_return("static_method").times(3)
+        assert SomeClass.static_method() == "static_method"
+        flexmock(DerivedClass).should_call("static_method").and_return("static_method").twice()
+        assert DerivedClass().static_method() == "static_method"
+        assert DerivedClass.static_method() == "static_method"
+
+    def test_spy_class_method_with_args_on_derived_class(self):
+        flexmock(DerivedClass).should_call("class_method_with_args").with_args(2).and_return(2)
+        assert DerivedClass().class_method_with_args(2) == 2
+        assert DerivedClass.class_method_with_args(2) == 2
+
+    def test_spy_static_method_with_args_on_derived_class(self):
+        flexmock(DerivedClass).should_call("static_method_with_args").with_args(4).and_return(
+            4
+        ).twice()
+        assert DerivedClass().static_method_with_args(4) == 4
+        assert DerivedClass.static_method_with_args(4) == 4
 
     def test_flexmock_should_match_expectations_against_user_defined_classes(self):
         mock = flexmock(name='temp')
@@ -578,25 +709,25 @@ class RegularClass(object):
 
     def test_with_args_on_class_mock(self):
         # Instance method
-        flexmock(SomeClass).should_receive("instance_method").with_args("red").once()
-        flexmock(SomeClass).should_receive("instance_method").with_args("blue").once()
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args("blue").once()
         instance = SomeClass()
-        instance.instance_method("red")
-        instance.instance_method("blue")
+        instance.instance_method_with_args("red")
+        instance.instance_method_with_args("blue")
         self._tear_down()
 
         # Class method
-        flexmock(SomeClass).should_receive("class_method").with_args("red").once()
-        flexmock(SomeClass).should_receive("class_method").with_args("blue").once()
-        SomeClass.class_method("red")
-        SomeClass.class_method("blue")
+        flexmock(SomeClass).should_receive("class_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("class_method_with_args").with_args("blue").once()
+        SomeClass.class_method_with_args("red")
+        SomeClass.class_method_with_args("blue")
         self._tear_down()
 
         # Static method
-        flexmock(SomeClass).should_receive("static_method").with_args("red").once()
-        flexmock(SomeClass).should_receive("static_method").with_args("blue").once()
-        SomeClass.static_method("red")
-        SomeClass.static_method("blue")
+        flexmock(SomeClass).should_receive("static_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("static_method_with_args").with_args("blue").once()
+        SomeClass.static_method_with_args("red")
+        SomeClass.static_method_with_args("blue")
 
     def test_flexmock_should_not_blow_up_on_should_call_for_class_methods(self):
         class User:
@@ -654,6 +785,90 @@ class RegularClass(object):
         for method in UPDATED_ATTRS:
             assert method not in Group.__dict__
             assert method not in group.__dict__
+
+    def test_class_attributes_are_unchanged_after_mocking(self):
+        class Base:
+            @classmethod
+            def class_method(cls):
+                pass
+
+            @staticmethod
+            def static_method():
+                pass
+
+            def instance_method(self):
+                pass
+
+        class Child(Base):
+            pass
+
+        instance = Base()
+        base_attrs = sorted(list(vars(Base).keys()))
+        instance_attrs = sorted(list(vars(instance).keys()))
+        child_attrs = sorted(list(vars(Child).keys()))
+        flexmock(Base).should_receive("class_method").once()
+        flexmock(Base).should_receive("static_method").once()
+        Base.class_method()
+        Base.static_method()
+
+        flexmock(instance).should_receive("class_method").once()
+        flexmock(instance).should_receive("static_method").once()
+        flexmock(instance).should_receive("instance_method").once()
+        instance.class_method()
+        instance.static_method()
+        instance.instance_method()
+
+        flexmock(Child).should_receive("class_method").once()
+        flexmock(Child).should_receive("static_method").once()
+        Child.class_method()
+        Child.static_method()
+
+        self._tear_down()
+        assert base_attrs == sorted(list(vars(Base).keys()))
+        assert instance_attrs == sorted(list(vars(instance).keys()))
+        assert child_attrs == sorted(list(vars(Child).keys()))
+
+    def test_class_attributes_are_unchanged_after_spying(self):
+        class Base:
+            @classmethod
+            def class_method(cls):
+                pass
+
+            @staticmethod
+            def static_method():
+                pass
+
+            def instance_method(self):
+                pass
+
+        class Child(Base):
+            pass
+
+        instance = Base()
+        base_attrs = sorted(list(vars(Base).keys()))
+        instance_attrs = sorted(list(vars(instance).keys()))
+        child_attrs = sorted(list(vars(Child).keys()))
+        flexmock(Base).should_call("class_method").times(3)
+        flexmock(Base).should_call("static_method").times(3)
+        Base.class_method()
+        Base.static_method()
+
+        flexmock(instance).should_call("class_method").once()
+        flexmock(instance).should_call("static_method").once()
+        flexmock(instance).should_call("instance_method").once()
+        instance.class_method()
+        instance.static_method()
+        instance.instance_method()
+
+        flexmock(Child).should_call("class_method").once()
+        flexmock(Child).should_call("static_method").once()
+        Child.class_method()
+        Child.static_method()
+
+        self._tear_down()
+        assert base_attrs == sorted(list(vars(Base).keys()))
+        assert instance_attrs == sorted(list(vars(instance).keys()))
+        assert child_attrs == sorted(list(vars(Child).keys()))
 
     def test_flexmock_should_cleanup_after_exception(self):
         class User:
@@ -1035,11 +1250,13 @@ class RegularClass(object):
         class User:
             @staticmethod
             def get_stuff(): return 'ok!'
+        assert isinstance(User.__dict__["get_stuff"], staticmethod)
         assertEqual('ok!', User.get_stuff())
         flexmock(User).should_receive('get_stuff')
         assert User.get_stuff() is None
         self._tear_down()
         assertEqual('ok!', User.get_stuff())
+        assert isinstance(User.__dict__["get_stuff"], staticmethod)
 
     def test_flexmock_should_properly_restore_undecorated_static_methods(self):
         class User:
@@ -1091,11 +1308,13 @@ class RegularClass(object):
             @classmethod
             def get_stuff(cls):
                 return cls.__name__
+        assert isinstance(User.__dict__["get_stuff"], classmethod)
         assertEqual('User', User.get_stuff())
         flexmock(User).should_receive('get_stuff').and_return('foo')
         assertEqual('foo', User.get_stuff())
         self._tear_down()
         assertEqual('User', User.get_stuff())
+        assert isinstance(User.__dict__["get_stuff"], classmethod)
 
     def test_spy_should_match_return_value_class(self):
         class User:
@@ -1864,6 +2083,43 @@ class RegularClass(object):
         flexmock(some_module).should_receive('SomeClass').with_args(1, 2)
         flexmock(some_module).should_receive('foo').with_args(1, 2)
 
+    def test_is_class_method(self):
+        assert _is_class_method(SomeClass.class_method, "class_method") is True
+        assert _is_class_method(SomeClass.static_method, "static_method") is False
+        assert _is_class_method(SomeClass.instance_method, "instance_method") is False
+
+        some_class = SomeClass()
+        assert _is_class_method(some_class.class_method, "class_method") is True
+        assert _is_class_method(some_class.static_method, "static_method") is False
+        assert _is_class_method(some_class.instance_method, "instance_method") is False
+
+        assert _is_class_method(DerivedClass.class_method, "class_method") is True
+        assert _is_class_method(DerivedClass.static_method, "static_method") is False
+        assert _is_class_method(DerivedClass.instance_method, "instance_method") is False
+
+        derived_class = DerivedClass()
+        assert _is_class_method(derived_class.class_method, "class_method") is True
+        assert _is_class_method(derived_class.static_method, "static_method") is False
+        assert _is_class_method(derived_class.instance_method, "instance_method") is False
+
+    def test_is_static_method(self):
+        assert _is_static_method(SomeClass, "class_method") is False
+        assert _is_static_method(SomeClass, "static_method") is True
+        assert _is_static_method(SomeClass, "instance_method") is False
+
+        some_class = SomeClass()
+        assert _is_static_method(some_class, "class_method") is False
+        assert _is_static_method(some_class, "static_method") is True
+        assert _is_static_method(some_class, "instance_method") is False
+
+        assert _is_static_method(DerivedClass, "class_method") is False
+        assert _is_static_method(DerivedClass, "static_method") is True
+        assert _is_static_method(DerivedClass, "instance_method") is False
+
+        derived_class = DerivedClass()
+        assert _is_static_method(derived_class, "class_method") is False
+        assert _is_static_method(derived_class, "static_method") is True
+        assert _is_static_method(derived_class, "instance_method") is False
 
 class TestFlexmockUnittest(RegularClass, unittest.TestCase):
     def tearDown(self):
