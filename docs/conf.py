@@ -51,7 +51,7 @@ copyright = u'2015, Slavek Kabrda, Herman Sheremetyev'
 # built documents.
 #
 # The short X.Y version.
-version = '0.10.8'
+version = '0.10.9'
 # The full version, including alpha/beta/rc tags.
 release = version
 

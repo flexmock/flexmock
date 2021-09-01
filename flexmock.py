@@ -25,7 +25,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # from flexmock import * is evil, keep it from doing any damage
 __all__ = ['flexmock']
-__version__ = '0.10.8'
+__version__ = '0.10.9'
 
 
 import inspect
