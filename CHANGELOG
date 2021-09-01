@@ -10,6 +10,14 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+Release 0.10.9
+--------------
+
+Fixed
+#####
+
+- Fix flexmock not mocking methods properly on derived classes.
+
 Release 0.10.8
 --------------
 
