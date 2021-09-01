@@ -27,6 +27,8 @@ from flexmock.api import (
     ReturnValue,
     StateError,
     _format_args,
+    _is_class_method,
+    _is_static_method,
     _isproperty,
     flexmock,
     flexmock_teardown,
@@ -2683,6 +2685,46 @@ class RegularClass:
         # object was an imported module
         flexmock(some_module).should_receive("ModuleClass").with_args(1, 2)
         flexmock(some_module).should_receive("module_function").with_args(1, 2)
+
+    def test_is_class_method(self):
+        assert _is_class_method(SomeClass.class_method, "class_method") is True
+        assert _is_class_method(SomeClass.static_method, "static_method") is False
+        assert _is_class_method(SomeClass.instance_method, "instance_method") is False
+        # Method names do no match
+        assert _is_class_method(SomeClass.class_method, "other_method") is False
+
+        some_class = SomeClass()
+        assert _is_class_method(some_class.class_method, "class_method") is True
+        assert _is_class_method(some_class.static_method, "static_method") is False
+        assert _is_class_method(some_class.instance_method, "instance_method") is False
+
+        assert _is_class_method(DerivedClass.class_method, "class_method") is True
+        assert _is_class_method(DerivedClass.static_method, "static_method") is False
+        assert _is_class_method(DerivedClass.instance_method, "instance_method") is False
+
+        derived_class = DerivedClass()
+        assert _is_class_method(derived_class.class_method, "class_method") is True
+        assert _is_class_method(derived_class.static_method, "static_method") is False
+        assert _is_class_method(derived_class.instance_method, "instance_method") is False
+
+    def test_is_static_method(self):
+        assert _is_static_method(SomeClass, "class_method") is False
+        assert _is_static_method(SomeClass, "static_method") is True
+        assert _is_static_method(SomeClass, "instance_method") is False
+
+        some_class = SomeClass()
+        assert _is_static_method(some_class, "class_method") is False
+        assert _is_static_method(some_class, "static_method") is True
+        assert _is_static_method(some_class, "instance_method") is False
+
+        assert _is_static_method(DerivedClass, "class_method") is False
+        assert _is_static_method(DerivedClass, "static_method") is True
+        assert _is_static_method(DerivedClass, "instance_method") is False
+
+        derived_class = DerivedClass()
+        assert _is_static_method(derived_class, "class_method") is False
+        assert _is_static_method(derived_class, "static_method") is True
+        assert _is_static_method(derived_class, "instance_method") is False
 
 
 class TestFlexmockUnittest(RegularClass, unittest.TestCase):
