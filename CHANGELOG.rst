@@ -49,6 +49,22 @@ Documentation
 
 - Add contribution documentation.
 
+Release 0.10.9
+--------------
+
+Fixed
+#####
+
+- Fix flexmock not mocking methods properly on derived classes.
+
+Release 0.10.8
+--------------
+
+Fixed
+#####
+
+- Fix ``with_args`` not working built-in functions.
+
 Release 0.10.7
 --------------
 
