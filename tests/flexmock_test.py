@@ -790,7 +790,7 @@ class RegularClass:
     def test_spy_class_method_on_derived_class_after_spying_base_class(self):
         flexmock(SomeClass).should_call("class_method").and_return("class_method").times(
             3
-        )  # TODO: Should be once
+        )  # TODO: Should be once #80
         assert SomeClass.class_method() == "class_method"
         flexmock(DerivedClass).should_call("class_method").and_return("class_method").twice()
         assert DerivedClass().class_method() == "class_method"
@@ -804,7 +804,7 @@ class RegularClass:
     def test_spy_static_method_on_derived_class_after_spying_base_class(self):
         flexmock(SomeClass).should_call("static_method").and_return("static_method").times(
             3
-        )  # TODO: Should be once
+        )  # TODO: Should be once #80
         assert SomeClass.static_method() == "static_method"
         flexmock(DerivedClass).should_call("static_method").and_return("static_method").twice()
         assert DerivedClass().static_method() == "static_method"
@@ -815,7 +815,7 @@ class RegularClass:
         assert DerivedClass().class_method_with_args(2) == 2
         assert DerivedClass.class_method_with_args(2) == 2
 
-    @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception
+    @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception #79
     def test_spy_class_method_with_args_on_derived_class_after_spying_base_class(self):
         flexmock(SomeClass).should_call("class_method_with_args").with_args(1).and_return(1)
         assert SomeClass.class_method_with_args(1) == 1
@@ -830,7 +830,7 @@ class RegularClass:
         assert DerivedClass().static_method_with_args(4) == 4
         assert DerivedClass.static_method_with_args(4) == 4
 
-    @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception
+    @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception #79
     def test_spy_static_method_with_args_on_derived_class_after_spying_base_class(self):
         flexmock(SomeClass).should_call("static_method_with_args").with_args(2).and_return(2).once()
         assert SomeClass.static_method_with_args(2) == 2
@@ -961,8 +961,8 @@ class RegularClass:
         base_attrs = list(vars(Base).keys())
         instance_attrs = list(vars(instance).keys())
         child_attrs = list(vars(Child).keys())
-        flexmock(Base).should_call("class_method").times(3)  # TODO: should be once
-        flexmock(Base).should_call("static_method").times(3)  # TODO: should be once
+        flexmock(Base).should_call("class_method").times(3)  # TODO: should be once #80
+        flexmock(Base).should_call("static_method").times(3)  # TODO: should be once #80
         Base.class_method()
         Base.static_method()
 
