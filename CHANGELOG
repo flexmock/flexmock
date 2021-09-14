@@ -10,6 +10,14 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+Release 0.10.10
+--------------
+
+Fixed
+#####
+
+- Fix AttributeError raised when mocking a proxied object.
+
 Release 0.10.9
 --------------
 

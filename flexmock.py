@@ -1214,7 +1214,16 @@ def _is_class_method(method, name):
 def _is_static_method(obj, name):
     if sys.version_info < (3, 0):
         return isinstance(getattr(obj, name), types.FunctionType)
-    return isinstance(inspect.getattr_static(obj, name), staticmethod)
+    try:
+        return isinstance(inspect.getattr_static(obj, name), staticmethod)
+    except AttributeError:
+        # AttributeError is raised when mocking a proxied object
+        if hasattr(obj, "__mro__"):
+            for cls in inspect.getmro(obj):
+                descriptor = vars(cls).get(name)
+                if descriptor is not None:
+                    return isinstance(descriptor, staticmethod)
+    return False
 
 def flexmock_teardown():
     """Performs lexmock-specific teardown tasks."""
