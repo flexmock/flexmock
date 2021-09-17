@@ -19,7 +19,7 @@ def test_module_level_test_for_pytest():
 
 @pytest.fixture()
 def runtest_hook_fixture():
-    return flexmock(foo="bar").should_receive("foo").once.mock()
+    return flexmock(foo="bar").should_receive("foo").once().mock()
 
 
 def test_runtest_hook_with_fixture_for_pytest(runtest_hook_fixture):

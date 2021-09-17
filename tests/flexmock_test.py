@@ -148,6 +148,22 @@ class RegularClass:
         assert_equal("value_bar", mock.method_foo())
         assert_equal("value_baz", mock.method_bar())
 
+    def test_calling_deprecated_properties_should_raise_exception(self):
+        error_msg = "Calling once, twice, never, or mock without parentheses has been deprecated"
+        mock = flexmock()
+        mock.should_receive("foo").once  # pylint: disable=expression-not-assigned
+        with assert_raises(FlexmockError, error_msg):
+            self._tear_down()
+        mock.should_receive("foo").twice  # pylint: disable=expression-not-assigned
+        with assert_raises(FlexmockError, error_msg):
+            self._tear_down()
+        mock.should_receive("foo").never  # pylint: disable=expression-not-assigned
+        with assert_raises(FlexmockError, error_msg):
+            self._tear_down()
+        mock.should_receive("foo").mock  # pylint: disable=expression-not-assigned
+        with assert_raises(FlexmockError, error_msg):
+            self._tear_down()
+
     def test_type_flexmock_with_unicode_string_in_should_receive(self):
         class Foo:
             def bar(self):
@@ -320,7 +336,7 @@ class RegularClass:
 
     def test_expectation_dot_mock_should_return_mock(self):
         mock = flexmock(name="temp")
-        assert_equal(mock, mock.should_receive("method_foo").mock)
+        assert_equal(mock, mock.should_receive("method_foo").mock())
 
     def test_flexmock_should_create_partial_new_style_object_mock(self):
         class User:
@@ -661,8 +677,8 @@ class RegularClass:
 
         user = User()
         user2 = User()
-        class_mock = flexmock(User).should_receive("method").and_return("class").mock
-        user_mock = flexmock(user).should_receive("method").and_return("instance").mock
+        class_mock = flexmock(User).should_receive("method").and_return("class").mock()
+        user_mock = flexmock(user).should_receive("method").and_return("instance").mock()
         assert class_mock is not user_mock
         assert_equal("instance", user.method())
         assert_equal("class", user2.method())
@@ -1750,6 +1766,12 @@ class RegularClass:
         with assert_raises(RuntimeError, "bar"):
             RaisesException.static_method()
 
+    def test_and_raise_with_invalid_arguments(self):
+        with assert_raises(
+            FlexmockError, "can't initialize <class 'Exception'> with the given arguments"
+        ):
+            flexmock().should_receive("foo").and_raise(Exception, 1, bar=2)
+
     def test_and_raise_with_value_that_is_not_a_class(self):
         class RaisesException:
             def get_stuff(self):
@@ -1972,7 +1994,7 @@ class RegularClass:
         class User:
             pass
 
-        mock = flexmock(User).new_instances(None).mock
+        mock = flexmock(User).new_instances(None).mock()
         with assert_raises(FlexmockError, "User does not have attribute 'foo'"):
             mock.should_receive("foo")
 
@@ -2979,7 +3001,7 @@ class ModernClass:
     def test_builtin_open(self):
         mock = flexmock(sys.modules["builtins"])
         fake_fd = flexmock(read=lambda: "some data")
-        mock.should_receive("open").once.with_args("file_name").and_return(fake_fd)
+        mock.should_receive("open").once().with_args("file_name").and_return(fake_fd)
         with open("file_name") as f:  # pylint: disable=unspecified-encoding
             data = f.read()
         self.assertEqual("some data", data)

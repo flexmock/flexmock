@@ -23,7 +23,8 @@ Added
 Changed
 #######
 
-- Flexmock needs to be imported explicitly using ``from flexmock import flexmock``.
+- **BREAKING CHANGE**: Flexmock needs to be imported explicitly using `from flexmock import flexmock`.
+  The hack that allowed flexmock to be imported directly using `import flexmock` did not work well with static analysis tools.
 - Many error messages have been improved.
 - Undocumented methods `Expectation.reset`, `Expectation.verify`, and `Expectation.match_args` that were unintentionally left public are now private methods.
 
@@ -33,12 +34,14 @@ Removed
 - Drop Python 2.7, 3.4, 3.5 support.
 - Drop Pytest 4.x support.
 - Remove unittest2 and nose integrations. unittest2 and nose are not maintained anymore.
+- **BREAKING CHANGE**: Removed support for calling `once`, `twice`, `never`, and `mock` methods
+  without parentheses. This allows code completion and static analysis to work with these methods.
 
 Fixed
 #####
 
-- Fix `with_args` not working built-in functions and methods.
 - Fix `should_call` is broken if called on a fake object.
+- Fix `and_raise` allows invalid arguments for an exception.
 
 Infrastructure
 ##############
