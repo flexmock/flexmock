@@ -287,7 +287,7 @@ class Mock:
         bound_to = getattr(method, "__self__", None)
         if bound_to is not None and inspect.isclass(bound_to):
             # Check if the method type was saved in a base class
-            for cls in bound_to.__mro__:
+            for cls in inspect.getmro(bound_to):
                 method_type = vars(cls).get(f"{name}__flexmock__method_type")
                 if method_type:
                     return method_type
@@ -1267,7 +1267,7 @@ def _is_class_method(method: Callable[..., Any], name: str) -> bool:
     bound_to = getattr(method, "__self__", None)
     if not inspect.isclass(bound_to):
         return False
-    for cls in bound_to.__mro__:
+    for cls in inspect.getmro(bound_to):
         descriptor = vars(cls).get(name)
         if descriptor is not None:
             return isinstance(descriptor, classmethod)
@@ -1275,4 +1275,13 @@ def _is_class_method(method: Callable[..., Any], name: str) -> bool:
 
 
 def _is_static_method(obj: Any, name: str) -> bool:
-    return isinstance(inspect.getattr_static(obj, name), staticmethod)
+    try:
+        return isinstance(inspect.getattr_static(obj, name), staticmethod)
+    except AttributeError:
+        # AttributeError is raised when mocking a proxied object
+        if hasattr(obj, "__mro__"):
+            for cls in inspect.getmro(obj):
+                descriptor = vars(cls).get(name)
+                if descriptor is not None:
+                    return isinstance(descriptor, staticmethod)
+        return False
