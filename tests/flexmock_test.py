@@ -39,7 +39,7 @@ from .proxy import Proxy
 
 
 def module_level_function(some, args):
-    return "%s, %s" % (some, args)
+    return f"{some}, {args}"
 
 
 MODULE_LEVEL_ATTRIBUTE = "test"
@@ -113,9 +113,9 @@ def assert_raises(expected_exception: Type[BaseException], match: Union[RE_TYPE,
 
 def assert_equal(expected, received, msg=""):
     if not msg:
-        msg = "expected %s, received %s" % (expected, received)
+        msg = f"expected {expected}, received {received}"
     if expected != received:
-        raise AssertionError("%s != %s : %s" % (expected, received, msg))
+        raise AssertionError(f"{expected} != {received} : {msg}")
 
 
 class RegularClass:
@@ -1155,7 +1155,7 @@ class RegularClass:
     def test_flexmock_should_call_respects_matched_expectations(self):
         class Group:
             def method1(self, arg1, arg2="b"):
-                return "%s:%s" % (arg1, arg2)
+                return f"{arg1}:{arg2}"
 
             def method2(self, arg):
                 return arg
@@ -1171,7 +1171,7 @@ class RegularClass:
     def test_flexmock_should_call_respects_unmatched_expectations(self):
         class Group:
             def method1(self, arg1, arg2="b"):
-                return "%s:%s" % (arg1, arg2)
+                return f"{arg1}:{arg2}"
 
             def method2(self, a):
                 pass
@@ -1445,7 +1445,7 @@ class RegularClass:
     def test_flexmock_should_call_should_match_keyword_arguments(self):
         class Foo:
             def method1(self, arg1, arg2=None, arg3=None):
-                return "%s%s%s" % (arg1, arg2, arg3)
+                return f"{arg1}{arg2}{arg3}"
 
         foo = Foo()
         flexmock(foo).should_call("method1").with_args(1, arg3=3, arg2=2).once()
@@ -1523,7 +1523,7 @@ class RegularClass:
         assert_equal([None], list(foo))
         assert_equal([None], list(foo2))
         assert_equal([None], list(foo3))
-        assert_equal(True, Foo.__iter__ == old, "%s != %s" % (Foo.__iter__, old))
+        assert_equal(True, Foo.__iter__ == old, f"{Foo.__iter__} != {old}")
 
     def test_flexmock_should_mock_private_methods_with_leading_underscores(self):
         class ClassWithPrivateMethods:
@@ -1585,7 +1585,7 @@ class RegularClass:
     def test_flexmock_should_verify_spy_raises_correct_exception_class(self):
         class FakeException(Exception):
             def __init__(self, param, param2):
-                self.message = "%s, %s" % (param, param2)
+                self.message = f"{param}, {param2}"
                 Exception.__init__(self)
 
         class User:
@@ -1604,7 +1604,7 @@ class RegularClass:
                 Exception.__init__(self, param)
 
             def __str__(self):
-                return "%s, %s" % (self.p1, self.p2)
+                return f"{self.p1}, {self.p2}"
 
         class User:
             def get_stuff(self):
@@ -1996,9 +1996,9 @@ class RegularClass:
 
     def test_return_value_should_not_explode_on_unicode_values(self):
         return_value = ReturnValue(chr(0x86C7))
-        assert_equal('"蛇"', "%s" % return_value)
+        assert_equal('"蛇"', f"{return_value}")
         return_value = ReturnValue((chr(0x86C7), chr(0x86C7)))
-        assert_equal('("蛇", "蛇")', "%s" % return_value)
+        assert_equal('("蛇", "蛇")', f"{return_value}")
 
     def test_pass_thru_should_call_original_method_only_once(self):
         class Nyan:
@@ -2969,7 +2969,7 @@ class ModernClass:
         mock = flexmock(sys.modules["builtins"])
         fake_fd = flexmock(read=lambda: "some data")
         mock.should_receive("open").once.with_args("file_name").and_return(fake_fd)
-        with open("file_name") as f:
+        with open("file_name") as f:  # pylint: disable=unspecified-encoding
             data = f.read()
         self.assertEqual("some data", data)
 
