@@ -31,7 +31,9 @@ RE_TYPE = type(re.compile(""))
 class ReturnValue:
     """ReturnValue"""
 
-    def __init__(self, value: Optional[Any] = None, raises: Optional[Exception] = None) -> None:
+    def __init__(
+        self, value: Optional[Any] = None, raises: Optional[Type[BaseException]] = None
+    ) -> None:
         self.value = value
         self.raises = raises
 
@@ -72,10 +74,6 @@ class Mock:
         traceback: Optional[TracebackType],
     ) -> None:
         pass
-
-    def __call__(self, *args: Any, **kwargs: Any) -> "Mock":
-        """Make Expectation.mock() work with parens."""
-        return self
 
     def __iter__(self) -> Iterator[Any]:
         """Makes the mock object iterable.
@@ -343,7 +341,7 @@ class Mock:
     def _create_mock_method(self, name: str) -> Callable[..., Any]:
         def _handle_exception_matching(expectation: Expectation) -> None:
             # pylint: disable=misplaced-bare-raise
-            return_values = _getattr(expectation, "_return_values")
+            return_values = expectation._return_values
             if return_values:
                 raised, instance = sys.exc_info()[:2]
                 assert raised, "no exception was raised"
@@ -353,7 +351,8 @@ class Mock:
                     raise
                 args = return_values[0].value
                 if inspect.isclass(expected):
-                    expected_instance = expected(*args["kargs"], **args["kwargs"])
+                    assert isinstance(args, dict)
+                    expected_instance = expected(*args["kargs"], **args["kwargs"])  # type: ignore
                     expected_message = str(expected_instance)
                     if expected is not raised and expected not in raised.__bases__:
                         raise ExceptionClassError(
@@ -406,11 +405,11 @@ class Mock:
         ) -> Any:
             return_values = None
             try:
-                original = _getattr(expectation, "_original")
-                _mock = _getattr(expectation, "_mock")
+                original = expectation._original
+                _mock = expectation._mock
                 if inspect.isclass(_mock):
                     if expectation._method_type in SPECIAL_METHODS:
-                        original = _getattr(expectation, "_original_function")
+                        original = expectation._original_function
                         return_values = original(*kargs, **kwargs)
                     else:
                         return_values = original(runtime_self, *kargs, **kwargs)
@@ -418,7 +417,7 @@ class Mock:
                     return_values = original(*kargs, **kwargs)
             except Exception:
                 return _handle_exception_matching(expectation)
-            expected_values = _getattr(expectation, "_return_values")
+            expected_values = expectation._return_values
             if expected_values and not match_return_values(expected_values[0].value, return_values):
                 expected_value = expected_values[0].value
                 # Display strings with quotes in the error message
@@ -444,13 +443,13 @@ class Mock:
                 )
             expectation._times_called += 1
             expectation._verify(final=False)
-            _pass_thru = _getattr(expectation, "_pass_thru")
-            _replace_with = _getattr(expectation, "_replace_with")
+            _pass_thru = expectation._pass_thru
+            _replace_with = expectation._replace_with
             if _pass_thru:
                 return pass_thru(expectation, runtime_self, *kargs, **kwargs)
             if _replace_with:
                 return _replace_with(*kargs, **kwargs)
-            return_values = _getattr(expectation, "_return_values")
+            return_values = expectation._return_values
             if return_values:
                 return_value = return_values[0]
                 del return_values[0]
@@ -459,9 +458,9 @@ class Mock:
                 return_value = ReturnValue()
             if return_value.raises:
                 if inspect.isclass(return_value.raises):
-                    raise return_value.raises(
-                        *return_value.value["kargs"], **return_value.value["kwargs"]
-                    )
+                    args = return_value.value
+                    assert isinstance(args, dict)
+                    raise return_value.raises(*args["kargs"], **args["kwargs"])  # type: ignore
                 raise return_value.raises  # pylint: disable=raising-bad-type
             return return_value.value
 
@@ -494,7 +493,7 @@ def flexmock_teardown() -> None:
     for mock_object, expectations in FlexmockContainer.flexmock_objects.items():
         saved[mock_object] = expectations[:]
         for expectation in expectations:
-            _getattr(expectation, "_reset")()
+            expectation._reset()
         for expectation in expectations:
             # Remove method type attributes set by flexmock. This needs to be done after
             # resetting all the expectations because method type is needed in expectation teardown.
@@ -528,7 +527,7 @@ def flexmock_teardown() -> None:
     # any of the previous steps that cleanup all the changes
     for mock_object, expectations in saved.items():
         for expectation in expectations:
-            _getattr(expectation, "_verify")()
+            expectation._verify()
 
 
 class Expectation:
@@ -559,7 +558,11 @@ class Expectation:
         self._return_values = [ReturnValue(return_value)] if return_value is not None else []
         self._replace_with: Optional[Callable[..., Any]] = None
         self._original_function: Optional[Callable[..., Any]] = None
-        self._expected_calls = {EXACTLY: None, AT_LEAST: None, AT_MOST: None}
+        self._expected_calls: Dict[str, Optional[int]] = {
+            EXACTLY: None,
+            AT_LEAST: None,
+            AT_MOST: None,
+        }
         self._runnable: Callable[..., bool] = lambda: True
         self._mock = mock
         self._pass_thru = False
@@ -568,32 +571,20 @@ class Expectation:
         self._verified = False
         self._callable = True
         self._local_override = False
+        # Remove in 1.0. Issue #96
+        self._called_deprecated_property = False
 
     def __str__(self) -> str:
         args = _format_args(str(self._name), self._args)
         return_values = ", ".join(str(x) for x in self._return_values)
         return f"{args} -> ({return_values})"
 
-    def __call__(self) -> "Expectation":
-        return self
-
     def __getattribute__(self, name: str) -> Any:
-        if name == "once":
-            return _getattr(self, "times")(1)
-        if name == "twice":
-            return _getattr(self, "times")(2)
-        if name == "never":
-            return _getattr(self, "times")(0)
-        if name in ("at_least", "at_most", "ordered", "one_by_one"):
-            return _getattr(self, name)()
-        if name == "mock":
-            return _getattr(self, "mock")()
-        return _getattr(self, name)
-
-    def __getattr__(self, name: str) -> NoReturn:
-        self.__raise(
-            AttributeError, f"'{self.__class__.__name__}' object has not attribute '{name}'"
-        )
+        # Workaround to raise an error if once, twice, or never are called
+        # without parenthesis.
+        if name in ("once", "twice", "never", "mock"):
+            self._called_deprecated_property = True
+        return object.__getattribute__(self, name)
 
     def _get_runnable(self) -> str:
         """Ugly hack to get the name of when() condition from the source code."""
@@ -717,7 +708,7 @@ class Expectation:
             ret["kwargs"][args[i]] = arg
         return ret
 
-    def __raise(self, exception: Type[Exception], message: str) -> NoReturn:
+    def __raise(self, exception: Type[BaseException], message: str) -> NoReturn:
         """Safe internal raise implementation.
 
         In case we're patching builtins, it's important to reset the
@@ -750,6 +741,7 @@ class Expectation:
 
     def mock(self) -> Mock:
         """Return the mock associated with this expectation."""
+        self._called_deprecated_property = False
         return self._mock
 
     def with_args(self, *kargs: Any, **kwargs: Any) -> "Expectation":
@@ -803,8 +795,8 @@ class Expectation:
             _setattr(self._mock, str(self._name), value)
             return self
 
-        return_values = _getattr(self, "_return_values")
-        if not _getattr(self, "_one_by_one"):
+        return_values = self._return_values
+        if not self._one_by_one:
             value = ReturnValue(value)
             return_values.append(value)
         else:
@@ -831,10 +823,43 @@ class Expectation:
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use times() with attribute stubs")
-        expected_calls = _getattr(self, "_expected_calls")
-        modifier = _getattr(self, "_modifier")
+        expected_calls = self._expected_calls
+        modifier = self._modifier
         expected_calls[modifier] = number
         return self
+
+    def once(self) -> "Expectation":
+        """Expect expectation's method to be called once.
+
+        Alias for times(1).
+
+        Returns:
+          - self, i.e. can be chained with other Expectation methods
+        """
+        self._called_deprecated_property = False
+        return self.times(1)
+
+    def twice(self) -> "Expectation":
+        """Expect expectation's method to be called twice.
+
+        Alias for times(2).
+
+        Returns:
+          - self, i.e. can be chained with other Expectation methods
+        """
+        self._called_deprecated_property = False
+        return self.times(2)
+
+    def never(self) -> "Expectation":
+        """Expect expectation's method to never be called.
+
+        Alias for times(0).
+
+        Returns:
+          - self, i.e. can be chained with other Expectation methods
+        """
+        self._called_deprecated_property = False
+        return self.times(0)
 
     def one_by_one(self) -> "Expectation":
         """Modifies the return value to be treated as a list of return values.
@@ -848,12 +873,12 @@ class Expectation:
             self.__raise(FlexmockError, "can't use one_by_one() with attribute stubs")
         if not self._one_by_one:
             self._one_by_one = True
-            return_values = _getattr(self, "_return_values")
+            return_values = self._return_values
             saved_values = return_values[:]
             self._return_values = return_values = []
             for value in saved_values:
                 try:
-                    for val in value.value:
+                    for val in value.value:  # type: ignore
                         return_values.append(ReturnValue(val))
                 except TypeError:
                     return_values.append(value)
@@ -870,8 +895,8 @@ class Expectation:
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_least() with attribute stubs")
-        expected_calls = _getattr(self, "_expected_calls")
-        modifier = _getattr(self, "_modifier")
+        expected_calls = self._expected_calls
+        modifier = self._modifier
         if expected_calls[AT_LEAST] is not None or modifier == AT_LEAST:
             self.__raise(FlexmockError, "cannot use at_least modifier twice")
         if modifier == AT_MOST and expected_calls[AT_MOST] is None:
@@ -890,8 +915,8 @@ class Expectation:
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_most() with attribute stubs")
-        expected_calls = _getattr(self, "_expected_calls")
-        modifier = _getattr(self, "_modifier")
+        expected_calls = self._expected_calls
+        modifier = self._modifier
         if expected_calls[AT_MOST] is not None or modifier == AT_MOST:
             self.__raise(FlexmockError, "cannot use at_most modifier twice")
         if modifier == AT_LEAST and expected_calls[AT_LEAST] is None:
@@ -930,7 +955,9 @@ class Expectation:
         self._runnable = func
         return self
 
-    def and_raise(self, exception: Exception, *kargs: Any, **kwargs: Any) -> "Expectation":
+    def and_raise(
+        self, exception: Type[BaseException], *kargs: Any, **kwargs: Any
+    ) -> "Expectation":
         """Specifies the exception to be raised when this expectation is met.
 
         Args:
@@ -943,8 +970,15 @@ class Expectation:
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_raise() with attribute stubs")
+        if inspect.isclass(exception):
+            try:
+                exception(*kargs, **kwargs)  # type: ignore
+            except TypeError:
+                self.__raise(
+                    FlexmockError, f"can't initialize {exception} with the given arguments"
+                )
         args = {"kargs": kargs, "kwargs": kwargs}
-        return_values = _getattr(self, "_return_values")
+        return_values = self._return_values
         return_values.append(ReturnValue(raises=exception, value=args))
         return self
 
@@ -959,7 +993,7 @@ class Expectation:
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use replace_with() with attribute/property stubs")
-        replace_with = _getattr(self, "_replace_with")
+        replace_with = self._replace_with
         original = self.__dict__.get("_original")
         if replace_with:
             self.__raise(FlexmockError, "replace_with cannot be specified twice")
@@ -1003,42 +1037,48 @@ class Expectation:
             )
 
     def _verify_number_of_calls(self, final: bool) -> Tuple[bool, str]:
+        if self._called_deprecated_property:
+            raise FlexmockError(
+                "Calling once, twice, never, or mock without parentheses has been deprecated"
+            )
         failed = False
         message = ""
-        expected_calls = _getattr(self, "_expected_calls")
-        times_called = _getattr(self, "_times_called")
-        if expected_calls[EXACTLY] is not None:
-            message = f"exactly {expected_calls[EXACTLY]}"
+        called_exactly = self._expected_calls[EXACTLY]
+        called_at_least = self._expected_calls[AT_LEAST]
+        called_at_most = self._expected_calls[AT_MOST]
+        times_called = self._times_called
+        if called_exactly is not None:
+            message = f"exactly {called_exactly}"
             if final:
-                if times_called != expected_calls[EXACTLY]:
+                if times_called != called_exactly:
                     failed = True
             else:
-                if times_called > expected_calls[EXACTLY]:
+                if times_called > called_exactly:
                     failed = True
-            message += " time" if expected_calls[EXACTLY] == 1 else " times"
+            message += " time" if called_exactly == 1 else " times"
         else:
-            if final and expected_calls[AT_LEAST] is not None:
-                message = f"at least {expected_calls[AT_LEAST]}"
-                if times_called < expected_calls[AT_LEAST]:
+            if final and called_at_least is not None:
+                message = f"at least {called_at_least}"
+                if times_called < called_at_least:
                     failed = True
-                message += " time" if expected_calls[AT_LEAST] == 1 else " times"
-            if expected_calls[AT_MOST] is not None:
+                message += " time" if called_at_least == 1 else " times"
+            if called_at_most is not None:
                 if message:
                     message += " and "
-                message += f"at most {expected_calls[AT_MOST]}"
-                if times_called > expected_calls[AT_MOST]:
+                message += f"at most {called_at_most}"
+                if times_called > called_at_most:
                     failed = True
-                message += " time" if expected_calls[AT_MOST] == 1 else " times"
+                message += " time" if called_at_most == 1 else " times"
         return failed, message
 
     def _reset(self) -> None:
         """Returns the methods overriden by this expectation to their originals."""
-        _mock = _getattr(self, "_mock")
+        _mock = self._mock
         if not isinstance(_mock, Mock):
             original = self.__dict__.get("_original")
             if original:
                 # name may be unicode but pypy demands dict keys to be str
-                name = str(_getattr(self, "_name"))
+                name = str(self._name)
                 if hasattr(_mock, "__dict__") and name in _mock.__dict__ and self._local_override:
                     delattr(_mock, name)
                 elif (
@@ -1161,11 +1201,6 @@ def flexmock(spec: Optional[Any] = None, **kwargs: Any) -> Mock:
     # use this intermediate class to attach properties
     klass = type("MockClass", (Mock,), {})
     return klass(**kwargs)  # type: ignore
-
-
-def _getattr(obj: object, name: str) -> Any:
-    """Convenience wrapper to work around custom __getattribute__."""
-    return object.__getattribute__(obj, name)
 
 
 def _arg_to_str(arg: Any) -> str:
