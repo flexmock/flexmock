@@ -50,6 +50,14 @@ Documentation
 
 - Add contribution documentation.
 
+Release 0.10.10
+--------------
+
+Fixed
+#####
+
+- Fix AttributeError raised when mocking a proxied object.
+
 Release 0.10.9
 --------------
 
