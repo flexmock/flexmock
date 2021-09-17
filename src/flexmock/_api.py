@@ -217,31 +217,6 @@ class Mock:
             )
         return Expectation(self._object, name=name, return_value=return_value)
 
-    def _update_class_for_magic_builtins(self, obj: Any, name: str) -> None:
-        """Fixes MRO for builtin methods on new-style objects.
-
-        On 2.7+ and 3.2+, replacing magic builtins on instances of new-style
-        classes has no effect as the one attached to the class takes precedence.
-        To work around it, we update the class' method to check if the instance
-        in question has one in its own __dict__ and call that instead.
-        """
-        if not (name.startswith("__") and name.endswith("__") and len(name) > 4):
-            return
-        original = getattr(obj.__class__, name)
-
-        def updated(self: Any, *kargs: Any, **kwargs: Any) -> Any:
-            if (
-                hasattr(self, "__dict__")
-                and isinstance(self.__dict__, dict)
-                and name in self.__dict__
-            ):
-                return self.__dict__[name](*kargs, **kwargs)
-            return original(self, *kargs, **kwargs)
-
-        setattr(obj.__class__, name, updated)
-        if updated.__code__ != original.__code__:
-            self._create_placeholder_mock_for_proper_teardown(obj.__class__, name, original)
-
     def _create_placeholder_mock_for_proper_teardown(
         self, obj: Any, name: str, original: Any
     ) -> None:
@@ -253,25 +228,23 @@ class Mock:
 
     def _update_method(self, expectation: "Expectation", name: str) -> None:
         method_instance = self._create_mock_method(name)
-        obj = self._object
-        if self._hasattr(obj, name) and not hasattr(expectation, "_original"):
-            expectation._update_original(name, obj)
-            expectation._method_type = self._get_method_type(obj, name, expectation._original)
+        if self._hasattr(self._object, name) and not hasattr(expectation, "_original"):
+            expectation._update_original(name, self._object)
+            expectation._method_type = self._get_method_type(name, expectation._original)
             if expectation._method_type in SPECIAL_METHODS:
-                expectation._original_function = getattr(obj, name)
-        if not inspect.isclass(obj) or expectation._method_type in SPECIAL_METHODS:
-            method_instance = types.MethodType(method_instance, obj)
-        override = _setattr(obj, name, method_instance)
-        expectation._local_override = override
+                expectation._original_function = getattr(self._object, name)
+        if not inspect.isclass(self._object) or expectation._method_type in SPECIAL_METHODS:
+            method_instance = types.MethodType(method_instance, self._object)
+        expectation._local_override = _setattr(self._object, name, method_instance)
         if (
-            override
-            and not inspect.isclass(obj)
-            and not isinstance(obj, Mock)
-            and hasattr(obj.__class__, name)
+            expectation._local_override
+            and not inspect.isclass(self._object)
+            and not isinstance(self._object, Mock)
+            and hasattr(self._object.__class__, name)
         ):
-            self._update_class_for_magic_builtins(obj, name)
+            self._update_class_for_magic_builtins(name)
 
-    def _get_method_type(self, obj: Any, name: str, method: Callable[..., Any]) -> Any:
+    def _get_method_type(self, name: str, method: Callable[..., Any]) -> Any:
         """Get method type of the original method.
 
         Method type is saved because after mocking the base class, it is difficult to determine
@@ -282,11 +255,11 @@ class Mock:
             return method_type
         if _is_class_method(method, name):
             method_type = classmethod
-        elif _is_static_method(obj, name):
+        elif _is_static_method(self._object, name):
             method_type = staticmethod
         else:
             method_type = type(method)
-        setattr(obj, f"{name}__flexmock__method_type", method_type)
+        setattr(self._object, f"{name}__flexmock__method_type", method_type)
         return method_type
 
     def _get_saved_method_type(self, name: str, method: Callable[..., Any]) -> Optional[Any]:
@@ -300,15 +273,40 @@ class Mock:
                     return method_type
         return None
 
+    def _update_class_for_magic_builtins(self, name: str) -> None:
+        """Fixes method resolution order for built-in methods.
+
+        Replacing magic builtins on instances has no effect as the one attached
+        to the class takes precedence. To work around it, we update the class'
+        method to check if the instance in question has one in its own __dict__
+        and call that instead.
+        """
+        if not (name.startswith("__") and name.endswith("__") and len(name) > 4):
+            return
+        original = getattr(self._object.__class__, name)
+
+        def updated(self: Any, *kargs: Any, **kwargs: Any) -> Any:
+            if (
+                hasattr(self, "__dict__")
+                and isinstance(self.__dict__, dict)
+                and name in self.__dict__
+            ):
+                return self.__dict__[name](*kargs, **kwargs)
+            return original(self, *kargs, **kwargs)
+
+        setattr(self._object.__class__, name, updated)
+        if updated.__code__ != original.__code__:
+            self._create_placeholder_mock_for_proper_teardown(
+                self._object.__class__, name, original
+            )
+
     def _update_attribute(
         self, expectation: "Expectation", name: str, return_value: Optional[Any] = None
     ) -> None:
-        obj = self._object
         expectation._callable = False
-        if self._hasattr(obj, name) and not hasattr(expectation, "_original"):
-            expectation._update_original(name, obj)
-        override = _setattr(obj, name, return_value)
-        expectation._local_override = override
+        if self._hasattr(self._object, name) and not hasattr(expectation, "_original"):
+            expectation._update_original(name, self._object)
+        expectation._local_override = _setattr(self._object, name, return_value)
 
     def _update_property(self, expectation: "Expectation", name: str) -> None:
         new_name = f"_flexmock__{name}"
