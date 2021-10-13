@@ -4,6 +4,7 @@ import inspect
 import re
 import sys
 import types
+import warnings
 from types import BuiltinMethodType, TracebackType
 from typing import Any, Callable, Dict, Iterator, List, NoReturn, Optional, Tuple, Type
 
@@ -22,7 +23,7 @@ AT_LEAST = "at least"
 AT_MOST = "at most"
 EXACTLY = "exactly"
 SPECIAL_METHODS = (classmethod, staticmethod)
-UPDATED_ATTRS = ["should_receive", "should_call", "new_instances"]
+UPDATED_ATTRS = ["should_receive", "should_call", "should_call_spy", "new_instances"]
 DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("", (object,), {}))]
 # Fix Python 3.6 does not have re.Pattern type
 RE_TYPE = type(re.compile(""))
@@ -153,13 +154,22 @@ class Mock:
         return hasattr(obj, name)
 
     def should_call(self, name: str) -> "Expectation":
+        """Method `should call` is deprecated. Use `should_call_spy` instead."""
+        warnings.warn(
+            "Method 'should call' is deprecated and will be removed in a future version. "
+            "Use 'should_call_spy' instead",
+            DeprecationWarning,
+        )
+        return self.should_call_spy(name)
+
+    def should_call_spy(self, name: str) -> "Expectation":
         """Creates a spy.
 
         This means that the original method will be called rather than the fake
         version. However, we can still keep track of how many times it's called and
         with what arguments, and apply expectations accordingly.
 
-        should_call is meaningless/not allowed for non-callable attributes.
+        should_call_spy is meaningless/not allowed for non-callable attributes.
 
         Args:
           - name: string name of the method

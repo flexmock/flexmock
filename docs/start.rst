@@ -119,23 +119,23 @@ Spies
 
 While replacing method calls with canned return values or checking that they are called with
 specific arguments is quite useful, there are also times when you want to execute the actual method
-and simply find out how many times it was called. flexmock uses should_call() to generate this
+and simply find out how many times it was called. flexmock uses should_call_spy() to generate this
 sort of expectations instead of should_receive():
 
 ::
 
-  flexmock(Train).should_call("get_destination").once()
+  flexmock(Train).should_call_spy("get_destination").once()
 
 
 In the above case the real get_destination() method will be executed, but flexmock will raise
 an exception unless it is executed exactly once. All the modifiers allowed with should_receive()
-can also be used with should_call() so it is possible to tweak the allowed arguments, return
+can also be used with should_call_spy() so it is possible to tweak the allowed arguments, return
 values and call times.
 
 ::
 
   (flexmock(Train)
-      .should_call("set_destination")
+      .should_call_spy("set_destination")
       .once()
       .with_args(object, str, int)
       .and_raise(Exception, re.compile("^No such dest.*")))

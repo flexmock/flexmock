@@ -27,6 +27,11 @@ Changed
 - Many error messages have been improved.
 - Undocumented methods `Expectation.reset`, `Expectation.verify`, and `Expectation.match_args` that were unintentionally left public are now private methods.
 
+Deprecated
+##########
+
+- Method `should_call` has been renamed and deprecated. Use `should_call_spy` instead.
+
 Removed
 #######
 

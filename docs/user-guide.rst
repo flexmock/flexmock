@@ -37,7 +37,7 @@ flexmock declarations follow a consistent style of the following 3 forms:
 
     COMMAND:
 
-      One of should_receive, should_call, or new_instances. These
+      One of should_receive, should_call_spy, or new_instances. These
       create the initial expectation object.
 
     ATTRIBUTE:
@@ -268,7 +268,7 @@ Matching specific arguments
 ::
 
     (flexmock(plane)
-        .should_call('repair')
+        .should_call_spy('repair')
         .with_args(wing, cockpit)
         .once())
 
@@ -277,7 +277,7 @@ Matching any arguments
 ::
 
     (flexmock(plane)
-        .should_call('turn')
+        .should_call_spy('turn')
         .twice())
 
 Matching specific return values
@@ -285,7 +285,7 @@ Matching specific return values
 ::
 
     (flexmock(plane)
-        .should_call('land')
+        .should_call_spy('land')
         .and_return('landed!'))
 
 Matching a regular expression
@@ -293,7 +293,7 @@ Matching a regular expression
 ::
 
     (flexmock(plane)
-        .should_call('land')
+        .should_call_spy('land')
         .and_return(re.compile('^la')))
 
 Match return values by class/type
@@ -301,7 +301,7 @@ Match return values by class/type
 ::
 
     (flexmock(plane)
-        .should_call('fly')
+        .should_call_spy('fly')
         .and_return(str, object, None))
 
 Ensure that an appropriate exception is raised
@@ -309,7 +309,7 @@ Ensure that an appropriate exception is raised
 ::
 
     (flexmock(plane)
-        .should_call('fly')
+        .should_call_spy('fly')
         .and_raise(BadWeatherException))
 
 Check that the exception message matches your expectations
@@ -317,7 +317,7 @@ Check that the exception message matches your expectations
 ::
 
     (flexmock(plane)
-        .should_call('fly')
+        .should_call_spy('fly')
         .and_raise(BadWeatherException, 'Oh noes, rain!'))
 
 Check that the exception message matches a regular expression
@@ -325,14 +325,14 @@ Check that the exception message matches a regular expression
 ::
 
     (flexmock(plane)
-        .should_call('fly')
+        .should_call_spy('fly')
         .and_raise(BadWeatherException, re.compile('rain')))
 
 If either and_return() or and_raise() is provided, flexmock will
 verify that the return value matches the expected return value or
 exception.
 
-:NOTE: should_call() changes the behavior of and_return() and and_raise() to specify expectations rather than generate given values or exceptions.
+:NOTE: should_call_spy() changes the behavior of and_return() and and_raise() to specify expectations rather than generate given values or exceptions.
 
 Multiple return values
 ----------------------
@@ -502,7 +502,7 @@ Now we can define some method call expectations dependent on the state of the ra
 
   >>> flexmock(radio)
   >>> radio.should_receive('select_channel').once().when(lambda: radio.is_on)
-  >>> radio.should_call('adjust_volume').once().with_args(5).when(lambda: radio.is_on)
+  >>> radio.should_call_spy('adjust_volume').once().with_args(5).when(lambda: radio.is_on)
 
 
 Calling these while the radio is off will result in an error:
@@ -620,13 +620,13 @@ Mocking or stubbing out builtin functions, such as open(), can be slightly trick
 It is not always obvious when the builtin function you are trying to mock might be
 internally called by the test runner and cause unexpected behavior in the test.
 As a result, the recommended way to mock out builtin functions is to always specify
-a fall-through with should_call() first and use with_args() to limit the scope of
+a fall-through with should_call_spy() first and use with_args() to limit the scope of
 your mock or stub to just the specific invocation you are trying to replace:
 
 ::
 
    mock = flexmock(sys.modules['builtins'])
-   mock.should_call('open')  # set the fall-through
+   mock.should_call_spy('open')  # set the fall-through
    (mock.should_receive('open')
        .with_args('/your/file')
        .and_return( flexmock(read=lambda: 'file contents') ))

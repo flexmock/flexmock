@@ -6,6 +6,7 @@ import random
 import re
 import sys
 import unittest
+import warnings
 from contextlib import contextmanager
 from typing import Type, Union
 
@@ -140,6 +141,13 @@ class RegularClass:
         mock = flexmock(name="temp")
         mock.should_receive("method_foo")
         assert "method_foo" in [x.name for x in FlexmockContainer.flexmock_objects[mock]]
+
+    def test_flexmock_deprecated_should_call_works(self):
+        mock = flexmock(name=lambda: "something")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mock.should_call("name")
+        assert mock.name() == "something"
 
     def test_flexmock_should_return_value(self):
         mock = flexmock(name="temp")
@@ -389,7 +397,7 @@ class RegularClass:
             mock.method_foo(2.0)
 
     def test_with_args_should_work_with_builtin_c_methods(self):
-        flexmock(sys.stdout).should_call("write")  # set fall-through
+        flexmock(sys.stdout).should_call_spy("write")  # set fall-through
         flexmock(sys.stdout).should_receive("write").with_args("flexmock_builtin_test")
         sys.stdout.write("flexmock_builtin_test")
 
@@ -656,7 +664,7 @@ class RegularClass:
         assert_equal("instance", user.method())
         assert_equal("class", user2.method())
 
-    def test_should_call_with_class_default_attributes(self):
+    def test_should_call_spy_with_class_default_attributes(self):
         """Flexmock should not allow mocking class default attributes like
         __call__ on an instance.
         """
@@ -671,9 +679,9 @@ class RegularClass:
             FlexmockError,
             re.compile(r".+<locals>\.WithCall object at 0x.+> does not have attribute '__call__'"),
         ):
-            flexmock(instance).should_call("__call__")
+            flexmock(instance).should_call_spy("__call__")
 
-    def test_should_call_on_class_mock(self):
+    def test_should_call_spy_on_class_mock(self):
         class User:
             def __init__(self):
                 self.value = "value"
@@ -687,27 +695,27 @@ class RegularClass:
         # Access class-level method
         user1 = User()
         user2 = User()
-        flexmock(User).should_call("foo").once()
+        flexmock(User).should_call_spy("foo").once()
         with assert_raises(
             MethodCallError, "foo() expected to be called exactly 1 time, called 0 times"
         ):
             self._tear_down()
-        flexmock(User).should_call("foo").twice()
+        flexmock(User).should_call_spy("foo").twice()
         assert_equal("class", user1.foo())
         assert_equal("class", user2.foo())
 
         # Access instance attributes
-        flexmock(User).should_call("bar").once()
+        flexmock(User).should_call_spy("bar").once()
         with assert_raises(
             MethodCallError, "bar() expected to be called exactly 1 time, called 0 times"
         ):
             self._tear_down()
-        flexmock(User).should_call("bar").twice()
+        flexmock(User).should_call_spy("bar").twice()
         assert_equal("value", user1.bar())
         assert_equal("value", user2.bar())
 
         # Try resetting the expectation
-        flexmock(User).should_call("bar").once()
+        flexmock(User).should_call_spy("bar").once()
         assert_equal("value", user1.bar())
 
     def test_mock_proxied_class(self):
@@ -745,31 +753,33 @@ class RegularClass:
     def test_spy_proxied_class(self):
         # pylint: disable=not-callable
         SomeClassProxy = Proxy(SomeClass)
-        flexmock(SomeClassProxy).should_call("class_method").and_return("class_method").twice()
+        flexmock(SomeClassProxy).should_call_spy("class_method").and_return("class_method").twice()
         assert SomeClassProxy().class_method() == "class_method"
         assert SomeClassProxy.class_method() == "class_method"
-        flexmock(SomeClassProxy).should_call("static_method").and_return("static_method").twice()
+        flexmock(SomeClassProxy).should_call_spy("static_method").and_return(
+            "static_method"
+        ).twice()
         assert SomeClassProxy().static_method() == "static_method"
         assert SomeClassProxy.static_method() == "static_method"
         instance = SomeClassProxy()
-        flexmock(instance).should_call("instance_method").and_return("instance_method").once()
+        flexmock(instance).should_call_spy("instance_method").and_return("instance_method").once()
         assert instance.instance_method() == "instance_method"
 
     def test_spy_proxied_class_with_args(self):
         # pylint: disable=not-callable
         SomeClassProxy = Proxy(SomeClass)
-        flexmock(SomeClassProxy).should_call("class_method_with_args").with_args("a").and_return(
+        flexmock(SomeClassProxy).should_call_spy("class_method_with_args").with_args(
             "a"
-        ).twice()
+        ).and_return("a").twice()
         assert SomeClassProxy().class_method_with_args("a") == "a"
         assert SomeClassProxy.class_method_with_args("a") == "a"
-        flexmock(SomeClassProxy).should_call("static_method_with_args").with_args("b").and_return(
+        flexmock(SomeClassProxy).should_call_spy("static_method_with_args").with_args(
             "b"
-        ).twice()
+        ).and_return("b").twice()
         assert SomeClassProxy().static_method_with_args("b") == "b"
         assert SomeClassProxy.static_method_with_args("b") == "b"
         instance = SomeClassProxy()
-        flexmock(instance).should_call("instance_method_with_args").with_args("c").and_return(
+        flexmock(instance).should_call_spy("instance_method_with_args").with_args("c").and_return(
             "c"
         ).once()
         assert instance.instance_method_with_args("c") == "c"
@@ -821,31 +831,35 @@ class RegularClass:
     def test_spy_proxied_derived_class(self):
         # pylint: disable=not-callable
         DerivedClassProxy = Proxy(DerivedClass)
-        flexmock(DerivedClassProxy).should_call("class_method").and_return("class_method").twice()
+        flexmock(DerivedClassProxy).should_call_spy("class_method").and_return(
+            "class_method"
+        ).twice()
         assert DerivedClassProxy().class_method() == "class_method"
         assert DerivedClassProxy.class_method() == "class_method"
-        flexmock(DerivedClassProxy).should_call("static_method").and_return("static_method").twice()
+        flexmock(DerivedClassProxy).should_call_spy("static_method").and_return(
+            "static_method"
+        ).twice()
         assert DerivedClassProxy().static_method() == "static_method"
         assert DerivedClassProxy.static_method() == "static_method"
         instance = DerivedClassProxy()
-        flexmock(instance).should_call("instance_method").and_return("instance_method").once()
+        flexmock(instance).should_call_spy("instance_method").and_return("instance_method").once()
         assert instance.instance_method() == "instance_method"
 
     def test_spy_proxied_derived_class_with_args(self):
         # pylint: disable=not-callable
         DerivedClassProxy = Proxy(DerivedClass)
-        flexmock(DerivedClassProxy).should_call("class_method_with_args").with_args("a").and_return(
+        flexmock(DerivedClassProxy).should_call_spy("class_method_with_args").with_args(
             "a"
-        ).twice()
+        ).and_return("a").twice()
         assert DerivedClassProxy().class_method_with_args("a") == "a"
         assert DerivedClassProxy.class_method_with_args("a") == "a"
-        flexmock(DerivedClassProxy).should_call("static_method_with_args").with_args(
+        flexmock(DerivedClassProxy).should_call_spy("static_method_with_args").with_args(
             "b"
         ).and_return("b").twice()
         assert DerivedClassProxy().static_method_with_args("b") == "b"
         assert DerivedClassProxy.static_method_with_args("b") == "b"
         instance = DerivedClassProxy()
-        flexmock(instance).should_call("instance_method_with_args").with_args("c").and_return(
+        flexmock(instance).should_call_spy("instance_method_with_args").with_args("c").and_return(
             "c"
         ).once()
         assert instance.instance_method_with_args("c") == "c"
@@ -930,48 +944,48 @@ class RegularClass:
         assert DerivedClass.static_method_with_args(4) == 5
 
     def test_spy_class_method_on_derived_class(self):
-        flexmock(DerivedClass).should_call("class_method").and_return("class_method").twice()
+        flexmock(DerivedClass).should_call_spy("class_method").and_return("class_method").twice()
         assert DerivedClass().class_method() == "class_method"
         assert DerivedClass.class_method() == "class_method"
 
     def test_spy_class_method_on_derived_class_after_spying_base_class(self):
-        flexmock(SomeClass).should_call("class_method").and_return("class_method").times(
+        flexmock(SomeClass).should_call_spy("class_method").and_return("class_method").times(
             3
         )  # TODO: Should be once #80
         assert SomeClass.class_method() == "class_method"
-        flexmock(DerivedClass).should_call("class_method").and_return("class_method").twice()
+        flexmock(DerivedClass).should_call_spy("class_method").and_return("class_method").twice()
         assert DerivedClass().class_method() == "class_method"
         assert DerivedClass.class_method() == "class_method"
 
     def test_spy_static_method_on_derived_class(self):
-        flexmock(DerivedClass).should_call("static_method").and_return("static_method").twice()
+        flexmock(DerivedClass).should_call_spy("static_method").and_return("static_method").twice()
         assert DerivedClass().static_method() == "static_method"
         assert DerivedClass.static_method() == "static_method"
 
     def test_spy_static_method_on_derived_class_after_spying_base_class(self):
-        flexmock(SomeClass).should_call("static_method").and_return("static_method").times(
+        flexmock(SomeClass).should_call_spy("static_method").and_return("static_method").times(
             3
         )  # TODO: Should be once #80
         assert SomeClass.static_method() == "static_method"
-        flexmock(DerivedClass).should_call("static_method").and_return("static_method").twice()
+        flexmock(DerivedClass).should_call_spy("static_method").and_return("static_method").twice()
         assert DerivedClass().static_method() == "static_method"
         assert DerivedClass.static_method() == "static_method"
 
     def test_spy_class_method_with_args_on_derived_class(self):
-        flexmock(DerivedClass).should_call("class_method_with_args").with_args(2).and_return(2)
+        flexmock(DerivedClass).should_call_spy("class_method_with_args").with_args(2).and_return(2)
         assert DerivedClass().class_method_with_args(2) == 2
         assert DerivedClass.class_method_with_args(2) == 2
 
     @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception #79
     def test_spy_class_method_with_args_on_derived_class_after_spying_base_class(self):
-        flexmock(SomeClass).should_call("class_method_with_args").with_args(1).and_return(1)
+        flexmock(SomeClass).should_call_spy("class_method_with_args").with_args(1).and_return(1)
         assert SomeClass.class_method_with_args(1) == 1
-        flexmock(DerivedClass).should_call("class_method_with_args").with_args(2).and_return(2)
+        flexmock(DerivedClass).should_call_spy("class_method_with_args").with_args(2).and_return(2)
         assert DerivedClass().class_method_with_args(2) == 2
         assert DerivedClass.class_method_with_args(2) == 2
 
     def test_spy_static_method_with_args_on_derived_class(self):
-        flexmock(DerivedClass).should_call("static_method_with_args").with_args(4).and_return(
+        flexmock(DerivedClass).should_call_spy("static_method_with_args").with_args(4).and_return(
             4
         ).twice()
         assert DerivedClass().static_method_with_args(4) == 4
@@ -979,30 +993,32 @@ class RegularClass:
 
     @assert_raises(MethodSignatureError, match=None)  # TODO: Should not raise exception #79
     def test_spy_static_method_with_args_on_derived_class_after_spying_base_class(self):
-        flexmock(SomeClass).should_call("static_method_with_args").with_args(2).and_return(2).once()
+        flexmock(SomeClass).should_call_spy("static_method_with_args").with_args(2).and_return(
+            2
+        ).once()
         assert SomeClass.static_method_with_args(2) == 2
-        flexmock(DerivedClass).should_call("static_method_with_args").with_args(4).and_return(
+        flexmock(DerivedClass).should_call_spy("static_method_with_args").with_args(4).and_return(
             4
         ).once()  # should be twice
         assert DerivedClass().static_method_with_args(4) == 4
         assert DerivedClass.static_method_with_args(4) == 4
 
-    def test_flexmock_should_not_blow_up_on_should_call_for_class_methods(self):
+    def test_flexmock_should_not_blow_up_on_should_call_spy_for_class_methods(self):
         class User:
             @classmethod
             def foo(cls):
                 return "class"
 
-        flexmock(User).should_call("foo")
+        flexmock(User).should_call_spy("foo")
         assert_equal("class", User.foo())
 
-    def test_flexmock_should_not_blow_up_on_should_call_for_static_methods(self):
+    def test_flexmock_should_not_blow_up_on_should_call_spy_for_static_methods(self):
         class User:
             @staticmethod
             def foo():
                 return "static"
 
-        flexmock(User).should_call("foo")
+        flexmock(User).should_call_spy("foo")
         assert_equal("static", User.foo())
 
     def test_flexmock_should_mock_new_instances_with_multiple_params(self):
@@ -1108,20 +1124,20 @@ class RegularClass:
         base_attrs = list(vars(Base).keys())
         instance_attrs = list(vars(instance).keys())
         child_attrs = list(vars(Child).keys())
-        flexmock(Base).should_call("class_method").times(3)  # TODO: should be once #80
-        flexmock(Base).should_call("static_method").times(3)  # TODO: should be once #80
+        flexmock(Base).should_call_spy("class_method").times(3)  # TODO: should be once #80
+        flexmock(Base).should_call_spy("static_method").times(3)  # TODO: should be once #80
         Base.class_method()
         Base.static_method()
 
-        flexmock(instance).should_call("class_method").once()
-        flexmock(instance).should_call("static_method").once()
-        flexmock(instance).should_call("instance_method").once()
+        flexmock(instance).should_call_spy("class_method").once()
+        flexmock(instance).should_call_spy("static_method").once()
+        flexmock(instance).should_call_spy("instance_method").once()
         instance.class_method()
         instance.static_method()
         instance.instance_method()
 
-        flexmock(Child).should_call("class_method").once()
-        flexmock(Child).should_call("static_method").once()
+        flexmock(Child).should_call_spy("class_method").once()
+        flexmock(Child).should_call_spy("static_method").once()
         Child.class_method()
         Child.static_method()
 
@@ -1152,7 +1168,7 @@ class RegularClass:
         for method in UPDATED_ATTRS:
             assert method not in dir(User)
 
-    def test_flexmock_should_call_respects_matched_expectations(self):
+    def test_flexmock_should_call_spy_respects_matched_expectations(self):
         class Group:
             def method1(self, arg1, arg2="b"):
                 return f"{arg1}:{arg2}"
@@ -1161,14 +1177,14 @@ class RegularClass:
                 return arg
 
         group = Group()
-        flexmock(group).should_call("method1").twice()
+        flexmock(group).should_call_spy("method1").twice()
         assert_equal("a:c", group.method1("a", arg2="c"))
         assert_equal("a:b", group.method1("a"))
-        group.should_call("method2").once().with_args("c")
+        group.should_call_spy("method2").once().with_args("c")
         assert_equal("c", group.method2("c"))
         self._tear_down()
 
-    def test_flexmock_should_call_respects_unmatched_expectations(self):
+    def test_flexmock_should_call_spy_respects_unmatched_expectations(self):
         class Group:
             def method1(self, arg1, arg2="b"):
                 return f"{arg1}:{arg2}"
@@ -1177,13 +1193,13 @@ class RegularClass:
                 pass
 
         group = Group()
-        flexmock(group).should_call("method1").at_least().once()
+        flexmock(group).should_call_spy("method1").at_least().once()
         with assert_raises(
             MethodCallError, "method1() expected to be called at least 1 time, called 0 times"
         ):
             self._tear_down()
         flexmock(group)
-        group.should_call("method2").with_args("a").once()
+        group.should_call_spy("method2").with_args("a").once()
         group.should_receive("method2").with_args("not a")
         group.method2("not a")
         with assert_raises(
@@ -1442,13 +1458,13 @@ class RegularClass:
         ):
             foo.method1(1)
 
-    def test_flexmock_should_call_should_match_keyword_arguments(self):
+    def test_flexmock_should_call_spy_should_match_keyword_arguments(self):
         class Foo:
             def method1(self, arg1, arg2=None, arg3=None):
                 return f"{arg1}{arg2}{arg3}"
 
         foo = Foo()
-        flexmock(foo).should_call("method1").with_args(1, arg3=3, arg2=2).once()
+        flexmock(foo).should_call_spy("method1").with_args(1, arg3=3, arg2=2).once()
         assert_equal("123", foo.method1(1, arg2=2, arg3=3))
 
     def test_flexmock_should_mock_private_methods(self):
@@ -1568,7 +1584,7 @@ class RegularClass:
                 return "real", "stuff"
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_return("real", "stuff")
+        flexmock(user).should_call_spy("get_stuff").and_return("real", "stuff")
         assert_equal(("real", "stuff"), user.get_stuff())
 
     def test_flexmock_should_verify_correct_spy_regexp_return_values(self):
@@ -1577,7 +1593,7 @@ class RegularClass:
                 return "real", "stuff"
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_return(
+        flexmock(user).should_call_spy("get_stuff").and_return(
             re.compile("ea.*"), re.compile("^stuff$")
         )
         assert_equal(("real", "stuff"), user.get_stuff())
@@ -1593,7 +1609,7 @@ class RegularClass:
                 raise FakeException(1, 2)
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(FakeException, 1, 2)
+        flexmock(user).should_call_spy("get_stuff").and_raise(FakeException, 1, 2)
         user.get_stuff()
 
     def test_flexmock_should_verify_spy_matches_exception_message(self):
@@ -1611,7 +1627,7 @@ class RegularClass:
                 raise FakeException("1", "2")
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(FakeException, "2", "1")
+        flexmock(user).should_call_spy("get_stuff").and_raise(FakeException, "2", "1")
         with assert_raises(
             ExceptionMessageError,
             (
@@ -1628,7 +1644,7 @@ class RegularClass:
                 raise Exception("123asdf345")
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(Exception, re.compile("asdf"))
+        flexmock(user).should_call_spy("get_stuff").and_raise(Exception, re.compile("asdf"))
         user.get_stuff()
         self._tear_down()
 
@@ -1638,7 +1654,7 @@ class RegularClass:
                 raise Exception("123asdf345")
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(Exception, re.compile("^asdf"))
+        flexmock(user).should_call_spy("get_stuff").and_raise(Exception, re.compile("^asdf"))
         with assert_raises(
             ExceptionMessageError,
             (
@@ -1655,7 +1671,7 @@ class RegularClass:
                 raise CallOrderError("foo")
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(MethodCallError)
+        flexmock(user).should_call_spy("get_stuff").and_raise(MethodCallError)
         with assert_raises(
             ExceptionClassError,
             (
@@ -1672,7 +1688,7 @@ class RegularClass:
                 raise CallOrderError("foo")
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_raise(FlexmockError)
+        flexmock(user).should_call_spy("get_stuff").and_raise(FlexmockError)
         user.get_stuff()
 
     def test_flexmock_should_reraise_exception_in_spy(self):
@@ -1689,9 +1705,9 @@ class RegularClass:
                 raise RuntimeError("baz")
 
         instance = RaisesException()
-        flexmock(instance).should_call("class_method").once()
-        flexmock(instance).should_call("static_method").once()
-        flexmock(instance).should_call("instance_method").once()
+        flexmock(instance).should_call_spy("class_method").once()
+        flexmock(instance).should_call_spy("static_method").once()
+        flexmock(instance).should_call_spy("instance_method").once()
 
         with assert_raises(RuntimeError, "foo"):
             instance.class_method()
@@ -1700,8 +1716,8 @@ class RegularClass:
         with assert_raises(RuntimeError, "baz"):
             instance.instance_method()
 
-        flexmock(RaisesException).should_call("class_method").once()
-        flexmock(RaisesException).should_call("static_method").once()
+        flexmock(RaisesException).should_call_spy("class_method").once()
+        flexmock(RaisesException).should_call_spy("static_method").once()
         with assert_raises(RuntimeError, "foo"):
             RaisesException.class_method()
         with assert_raises(RuntimeError, "bar"):
@@ -1721,9 +1737,9 @@ class RegularClass:
                 raise RuntimeError("baz")
 
         instance = RaisesException()
-        flexmock(instance).should_call("class_method").and_return("foo").once()
-        flexmock(instance).should_call("static_method").and_return("bar").once()
-        flexmock(instance).should_call("instance_method").and_return("baz").once()
+        flexmock(instance).should_call_spy("class_method").and_return("foo").once()
+        flexmock(instance).should_call_spy("static_method").and_return("bar").once()
+        flexmock(instance).should_call_spy("instance_method").and_return("baz").once()
 
         with assert_raises(RuntimeError, "foo"):
             instance.class_method()
@@ -1732,8 +1748,8 @@ class RegularClass:
         with assert_raises(RuntimeError, "baz"):
             instance.instance_method()
 
-        flexmock(RaisesException).should_call("class_method").once()
-        flexmock(RaisesException).should_call("static_method").once()
+        flexmock(RaisesException).should_call_spy("class_method").once()
+        flexmock(RaisesException).should_call_spy("static_method").once()
         with assert_raises(RuntimeError, "foo"):
             RaisesException.class_method()
         with assert_raises(RuntimeError, "bar"):
@@ -1745,7 +1761,7 @@ class RegularClass:
                 raise RuntimeError("baz")
 
         instance = RaisesException()
-        flexmock(instance).should_call("get_stuff").and_raise(RuntimeError("foo")).once()
+        flexmock(instance).should_call_spy("get_stuff").and_raise(RuntimeError("foo")).once()
         with assert_raises(
             ExceptionClassError,
             re.compile(
@@ -1768,7 +1784,7 @@ class RegularClass:
                 return "other", "stuff"
 
         user = User()
-        flexmock(user).should_call("get_stuff").and_return("other", "stuff")
+        flexmock(user).should_call_spy("get_stuff").and_return("other", "stuff")
         with assert_raises(
             MethodSignatureError,
             (
@@ -1778,7 +1794,7 @@ class RegularClass:
             ),
         ):
             user.get_stuff()
-        flexmock(user).should_call("get_more_stuff").and_return()
+        flexmock(user).should_call_spy("get_more_stuff").and_return()
         with assert_raises(
             MethodSignatureError,
             (
@@ -1802,8 +1818,8 @@ class RegularClass:
                 return "real", "stuff"
 
         user = User()
-        flexmock(user).should_call("get_stuff")
-        flexmock(user).should_call("get_stuff")
+        flexmock(user).should_call_spy("get_stuff")
+        flexmock(user).should_call_spy("get_stuff")
         assert_equal(("real", "stuff"), user.get_stuff())
 
     def test_flexmock_should_properly_restore_static_methods(self):
@@ -1892,10 +1908,10 @@ class RegularClass:
             baz=lambda: None,
             bax=lambda: None,
         )
-        foo.should_call("foo").and_return(str, str)
-        foo.should_call("bar").and_return(User)
-        foo.should_call("baz").and_return(object)
-        foo.should_call("bax").and_return(None)
+        foo.should_call_spy("foo").and_return(str, str)
+        foo.should_call_spy("bar").and_return(User)
+        foo.should_call_spy("baz").and_return(object)
+        foo.should_call_spy("bax").and_return(None)
         assert_equal(("bar", "baz"), foo.foo())
         assert_equal(user, foo.bar())
         assert_equal(None, foo.baz())
@@ -1916,10 +1932,10 @@ class RegularClass:
                 return ""
 
         foo = Foo()
-        flexmock(foo).should_call("foo").and_return("bar").once()
-        flexmock(foo).should_call("bar").and_return("bar").once()
-        flexmock(foo).should_call("baz").and_return("bar").once()
-        flexmock(foo).should_call("quux").and_return("bar").once()
+        flexmock(foo).should_call_spy("foo").and_return("bar").once()
+        flexmock(foo).should_call_spy("bar").and_return("bar").once()
+        flexmock(foo).should_call_spy("baz").and_return("bar").once()
+        flexmock(foo).should_call_spy("quux").and_return("bar").once()
         with assert_raises(
             FlexmockError,
             (
@@ -1965,13 +1981,13 @@ class RegularClass:
         with assert_raises(FlexmockError, "User does not have attribute 'foo'"):
             mock.should_receive("foo")
 
-    def test_should_call_alias_should_create_a_spy(self):
+    def test_should_call_spy_alias_should_create_a_spy(self):
         class Foo:
             def get_stuff(self):
                 return "yay"
 
         foo = Foo()
-        flexmock(foo).should_call("get_stuff").and_return("yay").once()
+        flexmock(foo).should_call_spy("get_stuff").and_return("yay").once()
         with assert_raises(
             MethodCallError, "get_stuff() expected to be called exactly 1 time, called 0 times"
         ):
@@ -2000,7 +2016,7 @@ class RegularClass:
         return_value = ReturnValue((chr(0x86C7), chr(0x86C7)))
         assert_equal('("蛇", "蛇")', f"{return_value}")
 
-    def test_pass_thru_should_call_original_method_only_once(self):
+    def test_pass_thru_should_call_spy_original_method_only_once(self):
         class Nyan:
             def __init__(self):
                 self.n = 0
@@ -2010,30 +2026,30 @@ class RegularClass:
 
         obj = Nyan()
         flexmock(obj)
-        obj.should_call("method")
+        obj.should_call_spy("method")
         obj.method()
         assert_equal(obj.n, 1)
 
-    def test_should_call_works_for_same_method_with_different_args(self):
+    def test_should_call_spy_works_for_same_method_with_different_args(self):
         class Foo:
             def method(self, arg):
                 pass
 
         foo = Foo()
-        flexmock(foo).should_call("method").with_args("foo").once()
-        flexmock(foo).should_call("method").with_args("bar").once()
+        flexmock(foo).should_call_spy("method").with_args("foo").once()
+        flexmock(foo).should_call_spy("method").with_args("bar").once()
         foo.method("foo")
         foo.method("bar")
         self._tear_down()
 
-    def test_should_call_fails_properly_for_same_method_with_different_args(self):
+    def test_should_call_spy_fails_properly_for_same_method_with_different_args(self):
         class Foo:
             def method(self, arg):
                 pass
 
         foo = Foo()
-        flexmock(foo).should_call("method").with_args("foo").once()
-        flexmock(foo).should_call("method").with_args("bar").once()
+        flexmock(foo).should_call_spy("method").with_args("foo").once()
+        flexmock(foo).should_call_spy("method").with_args("bar").once()
         foo.method("foo")
         with assert_raises(
             MethodCallError,
@@ -2181,7 +2197,7 @@ class RegularClass:
 
         foo = Foo()
         flexmock(foo)
-        for method_name in ["should_receive", "should_call", "new_instances"]:
+        for method_name in ["should_receive", "should_call_spy", "new_instances"]:
             with assert_raises(FlexmockError, "unable to replace flexmock methods"):
                 foo.should_receive(method_name)
 
@@ -2196,7 +2212,7 @@ class RegularClass:
         foo = Foo()
         mock = flexmock(foo)
         assert_equal(foo.should_receive(), "real")
-        assert "should_call" not in dir(foo)
+        assert "should_call_spy" not in dir(foo)
         assert "new_instances" not in dir(foo)
         mock.should_receive("bar").and_return("baz")
         assert_equal(foo.bar(), "baz")
@@ -2214,7 +2230,7 @@ class RegularClass:
         foo = Foo()
         mock = flexmock(Foo)
         assert_equal(foo.should_receive(), "real")
-        assert "should_call" not in dir(Foo)
+        assert "should_call_spy" not in dir(Foo)
         assert "new_instances" not in dir(Foo)
         mock.should_receive("bar").and_return("baz")
         assert_equal(foo.bar(), "baz")
@@ -2359,7 +2375,7 @@ class RegularClass:
             return radio.is_on
 
         radio.should_receive("select_channel").once().when(lambda: radio.is_on)
-        radio.should_call("adjust_volume").once().with_args(5).when(radio_is_on)
+        radio.should_call_spy("adjust_volume").once().with_args(5).when(radio_is_on)
 
         with assert_raises(
             StateError, "select_channel expected to be called when lambda: radio.is_on is True"
@@ -2392,14 +2408,14 @@ class RegularClass:
                 pass
 
         foo = Foo()
-        flexmock(foo).should_call("bar").at_least().once().at_most().twice()
+        flexmock(foo).should_call_spy("bar").at_least().once().at_most().twice()
         with assert_raises(
             MethodCallError,
             "bar() expected to be called at least 1 time and at most 2 times, called 0 times",
         ):
             self._tear_down()
 
-        flexmock(foo).should_call("bar").at_least().once().at_most().twice()
+        flexmock(foo).should_call_spy("bar").at_least().once().at_most().twice()
         foo.bar()
         foo.bar()
         with assert_raises(
@@ -2407,11 +2423,11 @@ class RegularClass:
         ):
             foo.bar()
 
-        flexmock(foo).should_call("bar").at_least().once().at_most().twice()
+        flexmock(foo).should_call_spy("bar").at_least().once().at_most().twice()
         foo.bar()
         self._tear_down()
 
-        flexmock(foo).should_call("bar").at_least().once().at_most().twice()
+        flexmock(foo).should_call_spy("bar").at_least().once().at_most().twice()
         foo.bar()
         foo.bar()
         self._tear_down()
@@ -2485,8 +2501,8 @@ class RegularClass:
 
         s = String("abc")
         flexmock(s)
-        s.should_call("startswith").with_args("asdf", 0, 4).ordered()
-        s.should_call("endswith").ordered()
+        s.should_call_spy("startswith").with_args("asdf", 0, 4).ordered()
+        s.should_call_spy("endswith").ordered()
         with assert_raises(
             CallOrderError,
             re.compile(
@@ -2938,8 +2954,8 @@ class ModernClass:
                 pass
 
         cm = CM()
-        flexmock(cm).should_call("__enter__").once()
-        flexmock(cm).should_call("__exit__").once()
+        flexmock(cm).should_call_spy("__enter__").once()
+        flexmock(cm).should_call_spy("__exit__").once()
         with cm:
             pass
         self._tear_down()
