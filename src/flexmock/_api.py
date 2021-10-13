@@ -357,7 +357,7 @@ class Mock:
                     expected_message = str(expected_instance)
                     if expected is not raised and expected not in raised.__bases__:
                         raise ExceptionClassError(
-                            f"Raised exception for call {expectation.name} "
+                            f"Raised exception for call {expectation._name} "
                             "did not match expectation:\n"
                             f"  Expected:\t{expected}\n"
                             f"  Raised:\t{raised}"
@@ -379,7 +379,8 @@ class Mock:
                         )
                 elif expected is not raised:
                     raise ExceptionClassError(
-                        f"Raised exception for call {expectation.name} did not match expectation:\n"
+                        f"Raised exception for call {expectation._name} "
+                        f"did not match expectation:\n"
                         f"  Expected:\t{repr(expected)}\n"
                         f"  Raised:\t{raised}\n\n"
                         "Did you try to call and_raise with an instance?\n"
@@ -427,7 +428,7 @@ class Mock:
                     expected_value = repr(expected_value)
                 raise (
                     MethodSignatureError(
-                        f"Returned values for call {expectation.name} did not match expectation:\n"
+                        f"Returned values for call {expectation._name} did not match expectation:\n"
                         f"  Expected:\t{expected_value}\n"
                         f"  Returned:\t{return_values}"
                     )
@@ -441,7 +442,7 @@ class Mock:
                 raise StateError(
                     f"{name} expected to be called when {expectation._get_runnable()} is True"
                 )
-            expectation.times_called += 1
+            expectation._times_called += 1
             expectation._verify(final=False)
             _pass_thru = _getattr(expectation, "_pass_thru")
             _replace_with = _getattr(expectation, "_replace_with")
@@ -499,7 +500,7 @@ def flexmock_teardown() -> None:
             # resetting all the expectations because method type is needed in expectation teardown.
             if inspect.isclass(mock_object) or hasattr(mock_object, "__class__"):
                 try:
-                    delattr(mock_object._object, f"{expectation.name}__flexmock__method_type")
+                    delattr(mock_object._object, f"{expectation._name}__flexmock__method_type")
                 except (AttributeError, TypeError):
                     pass
     for mock in saved:
@@ -546,11 +547,11 @@ class Expectation:
         original: Optional[Any] = None,
         method_type: Optional[Any] = None,
     ) -> None:
-        self.name = name
-        self.times_called: int = 0
-
         if original is not None:
             self._original = original
+
+        self._name = name
+        self._times_called: int = 0
         self._modifier: str = EXACTLY
         self._args: Optional[Dict[str, Any]] = None
         self._method_type = method_type
@@ -569,7 +570,7 @@ class Expectation:
         self._local_override = False
 
     def __str__(self) -> str:
-        args = _format_args(str(self.name), self._args)
+        args = _format_args(str(self._name), self._args)
         return_values = ", ".join(str(x) for x in self._return_values)
         return f"{args} -> ({return_values})"
 
@@ -649,27 +650,27 @@ class Expectation:
         if total_positional < minimum:
             arguments = "argument" if minimum == 1 else "arguments"
             raise MethodSignatureError(
-                f"{self.name} requires at least {minimum} {arguments}, "
+                f"{self._name} requires at least {minimum} {arguments}, "
                 f"expectation provided {total_positional}"
             )
         if maximum is not None and total_positional > maximum:
             arguments = "argument" if maximum == 1 else "arguments"
             raise MethodSignatureError(
-                f"{self.name} requires at most {maximum} {arguments}, "
+                f"{self._name} requires at most {maximum} {arguments}, "
                 f"expectation provided {total_positional}"
             )
         if args_len == len(kargs) and any(a for a in kwargs if a in allowed.args):
             given_args = [a for a in kwargs if a in allowed.args]
             arguments = "argument" if len(given_args) == 1 else "arguments"
             raise MethodSignatureError(
-                f"{given_args} already given as positional {arguments} to {self.name}"
+                f"{given_args} already given as positional {arguments} to {self._name}"
             )
         if not allowed.varkw and any(
             a for a in kwargs if a not in allowed.args + allowed.kwonlyargs
         ):
             invalid_arg = [a for a in kwargs if a not in allowed.args + allowed.kwonlyargs][0]
             raise MethodSignatureError(
-                f"{invalid_arg} is not a valid keyword argument to {self.name}"
+                f"{invalid_arg} is not a valid keyword argument to {self._name}"
             )
         # check that kwonlyargs that don't have default value specified are provided
         required_kwonlyargs = [
@@ -680,7 +681,7 @@ class Expectation:
             arguments = "argument" if len(missing_kwonlyargs) == 1 else "arguments"
             missing_args = '", "'.join(missing_kwonlyargs)
             raise MethodSignatureError(
-                f'{self.name} requires keyword-only {arguments} "{missing_args}"'
+                f'{self._name} requires keyword-only {arguments} "{missing_args}"'
             )
 
     def _update_original(self, name: str, obj: Any) -> None:
@@ -799,7 +800,7 @@ class Expectation:
             value = values
 
         if not self._callable:
-            _setattr(self._mock, str(self.name), value)
+            _setattr(self._mock, str(self._name), value)
             return self
 
         return_values = _getattr(self, "_return_values")
@@ -995,9 +996,9 @@ class Expectation:
             self.__raise(
                 MethodCallError,
                 (
-                    f"{_format_args(str(self.name), self._args)} expected to be called "
-                    f"{message}, called {self.times_called} "
-                    f"{'time' if self.times_called == 1 else 'times'}"
+                    f"{_format_args(str(self._name), self._args)} expected to be called "
+                    f"{message}, called {self._times_called} "
+                    f"{'time' if self._times_called == 1 else 'times'}"
                 ),
             )
 
@@ -1005,7 +1006,7 @@ class Expectation:
         failed = False
         message = ""
         expected_calls = _getattr(self, "_expected_calls")
-        times_called = _getattr(self, "times_called")
+        times_called = _getattr(self, "_times_called")
         if expected_calls[EXACTLY] is not None:
             message = f"exactly {expected_calls[EXACTLY]}"
             if final:
@@ -1037,7 +1038,7 @@ class Expectation:
             original = self.__dict__.get("_original")
             if original:
                 # name may be unicode but pypy demands dict keys to be str
-                name = str(_getattr(self, "name"))
+                name = str(_getattr(self, "_name"))
                 if hasattr(_mock, "__dict__") and name in _mock.__dict__ and self._local_override:
                     delattr(_mock, name)
                 elif (
@@ -1081,7 +1082,7 @@ class FlexmockContainer:
         if name and obj in cls.flexmock_objects:
             found = None
             for expectation in reversed(cls.flexmock_objects[obj]):
-                if expectation.name == name and expectation._match_args(args):
+                if expectation._name == name and expectation._match_args(args):
                     if expectation in cls.ordered or not expectation._ordered and not found:
                         found = expectation
             if found and found._ordered:
@@ -1098,8 +1099,8 @@ class FlexmockContainer:
             cls.last = next_method
         if expectation is not next_method and next_method is not None:
             raise CallOrderError(
-                f"{_format_args(str(expectation.name), args)} called before "
-                f"{_format_args(str(next_method.name), next_method._args)}"
+                f"{_format_args(str(expectation._name), args)} called before "
+                f"{_format_args(str(next_method._name), next_method._args)}"
             )
 
     @classmethod
@@ -1113,7 +1114,7 @@ class FlexmockContainer:
     @classmethod
     def get_expectations_with_name(cls, obj: Mock, name: str) -> List[Expectation]:
         """Get all expectations for given name."""
-        return [x for x in FlexmockContainer.flexmock_objects.get(obj, []) if x.name == name]
+        return [x for x in FlexmockContainer.flexmock_objects.get(obj, []) if x._name == name]
 
     @classmethod
     def add_teardown_property(cls, obj: Any, name: str) -> None:
