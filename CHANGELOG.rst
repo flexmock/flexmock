@@ -17,7 +17,7 @@ Unreleased
 Added
 #####
 
-- Add Python 3.8, 3.9, 3.10 support.
+- Add Python 3.8, 3.9, and 3.10 support.
 - Add type annotations.
 
 Changed
