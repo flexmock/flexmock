@@ -285,6 +285,17 @@ class RegularClass:
         assert_equal("bar", mock.method_foo("foo", "bar"))
         assert_equal("baz", mock.method_foo("baz"))
 
+    def test_spying_non_existent_mock_object_method_should_fail(self):
+        mock = flexmock()
+        with assert_raises(
+            FlexmockError,
+            "Mock object does not have attribute 'method_foo'. "
+            'Did you mean to call should_receive("method_foo") instead?',
+        ):
+            mock.should_call("method_foo")
+        mock = flexmock(method_foo=lambda: "ok")
+        mock.should_call("method_foo")
+
     def test_flexmock_should_fail_to_match_exactly_no_args_when_calling_with_args(self):
         mock = flexmock()
         mock.should_receive("method_foo").with_args()

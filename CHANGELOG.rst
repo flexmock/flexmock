@@ -37,7 +37,8 @@ Removed
 Fixed
 #####
 
-- Fix ``with_args`` not working built-in functions and methods.
+- Fix `with_args` not working built-in functions and methods.
+- Fix `should_call` is broken if called on a fake object.
 
 Infrastructure
 ##############

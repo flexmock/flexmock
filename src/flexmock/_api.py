@@ -167,6 +167,11 @@ class Mock:
         Returns:
           - Expectation object
         """
+        if isinstance(self._object, Mock) and not hasattr(self._object, name):
+            raise FlexmockError(
+                f"Mock object does not have attribute '{name}'. "
+                f'Did you mean to call should_receive("{name}") instead?'
+            )
         expectation = self.should_receive(name)
         return expectation.replace_with(expectation.__dict__["_original"])
 
