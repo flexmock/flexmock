@@ -139,7 +139,7 @@ class RegularClass:
     def test_flexmock_should_add_expectations(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo")
-        assert "method_foo" in [x.name for x in FlexmockContainer.flexmock_objects[mock]]
+        assert "method_foo" in [x._name for x in FlexmockContainer.flexmock_objects[mock]]
 
     def test_flexmock_should_return_value(self):
         mock = flexmock(name="temp")
@@ -189,7 +189,7 @@ class RegularClass:
         mock.should_receive("method_foo")
         assert_equal(
             "method_foo",
-            FlexmockContainer.get_flexmock_expectation(mock, "method_foo").name,
+            FlexmockContainer.get_flexmock_expectation(mock, "method_foo")._name,
         )
 
     def test_flexmock_expectations_returns_none_if_not_found(self):
@@ -213,11 +213,11 @@ class RegularClass:
         mock.method_foo("bar")
         mock.method_foo("baz")
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo", ("foo",))
-        assert_equal(0, expectation.times_called)
+        assert_equal(0, expectation._times_called)
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo", ("bar",))
-        assert_equal(2, expectation.times_called)
+        assert_equal(2, expectation._times_called)
         expectation = FlexmockContainer.get_flexmock_expectation(mock, "method_foo", ("baz",))
-        assert_equal(1, expectation.times_called)
+        assert_equal(1, expectation._times_called)
 
     def test_flexmock_should_set_expectation_call_numbers(self):
         mock = flexmock(name="temp")
@@ -241,7 +241,7 @@ class RegularClass:
             mock.method_foo()
         assert_equal(
             1,
-            FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
+            FlexmockContainer.get_flexmock_expectation(mock, "method_foo")._times_called,
         )
 
     def test_flexmock_should_check_raised_exceptions_instance_with_args(self):
@@ -257,7 +257,7 @@ class RegularClass:
             mock.method_foo()
         assert_equal(
             1,
-            FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
+            FlexmockContainer.get_flexmock_expectation(mock, "method_foo")._times_called,
         )
 
     def test_flexmock_should_check_raised_exceptions_class_with_args(self):
@@ -273,7 +273,7 @@ class RegularClass:
             mock.method_foo()
         assert_equal(
             1,
-            FlexmockContainer.get_flexmock_expectation(mock, "method_foo").times_called,
+            FlexmockContainer.get_flexmock_expectation(mock, "method_foo")._times_called,
         )
 
     def test_flexmock_should_match_any_args_by_default(self):
