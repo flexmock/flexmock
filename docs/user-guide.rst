@@ -47,7 +47,7 @@ flexmock declarations follow a consistent style of the following 3 forms:
     MODIFIER:
 
       One of several Expectation modifiers, such as with_args,
-      and_return, should_raise, times, etc.
+      and_return, and_raise, times, etc.
 
     VALUE:
 
