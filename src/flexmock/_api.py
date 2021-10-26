@@ -49,13 +49,14 @@ class ReturnValue:
 
 
 class Mock:
-    """Fake object class returned by the flexmock() function."""
+    """Fake object class returned by the `flexmock()` function."""
 
     def __init__(self, **kwargs: Any) -> None:
         """Mock constructor.
 
         Args:
-          - kwargs: dict of attribute/value pairs used to initialize the mock object
+            **kwargs: dict of attribute/value pairs used to initialize the mock
+                object.
         """
         self._object: Any = self
         for attr, value in kwargs.items():
@@ -94,11 +95,14 @@ class Mock:
         """Replaces the specified attribute with a fake.
 
         Args:
-          - name: string name of the attribute to replace
+            name: Name of the attribute to replace.
 
         Returns:
-          - Expectation object which can be used to modify the expectations
-            on the fake attribute
+            Expectation object which can be used to modify the expectations
+                on the fake attribute.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").and_return("vooosh!").once()
         """
         if name in UPDATED_ATTRS:
             raise FlexmockError("unable to replace flexmock methods")
@@ -154,16 +158,19 @@ class Mock:
         """Creates a spy.
 
         This means that the original method will be called rather than the fake
-        version. However, we can still keep track of how many times it's called and
-        with what arguments, and apply expectations accordingly.
+        version. However, we can still keep track of how many times it is called
+        and with what arguments, and apply expectations accordingly.
 
-        should_call is meaningless/not allowed for non-callable attributes.
+        `should_call` is meaningless/not allowed for non-callable attributes.
 
         Args:
-          - name: string name of the method
+            name: Name of the method to spy.
 
         Returns:
-          - Expectation object
+            Expectation object.
+
+        Examples:
+            >>> flexmock(plane).should_call("repair").with_args("wing").once()
         """
         if isinstance(self._object, Mock) and not hasattr(self._object, name):
             raise FlexmockError(
@@ -173,19 +180,33 @@ class Mock:
         expectation = self.should_receive(name)
         return expectation.replace_with(expectation.__dict__["_original"])
 
-    def new_instances(self, *kargs: Any) -> "Expectation":
-        """Overrides __new__ method on the class to return custom objects.
+    def new_instances(self, *args: Any) -> "Expectation":
+        """Overrides `__new__` method on a class to return custom objects.
 
-        Alias for should_receive('__new__').and_return(kargs).one_by_one
+        Alias for `should_receive('__new__').and_return(args).one_by_one()`.
 
         Args:
-          - kargs: objects to return on each successive call to __new__
+            *args: Objects to return on each successive call to `__new__`.
 
         Returns:
-          - Expectation object
+            Expectation object.
+
+        Examples:
+
+            >>> fake_class = flexmock(name="fake")
+            >>> flexmock(SomeClass).new_instances(fake_class)
+            >>> assert SomeClass().name == "fake"
+
+            It is also possible to return different fake objects in a sequence:
+
+            >>> fake_class1 = flexmock(name="fake1")
+            >>> fake_class2 = flexmock(name="fake2")
+            >>> flexmock(SomeClass).new_instances(fake_class1, fake_class2)
+            >>> assert SomeClass().name == "fake1"
+            >>> assert SomeClass().name == "fake2"
         """
         if inspect.isclass(self._object):
-            return self.should_receive("__new__").and_return(kargs).one_by_one()
+            return self.should_receive("__new__").and_return(args).one_by_one()
         raise FlexmockError("new_instances can only be called on a class mock")
 
     def _create_expectation(self, name: str, return_value: Optional[Any] = None) -> "Expectation":
@@ -740,19 +761,48 @@ class Expectation:
         return True
 
     def mock(self) -> Mock:
-        """Return the mock associated with this expectation."""
+        """Return the mock associated with this expectation.
+
+        Returns:
+            Mock associated with this expectation.
+
+        Examples:
+            >>> plane = flexmock(plane).should_receive("fly").mock()
+        """
         self._called_deprecated_property = False
         return self._mock
 
-    def with_args(self, *kargs: Any, **kwargs: Any) -> "Expectation":
+    def with_args(self, *args: Any, **kwargs: Any) -> "Expectation":
         """Override the arguments used to match this expectation's method.
 
         Args:
-          - kargs: optional keyword arguments
-          - kwargs: optional named arguments
+            *args: Positional arguments.
+            **kwargs: Keyword arguments.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            Match calls with no arguments:
+
+            >>> flexmock(plane).should_receive("fly").with_args()
+
+            Match a single argument:
+
+            >>> flexmock(plane).should_receive("fly").with_args("left")
+
+            Match keyword arguments:
+
+            >>> flexmock(plane).should_receive("fly").with_args("up", destination="Paris")
+
+            Match argument type:
+
+            >>> flexmock(plane).should_receive("fly").with_args(str)
+
+            Match a string using a compiled regular expression:
+
+            >>> regex = re.compile("^(up|down)$")
+            >>> flexmock(plane).should_receive("fly").with_args(regex)
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use with_args() with attribute stubs")
@@ -760,29 +810,38 @@ class Expectation:
         if self._argspec:
             # do this outside try block as TypeError is way too general and catches
             # unrelated errors in the verify signature code
-            self._verify_signature_match(*kargs, **kwargs)
-            self._args = self._normalize_named_args(*kargs, **kwargs)
+            self._verify_signature_match(*args, **kwargs)
+            self._args = self._normalize_named_args(*args, **kwargs)
         else:
-            self._args = {"kargs": kargs, "kwargs": kwargs}
+            self._args = {"kargs": args, "kwargs": kwargs}
         return self
 
     def and_return(self, *values: Any) -> "Expectation":
         """Override the return value of this expectation's method.
 
-        When and_return is given multiple times, each value provided is returned
+        When `and_return` is given multiple times, each value provided is returned
         on successive invocations of the method. It is also possible to mix
-        and_return with and_raise in the same manner to alternate between returning
+        `and_return` with `and_raise` in the same manner to alternate between returning
         a value and raising and exception on different method invocations.
 
-        When combined with the one_by_one property, value is treated as a list of
+        When combined with the `one_by_one` modifier, value is treated as a list of
         values to be returned in the order specified by successive calls to this
         method rather than a single list to be returned each time.
 
         Args:
-          - values: optional list of return values, defaults to None if not given
+            *values: Optional list of return values, defaults to `None` if not given.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            Provide return values with for mocks:
+
+            >>> flexmock(plane).should_receive("land").and_return("landed!").once()
+
+            Match specific return values with spies:
+
+            >>> flexmock(train).should_call("passenger_count").and_return(10)
         """
         if not values:
             value = None
@@ -809,17 +868,21 @@ class Expectation:
     def times(self, number: int) -> "Expectation":
         """Number of times this expectation's method is expected to be called.
 
-        There are also 3 aliases for the times() method:
+        There are also 3 aliases for the `times()` method:
 
-          - once() -> times(1)
-          - twice() -> times(2)
-          - never() -> times(0)
+          - `once()` -> `times(1)`
+          - `twice()` -> `times(2)`
+          - `never()` -> `times(0)`
 
         Args:
-          - number: int
+            number: Expected call count.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").times(3)
+            >>> flexmock(train).should_call("move").times(2)
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use times() with attribute stubs")
@@ -834,7 +897,10 @@ class Expectation:
         Alias for times(1).
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("land").once()
         """
         self._called_deprecated_property = False
         return self.times(1)
@@ -845,7 +911,10 @@ class Expectation:
         Alias for times(2).
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").twice()
         """
         self._called_deprecated_property = False
         return self.times(2)
@@ -856,7 +925,10 @@ class Expectation:
         Alias for times(0).
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("crash").never()
         """
         self._called_deprecated_property = False
         return self.times(0)
@@ -867,7 +939,10 @@ class Expectation:
         Each value in the list is returned on successive invocations of the method.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(group).should_receive("members").and_return("user1", "user2").one_by_one()
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use one_by_one() with attribute stubs")
@@ -885,13 +960,16 @@ class Expectation:
         return self
 
     def at_least(self) -> "Expectation":
-        """Modifies the associated times() expectation.
+        """Modifies the associated `times()` expectation.
 
         When given, an exception will only be raised if the method is called less
-        than times() specified. Does nothing if times() is not given.
+        than `times()` specified. Does nothing if `times()` is not given.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("turn").with_args("east").at_least().twice()
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_least() with attribute stubs")
@@ -905,13 +983,16 @@ class Expectation:
         return self
 
     def at_most(self) -> "Expectation":
-        """Modifies the associated "times" expectation.
+        """Modifies the associated `times()` expectation.
 
         When given, an exception will only be raised if the method is called more
-        than times() specified. Does nothing if times() is not given.
+        than `times()` specified. Does nothing if `times()` is not given.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(train).should_receive("move").at_most().times(3)
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_most() with attribute stubs")
@@ -925,13 +1006,18 @@ class Expectation:
         return self
 
     def ordered(self) -> "Expectation":
-        """Makes the expectation respect the order of should_receive statements.
+        """Makes the expectation respect the order of `should_receive` statements.
 
         An exception will be raised if methods are called out of order, determined
-        by order of should_receive calls in the test.
+        by order of `should_receive` calls in the test.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").with_args("left").and_return("ok").ordered()
+            >>> flexmock(plane).should_receive("fly").with_args("right").and_return("ok").ordered()
+
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use ordered() with attribute stubs")
@@ -940,13 +1026,20 @@ class Expectation:
         return self
 
     def when(self, func: Callable[..., Any]) -> "Expectation":
-        """Sets an outside resource to be checked before executing the method.
+        """Sets an outside resource to be checked when asserting if a method
+        should be called.
 
         Args:
-          - func: function to call to check if the method should be executed
+            func: Function that indicates if the mocked or spied method should
+                have been called.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> mock = flexmock(radio)
+            >>> mock.should_receive("select_channel").when(lambda: tv.is_off).once()
+            >>> mock.should_call("adjust_volume").when(lambda: tv.is_on).twice()
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use when() with attribute stubs")
@@ -955,41 +1048,51 @@ class Expectation:
         self._runnable = func
         return self
 
-    def and_raise(
-        self, exception: Type[BaseException], *kargs: Any, **kwargs: Any
-    ) -> "Expectation":
+    def and_raise(self, exception: Type[BaseException], *args: Any, **kwargs: Any) -> "Expectation":
         """Specifies the exception to be raised when this expectation is met.
 
         Args:
-          - exception: class or instance of the exception
-          - kargs: optional keyword arguments to pass to the exception
-          - kwargs: optional named arguments to pass to the exception
+            exception: Exception class.
+            *args: Positional arguments to pass to the exception.
+            **kwargs: Keyword arguments to pass to the exception.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            Make a mocked method raise an exception instead of returning a value:
+
+            >>> flexmock(plane).should_receive("fly").and_raise(BadWeatherException)
+
+            Make a spy to verify that a specific exception is raised:
+
+            >>> flexmock(car).should_call("repair").and_raise(RuntimeError, "error msg")
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_raise() with attribute stubs")
         if inspect.isclass(exception):
             try:
-                exception(*kargs, **kwargs)  # type: ignore
+                exception(*args, **kwargs)  # type: ignore
             except TypeError:
                 self.__raise(
                     FlexmockError, f"can't initialize {exception} with the given arguments"
                 )
-        args = {"kargs": kargs, "kwargs": kwargs}
+        kargs = {"kargs": args, "kwargs": kwargs}
         return_values = self._return_values
-        return_values.append(ReturnValue(raises=exception, value=args))
+        return_values.append(ReturnValue(raises=exception, value=kargs))
         return self
 
     def replace_with(self, function: Callable[..., Any]) -> "Expectation":
         """Gives a function to run instead of the mocked out one.
 
         Args:
-          - function: callable
+            function: A callable that is used to replace the original function.
 
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("set_speed").replace_with(lambda x: x == 5)
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use replace_with() with attribute/property stubs")
@@ -1002,27 +1105,33 @@ class Expectation:
         self._replace_with = function
         return self
 
-    def and_yield(self, *kargs: Any) -> "Expectation":
+    def and_yield(self, *args: Any) -> "Expectation":
         """Specifies the list of items to be yielded on successive method calls.
 
         In effect, the mocked object becomes a generator.
 
+        Args:
+            *args: Items to be yielded on successive method calls.
+
         Returns:
-          - self, i.e. can be chained with other Expectation methods
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("flight_log").and_yield("fly", "land")
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_yield() with attribute stubs")
-        return self.and_return(iter(kargs))
+        return self.and_return(iter(args))
 
     def _verify(self, final: bool = True) -> None:
         """Verify that this expectation has been met.
 
         Args:
-          final: boolean, True if no further calls to this method expected
-                 (skip checking at_least expectations when False)
+            final: True if no further calls to this method expected
+                (skip checking at_least expectations when False).
 
         Raises:
-          MethodCallError Exception
+            MethodCallError Exception
         """
         failed, message = self._verify_number_of_calls(final)
         if failed and not self._verified:
@@ -1179,22 +1288,23 @@ def flexmock(spec: Optional[Any] = None, **kwargs: Any) -> Mock:
     an existing object (or class or module) and use it as a basis for
     a partial mock. In case of a partial mock, the passed in object
     is modified to support basic Mock class functionality making
-    it unnecessary to make successive flexmock() calls on the same
+    it unnecessary to make successive `flexmock()` calls on the same
     objects to generate new expectations.
 
-    Examples:
-      >>> flexmock(SomeClass)
-      >>> SomeClass.should_receive('some_method')
-
-    NOTE: it's safe to call flexmock() on the same object, it will detect
-    when an object has already been partially mocked and return it each time.
+    It is safe to call `flexmock()` on the same object again, flexmock will
+    detect when an object has already been partially mocked and return it each
+    time.
 
     Args:
-      - spec: object (or class or module) to mock
-      - kwargs: method/return_value pairs to attach to the object
+        spec: Object, class, or module to mock.
+        **kwargs: Method or return value pairs to attach to the object.
 
     Returns:
-      Mock object if no spec is provided. Otherwise return the spec object.
+        Mock object if no spec is provided. Otherwise return the spec object.
+
+    Examples:
+        >>> mock = flexmock(SomeClass)
+        >>> mock.should_receive("some_method")
     """
     if spec is not None:
         return _create_partial_mock(spec, **kwargs)

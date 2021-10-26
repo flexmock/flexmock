@@ -57,10 +57,12 @@ mypy = "^0.910"
 pylint = "^2.9.3"
 black = "^21.6b0"
 isort = "^5.9.1"
-Sphinx = "^4.0.3"
 tox = "^3.23.1"
 Twisted = "^21.2.0"
 pytest-cov = "^2.12.1"
+mkdocs-material = "^7.3.4"
+markdown-include = "^0.6.0"
+mkdocstrings = "^0.16.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

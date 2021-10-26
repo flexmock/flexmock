@@ -1,0 +1,74 @@
+site_name: flexmock - Documentation
+site_description: flexmock - Mock, stub, and spy library for Python.
+site_url: https://flexmock.readthedocs.io/
+theme:
+  name: material
+  logo: assets/icon_white.png
+  favicon: assets/icon_black.png
+  features:
+    - content.code.annotate
+    - navigation.expand
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+extra_css:
+  - assets/extra.css
+repo_name: flexmock
+repo_url: https://github.com/flexmock/flexmock
+edit_uri: ""
+
+nav:
+- Overview: index.md
+- Getting started: start.md
+- User Guide:
+  - usage/intro.md
+  - usage/mocking.md
+  - usage/spying.md
+  - usage/call_count.md
+  - usage/argument_matching.md
+- Advanced Usage:
+  - advanced/builtin_functions.md
+  - advanced/call_order.md
+  - advanced/chained_methods.md
+  - advanced/generators.md
+  - advanced/multiple_return.md
+  - advanced/new_instances.md
+  - advanced/replacing_functions.md
+  - advanced/state.md
+- Compare: compare.md
+- Changelog: changelog.md
+- Contributing: contributing.md
+- API reference: api.md
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        selection:
+          filters:
+            - "!^_"  # exlude all members starting with _
+        rendering:
+          show_source: false
+          show_root_heading: true
+          show_root_full_path: false
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - markdown_include.include:
+      base_path: docs
