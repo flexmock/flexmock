@@ -12,7 +12,7 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
-## Unreleased
+## Release 0.11.0
 
 ### Added
 
@@ -25,6 +25,7 @@ Types of changes:
   The hack that allowed flexmock to be imported directly using `import flexmock` did not work well with static analysis tools.
 - Many error messages have been improved.
 - Undocumented methods `Expectation.reset`, `Expectation.verify`, and `Expectation.match_args` that were unintentionally left public are now private methods.
+- Undocumented attributes in `Mock` and `Expectation` are now private. These attributes were never meant to be accessed directly.
 
 ### Removed
 
