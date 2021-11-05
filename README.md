@@ -80,8 +80,8 @@ flexmock(Train).should_call("get_tickets").at_most().times(3)
 # Make sure that a method is never called with specific arguments
 flexmock(Train).should_call("set_destination").with_args("Helsinki").never()
 
-# Here is a more complex spy example that uses multiple features like argument type and exception matching
-flexmock(Train).should_call("set_destination").with_args(str, int).and_raise(AttributeError).once()
+# More complex example with features like argument type and exception matching
+flexmock(Train).should_call("crash").with_args(str, int).and_raise(AttributeError).once()
 ```
 
 See more examples in the documentation.
