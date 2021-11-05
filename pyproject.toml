@@ -23,9 +23,13 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Mocking",
+    "Topic :: Software Development :: Testing :: Unit",
+    "Typing :: Typed",
 ]
 include = [
     "CHANGELOG.md",
@@ -38,6 +42,11 @@ include = [
     "tests/**/*.{py,sh}",
 ]
 packages = [{ include = "flexmock", from = "src" }]
+
+[tool.poetry.urls]
+"Changes" = "https://github.com/flexmock/flexmock/blob/master/CHANGELOG.rst"
+"Source Code" = "https://github.com/flexmock/flexmock"
+"Issue Tracker" = "https://github.com/flexmock/flexmock/issues"
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
