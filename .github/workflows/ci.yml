@@ -17,12 +17,13 @@ jobs:
           [
             "pypy-3.6",
             "pypy-3.7",
+            "pypy-3.8",
             "3.6",
             "3.7",
             "3.8",
             "3.9",
             "3.10",
-            # "3.11-dev", disabled until test tools support 3.11
+            "3.11-dev",
           ]
 
     steps:
