@@ -44,7 +44,7 @@ include = [
 packages = [{ include = "flexmock", from = "src" }]
 
 [tool.poetry.urls]
-"Changes" = "https://github.com/flexmock/flexmock/blob/master/CHANGELOG.rst"
+"Changes" = "https://flexmock.readthedocs.io/en/latest/changelog/"
 "Source Code" = "https://github.com/flexmock/flexmock"
 "Issue Tracker" = "https://github.com/flexmock/flexmock/issues"
 
