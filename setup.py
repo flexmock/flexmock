@@ -12,7 +12,7 @@ setup(
     url="https://flexmock.readthedocs.io/",
     project_urls={
         "Documentation": "https://flexmock.readthedocs.io/",
-        "Changes": "https://github.com/flexmock/flexmock/blob/master/CHANGELOG.rst",
+        "Changes": "https://flexmock.readthedocs.io/en/latest/changelog/",
         "Source Code": "https://github.com/flexmock/flexmock",
         "Issue Tracker": "https://github.com/flexmock/flexmock/issues",
     },
