@@ -566,6 +566,16 @@ class RegularClass:
         assert_equal(saved1, user.get_name)
         assert_equal(saved2, group.get_name)
 
+    def test_flexmock_stubs_are_callable(self):
+        stub = flexmock()
+        mocked = flexmock()
+        mocked.should_receive("create").twice()
+        stub.tickets = mocked
+        # stub.tickets should work with and without parentheses
+        stub.tickets().create()
+        stub.tickets.create()
+        self._tear_down()
+
     def test_flexmock_respects_at_least_when_called_less_than_requested(self):
         mock = flexmock(name="temp")
         mock.should_receive("method_foo").and_return("bar").at_least().twice()

@@ -76,6 +76,14 @@ class Mock:
     ) -> None:
         pass
 
+    def __call__(self, *args: Any, **kwargs: Any) -> "Mock":
+        """Make mocks callable with and without parentheses.
+
+        If `Mock` is not callable, it is difficult to mock attributes that
+        should work with and without parentheses.
+        """
+        return self
+
     def __iter__(self) -> Iterator[Any]:
         """Makes the mock object iterable.
 
