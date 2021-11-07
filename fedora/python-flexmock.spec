@@ -44,7 +44,7 @@ BuildRequires:  python3-setuptools
 
 %files -n python3-flexmock
 %license LICENSE
-%doc README.md CHANGELOG.rst docs/
+%doc README.md CHANGELOG.md docs/
 %{python3_sitelib}/*
 
 

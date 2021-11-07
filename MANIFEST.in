@@ -1,8 +1,6 @@
 include *.py
-include CHANGELOG.rst
+include CHANGELOG.md
 include LICENSE
 include README.md
 recursive-include tests *py
-include docs/conf.py
-include docs/Makefile
-recursive-include docs *.rst
+recursive-include docs *.md
