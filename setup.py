@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as file:
 
 setup(
     name="flexmock",
-    version="0.11.0",
+    version="0.11.1",
     author="Slavek Kabrda, Herman Sheremetyev",
     author_email="slavek@redhat.com",
     url="https://flexmock.readthedocs.io/",

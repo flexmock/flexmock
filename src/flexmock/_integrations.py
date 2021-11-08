@@ -178,7 +178,11 @@ with suppress(ImportError):
 with suppress(ImportError):
     from zope import testrunner  # pylint: disable=no-name-in-module
 
-    _patch_test_result(testrunner.runner.TestResult)
+    try:
+        _patch_test_result(testrunner.runner.TestResult)
+    except AttributeError:
+        # testrunner.runner is only available when tests are executed with zope.testrunner
+        pass
 
 
 # Hook into subunit.
