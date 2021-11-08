@@ -12,6 +12,16 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+## Release 0.11.1
+
+### Fixed
+
+- Fix Zope testrunner integration is broken.
+
+### Infrastructure
+
+- Run tests with Zope testrunner using tox.
+
 ## Release 0.11.0
 
 ### Added
