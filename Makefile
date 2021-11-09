@@ -30,7 +30,7 @@ pytest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running pytest$(off)\n'
 	@printf '*****************\n'
-	pytest tests/flexmock_pytest_test.py
+	pytest tests/test_pytest.py
 
 .PHONY: unittest
 unittest:
@@ -44,7 +44,7 @@ twisted:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running twisted tests$(off)\n'
 	@printf '*****************\n'
-	$(PYTHON) -c "from twisted.scripts.trial import run; run();" tests/flexmock_pytest_test.py
+	$(PYTHON) -c "from twisted.scripts.trial import run; run();" tests/flexmock_test.py
 
 .PHONY: mypy
 mypy:
