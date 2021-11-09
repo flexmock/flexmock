@@ -11,7 +11,7 @@ all: lint test
 lint: isort black mypy pylint
 
 .PHONY: test
-test: install twisted unittest pytest
+test: install twisted unittest doctest pytest
 
 .PHONY: install
 install:
@@ -38,6 +38,13 @@ unittest:
 	@printf '$(color)Running unittest$(off)\n'
 	@printf '*****************\n'
 	$(PYTHON) -m unittest tests/test_flexmock.py
+
+.PHONY: doctest
+doctest:
+	@printf '\n\n*****************\n'
+	@printf '$(color)Running doctest$(off)\n'
+	@printf '*****************\n'
+	$(PYTHON) tests/test_doctest.py
 
 .PHONY: twisted
 twisted:
