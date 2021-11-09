@@ -12,6 +12,12 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+## Unreleased
+
+### Infrastructure
+
+- Run tests with testtools testrunner using tox.
+
 ## Release 0.11.1
 
 ### Fixed
