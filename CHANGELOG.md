@@ -16,7 +16,11 @@ Types of changes:
 
 ### Infrastructure
 
-- Run tests with testtools testrunner using tox.
+- Run tests with testtools and doctest testrunners using tox.
+
+### Documentation
+
+- Test flexmock API examples using doctest.
 
 ## Release 0.11.1
 

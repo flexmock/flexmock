@@ -111,6 +111,9 @@ class Mock:
 
         Examples:
             >>> flexmock(plane).should_receive("fly").and_return("vooosh!").once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+            'vooosh!'
         """
         if name in UPDATED_ATTRS:
             raise FlexmockError("unable to replace flexmock methods")
@@ -178,7 +181,9 @@ class Mock:
             Expectation object.
 
         Examples:
-            >>> flexmock(plane).should_call("repair").with_args("wing").once()
+            >>> flexmock(plane).should_call("repair").once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.repair("wing")
         """
         if isinstance(self._object, Mock) and not hasattr(self._object, name):
             raise FlexmockError(
@@ -201,17 +206,22 @@ class Mock:
 
         Examples:
 
-            >>> fake_class = flexmock(name="fake")
-            >>> flexmock(SomeClass).new_instances(fake_class)
-            >>> assert SomeClass().name == "fake"
+            >>> fake_plane = flexmock(model="fake")
+            >>> flexmock(Plane).new_instances(fake_plane)
+            <flexmock._api.Expectation object at ...>
+            >>> Plane().model
+            'fake'
 
             It is also possible to return different fake objects in a sequence:
 
-            >>> fake_class1 = flexmock(name="fake1")
-            >>> fake_class2 = flexmock(name="fake2")
-            >>> flexmock(SomeClass).new_instances(fake_class1, fake_class2)
-            >>> assert SomeClass().name == "fake1"
-            >>> assert SomeClass().name == "fake2"
+            >>> fake_plane1 = flexmock(model="fake1")
+            >>> fake_plane2 = flexmock(model="fake2")
+            >>> flexmock(Plane).new_instances(fake_plane1, fake_plane2)
+            <flexmock._api.Expectation object at ...>
+            >>> Plane().model
+            'fake1'
+            >>> Plane().model
+            'fake2'
         """
         if inspect.isclass(self._object):
             return self.should_receive("__new__").and_return(args).one_by_one()
@@ -794,23 +804,28 @@ class Expectation:
             Match calls with no arguments:
 
             >>> flexmock(plane).should_receive("fly").with_args()
+            <flexmock._api.Expectation object at ...>
 
             Match a single argument:
 
-            >>> flexmock(plane).should_receive("fly").with_args("left")
+            >>> flexmock(plane).should_receive("fly").with_args("east")
+            <flexmock._api.Expectation object at ...>
 
             Match keyword arguments:
 
-            >>> flexmock(plane).should_receive("fly").with_args("up", destination="Paris")
+            >>> flexmock(plane).should_receive("fly").with_args("up", destination="Oslo")
+            <flexmock._api.Expectation object at ...>
 
             Match argument type:
 
             >>> flexmock(plane).should_receive("fly").with_args(str)
+            <flexmock._api.Expectation object at ...>
 
             Match a string using a compiled regular expression:
 
             >>> regex = re.compile("^(up|down)$")
             >>> flexmock(plane).should_receive("fly").with_args(regex)
+            <flexmock._api.Expectation object at ...>
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use with_args() with attribute stubs")
@@ -843,13 +858,19 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            Provide return values with for mocks:
+            Provide return values for mocks:
 
             >>> flexmock(plane).should_receive("land").and_return("landed!").once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.land()
+            'landed!'
 
             Match specific return values with spies:
 
-            >>> flexmock(train).should_call("passenger_count").and_return(10)
+            >>> flexmock(plane).should_call("passenger_count").and_return(3)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.passenger_count()
+            3
         """
         if not values:
             value = None
@@ -889,8 +910,14 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(plane).should_receive("fly").times(3)
-            >>> flexmock(train).should_call("move").times(2)
+            >>> flexmock(plane).should_receive("fly").times(1)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+
+            >>> flexmock(plane).should_call("land").times(2)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.land()
+            >>> plane.land()
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use times() with attribute stubs")
@@ -902,13 +929,15 @@ class Expectation:
     def once(self) -> "Expectation":
         """Expect expectation's method to be called once.
 
-        Alias for times(1).
+        Alias for `times(1)`.
 
         Returns:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
             >>> flexmock(plane).should_receive("land").once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.land()
         """
         self._called_deprecated_property = False
         return self.times(1)
@@ -916,13 +945,16 @@ class Expectation:
     def twice(self) -> "Expectation":
         """Expect expectation's method to be called twice.
 
-        Alias for times(2).
+        Alias for `times(2)`.
 
         Returns:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
             >>> flexmock(plane).should_receive("fly").twice()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+            >>> plane.fly()
         """
         self._called_deprecated_property = False
         return self.times(2)
@@ -930,13 +962,18 @@ class Expectation:
     def never(self) -> "Expectation":
         """Expect expectation's method to never be called.
 
-        Alias for times(0).
+        Alias for `times(0)`.
 
         Returns:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
             >>> flexmock(plane).should_receive("crash").never()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.crash()
+            Traceback (most recent call last):
+              ...
+            flexmock.exceptions.MethodCallError: crash() expected to be called...
         """
         self._called_deprecated_property = False
         return self.times(0)
@@ -950,7 +987,12 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(group).should_receive("members").and_return("user1", "user2").one_by_one()
+            >>> flexmock(plane).should_receive("pilot").and_return("pilot1", "pilot2").one_by_one()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.pilot()
+            'pilot1'
+            >>> plane.pilot()
+            'pilot2'
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use one_by_one() with attribute stubs")
@@ -977,7 +1019,9 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(plane).should_receive("turn").with_args("east").at_least().twice()
+            >>> flexmock(plane).should_receive("fly").at_least().once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly("east")
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_least() with attribute stubs")
@@ -1000,7 +1044,13 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(train).should_receive("move").at_most().times(3)
+            >>> flexmock(plane).should_receive("land").at_most().once()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.land()
+            >>> plane.land()
+            Traceback (most recent call last):
+              ...
+            flexmock.exceptions.MethodCallError: land() expected to be called at most...
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use at_most() with attribute stubs")
@@ -1023,9 +1073,14 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(plane).should_receive("fly").with_args("left").and_return("ok").ordered()
-            >>> flexmock(plane).should_receive("fly").with_args("right").and_return("ok").ordered()
-
+            >>> flexmock(plane).should_receive("fly").with_args("east").ordered()
+            <flexmock._api.Expectation object at ...>
+            >>> flexmock(plane).should_receive("fly").with_args("west").ordered()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly("west")
+            Traceback (most recent call last):
+              ...
+            flexmock.exceptions.CallOrderError: fly("west") called before...
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use ordered() with attribute stubs")
@@ -1045,9 +1100,16 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> mock = flexmock(radio)
-            >>> mock.should_receive("select_channel").when(lambda: tv.is_off).once()
-            >>> mock.should_call("adjust_volume").when(lambda: tv.is_on).twice()
+            >>> flexmock(plane).should_receive("land").when(lambda: plane.is_flying)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.is_flying
+            True
+            >>> plane.land()
+            >>> plane.is_flying = False
+            >>> plane.land()
+            Traceback (most recent call last):
+              ...
+            flexmock.exceptions.StateError: land expected to be called when...
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use when() with attribute stubs")
@@ -1071,10 +1133,16 @@ class Expectation:
             Make a mocked method raise an exception instead of returning a value:
 
             >>> flexmock(plane).should_receive("fly").and_raise(BadWeatherException)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+            Traceback (most recent call last):
+              ...
+            BadWeatherException
 
             Make a spy to verify that a specific exception is raised:
 
-            >>> flexmock(car).should_call("repair").and_raise(RuntimeError, "error msg")
+            >>> flexmock(plane).should_call("repair").and_raise(RuntimeError, "err msg")
+            <flexmock._api.Expectation object at ...>
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_raise() with attribute stubs")
@@ -1101,6 +1169,11 @@ class Expectation:
 
         Examples:
             >>> flexmock(plane).should_receive("set_speed").replace_with(lambda x: x == 5)
+            <flexmock._api.Expectation object at ...>
+            >>> plane.set_speed(5)
+            True
+            >>> plane.set_speed(4)
+            False
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use replace_with() with attribute/property stubs")
@@ -1126,6 +1199,12 @@ class Expectation:
 
         Examples:
             >>> flexmock(plane).should_receive("flight_log").and_yield("fly", "land")
+            <flexmock._api.Expectation object at ...>
+            >>> log = plane.flight_log()
+            >>> next(log)
+            'fly'
+            >>> next(log)
+            'land'
         """
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_yield() with attribute stubs")
@@ -1311,8 +1390,9 @@ def flexmock(spec: Optional[Any] = None, **kwargs: Any) -> Mock:
         Mock object if no spec is provided. Otherwise return the spec object.
 
     Examples:
-        >>> mock = flexmock(SomeClass)
-        >>> mock.should_receive("some_method")
+        >>> mock = flexmock(Plane)
+        >>> mock.should_receive("fly")
+        <flexmock._api.Expectation object at ...>
     """
     if spec is not None:
         return _create_partial_mock(spec, **kwargs)
