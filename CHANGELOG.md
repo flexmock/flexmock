@@ -16,10 +16,11 @@ Types of changes:
 
 ### Infrastructure
 
-- Run tests with testtools testrunner using tox.
+- Run tests with testtools and doctest testrunners using tox.
 
-## Documentation
+### Documentation
 
+- Test flexmock API examples using doctest.
 - Re-add Sphinx support for generating man pages.
 
 ## Release 0.11.1
