@@ -5,8 +5,8 @@ import pytest
 from flexmock import flexmock
 from flexmock._api import flexmock_teardown
 from flexmock.exceptions import MethodCallError
-from tests import flexmock_test
-from tests.flexmock_test import assert_raises
+from tests import test_flexmock
+from tests.test_flexmock import assert_raises
 
 
 def test_module_level_test_for_pytest():
@@ -26,7 +26,7 @@ def test_runtest_hook_with_fixture_for_pytest(runtest_hook_fixture):
     runtest_hook_fixture.foo()
 
 
-class TestForPytest(flexmock_test.RegularClass):
+class TestForPytest(test_flexmock.RegularClass):
     def test_class_level_test_for_pytest(self):
         flexmock(foo="bar").should_receive("foo").once()
         with assert_raises(
@@ -35,7 +35,7 @@ class TestForPytest(flexmock_test.RegularClass):
             flexmock_teardown()
 
 
-class TestUnittestClass(flexmock_test.TestFlexmockUnittest):
+class TestUnittestClass(test_flexmock.TestFlexmockUnittest):
     def test_unittest(self):
         mocked = flexmock(a=2)
         mocked.should_receive("a").once()

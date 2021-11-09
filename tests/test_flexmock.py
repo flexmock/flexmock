@@ -445,7 +445,7 @@ class RegularClass:
             (
                 "Arguments for call method_foo did not match expectations:\n"
                 "  Received call:\tmethod_foo(1)\n"
-                "  Expected call[1]:\tmethod_foo(<class 'tests.flexmock_test.RegularClass.test"
+                "  Expected call[1]:\tmethod_foo(<class 'tests.test_flexmock.RegularClass.test"
                 "_flexmock_should_match_expectations_against_user_defined_classes.<locals>.Foo'>)"
             ),
         ):
@@ -1877,8 +1877,8 @@ class RegularClass:
         assert_equal("ok!", User.get_stuff())
 
     def test_flexmock_should_properly_restore_module_level_functions(self):
-        if "tests.flexmock_test" in sys.modules:
-            mod = sys.modules["tests.flexmock_test"]
+        if "tests.test_flexmock" in sys.modules:
+            mod = sys.modules["tests.test_flexmock"]
         else:
             mod = sys.modules["__main__"]
         flexmock(mod).should_receive("module_level_function").with_args(1, 2)
@@ -1887,8 +1887,8 @@ class RegularClass:
         assert_equal("1, 2", module_level_function(1, 2))
 
     def test_module_level_function_with_kwargs(self):
-        if "tests.flexmock_test" in sys.modules:
-            mod = sys.modules["tests.flexmock_test"]
+        if "tests.test_flexmock" in sys.modules:
+            mod = sys.modules["tests.test_flexmock"]
         else:
             mod = sys.modules["__main__"]
         flexmock(mod).should_receive("module_level_function").with_args(1, args="expected")
@@ -1903,8 +1903,8 @@ class RegularClass:
             module_level_function(1, args="not expected")
 
     def test_flexmock_should_support_mocking_classes_as_functions(self):
-        if "tests.flexmock_test" in sys.modules:
-            mod = sys.modules["tests.flexmock_test"]
+        if "tests.test_flexmock" in sys.modules:
+            mod = sys.modules["tests.test_flexmock"]
         else:
             mod = sys.modules["__main__"]
         flexmock(mod).should_receive("SomeClass").and_return("yay")
@@ -2589,8 +2589,8 @@ class RegularClass:
         assert_equal(1, foo.bar)
 
     def test_replace_non_callable_module_attributes(self):
-        if "tests.flexmock_test" in sys.modules:
-            mod = sys.modules["tests.flexmock_test"]
+        if "tests.test_flexmock" in sys.modules:
+            mod = sys.modules["tests.test_flexmock"]
         else:
             mod = sys.modules["__main__"]
         flexmock(mod, MODULE_LEVEL_ATTRIBUTE="yay")
