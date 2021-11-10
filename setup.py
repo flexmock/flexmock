@@ -4,9 +4,11 @@ from setuptools import setup
 with open("README.md", "r", encoding="utf-8") as file:
     long_description = file.read()
 
+VERSION = "0.11.1"
+
 setup(
     name="flexmock",
-    version="0.11.1",
+    version=VERSION,
     author="Slavek Kabrda, Herman Sheremetyev",
     author_email="slavek@redhat.com",
     url="https://flexmock.readthedocs.io/",
@@ -44,4 +46,10 @@ setup(
     packages=["flexmock"],
     package_dir={"": "src"},
     include_package_data=True,
+    command_options={
+        "build_sphinx": {
+            "version": ("setup.py", VERSION),
+            "release": ("setup.py", VERSION),
+        }
+    },
 )
