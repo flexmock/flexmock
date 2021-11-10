@@ -18,6 +18,10 @@ Types of changes:
 
 - Run tests with testtools testrunner using tox.
 
+## Documentation
+
+- Re-add Sphinx support for generating man pages.
+
 ## Release 0.11.1
 
 ### Fixed
