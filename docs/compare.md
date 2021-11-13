@@ -105,7 +105,7 @@ flexmock(some_module.SomeClass).new_instances(some_other_object)
 assert some_other_object == some_module.SomeClass()
 
 # Mock
-with mock.patch("somemodule.Someclass") as MockClass:
+with mock.patch("somemodule.SomeClass") as MockClass:
     MockClass.return_value = some_other_object
     assert some_other_object == some_module.SomeClass()
 ```
