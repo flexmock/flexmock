@@ -22,6 +22,8 @@ Types of changes:
 
 - Test flexmock API examples using doctest.
 - Re-add Sphinx support for generating man pages.
+- Fix 404 page not loading CSS and Javascript resources in documentation.
+- Small fixes to documentation.
 
 ## Release 0.11.1
 
