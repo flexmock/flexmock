@@ -1,6 +1,6 @@
 site_name: flexmock - Documentation
 site_description: flexmock - Mock, stub, and spy library for Python.
-site_url: https://flexmock.readthedocs.io/
+site_url: https://flexmock.readthedocs.io/en/latest/
 theme:
   name: material
   logo: assets/icon_white.png
