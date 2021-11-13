@@ -163,7 +163,7 @@ with my_mock:
 
 The following examples work in an interactive Python session but may not work
 quite the same way in a script. See examples in the
-[Mocking builtins](/advanced/builtin_functions) section for more specific
+[Mocking builtins](advanced/builtin_functions.md) section for more specific
 flexmock instructions on mocking builtins.
 
 ```python
