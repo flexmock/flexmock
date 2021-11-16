@@ -72,7 +72,7 @@ def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
     """
 
     @wraps(klass.addSuccess)
-    def decorated(self: unittest.TextTestResult, _test: unittest.TestCase) -> None:
+    def decorated(self: unittest.TextTestResult, _test: unittest.TestCase, **_kwargs: Any) -> None:
         self._pre_flexmock_success = True  # type: ignore
 
     if klass.addSuccess is not decorated:
@@ -193,6 +193,7 @@ with suppress(ImportError):
     import subunit
 
     _patch_test_result(subunit.TestProtocolClient)
+    _patch_test_result(subunit.test_results.TestResultDecorator)
 
 
 # Hook into twisted.
