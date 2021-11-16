@@ -28,7 +28,12 @@ jobs:
           poetry install
 
       - name: Generate report
-        run: poetry run pytest tests/test_pytest.py --cov flexmock --cov-report xml
+        run: |
+          poetry run coverage run --parallel-mode --source flexmock -m unittest tests/test_flexmock.py
+          poetry run coverage run --parallel-mode --source flexmock tests/test_doctest.py
+          poetry run coverage run --parallel-mode --source flexmock -m pytest tests/test_pytest.py
+          poetry run coverage combine
+          poetry run coverage xml
 
       - name: Upload report to Codecov
         uses: codecov/codecov-action@v2
