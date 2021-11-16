@@ -48,8 +48,40 @@ class BadWeatherException(Exception):
     pass
 
 
+class TestDoctestTeardown:
+    """Test doctest runner teardown."""
+
+    def test_flexmock_teardown_works_with_doctest_part_1(self):
+        """Part 1
+
+        Examples:
+            Part 1:
+
+            >>> from flexmock import flexmock
+            >>> flexmock().should_receive("method1").ordered()
+            <flexmock._api.Expectation object at ...>
+        """
+
+    def test_flexmock_teardown_works_with_doctest_part_2(self):
+        """Raises CallOrderError if flexmock teardown is not automatically called
+        after test part 1 above.
+
+        Examples:
+            Part 2:
+
+            >>> from flexmock import flexmock
+            >>> mock = flexmock().should_receive("method2").ordered().mock()
+            >>> mock.method2()
+        """
+
+
 if __name__ == "__main__":
-    results = doctest.testmod(
+    results1 = doctest.testmod(
+        sys.modules[__name__],  # current module
+        optionflags=doctest.ELLIPSIS,
+    )
+
+    results2 = doctest.testmod(
         _api,
         extraglobs={
             "Plane": Plane,
@@ -58,4 +90,5 @@ if __name__ == "__main__":
         },
         optionflags=doctest.ELLIPSIS,
     )
-    sys.exit(results.failed)
+
+    sys.exit(results1.failed + results2.failed)
