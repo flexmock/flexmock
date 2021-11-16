@@ -14,9 +14,13 @@ Types of changes:
 
 ## Unreleased
 
+### Fixed
+
+- Fix subunit testrunner integration is broken.
+
 ### Infrastructure
 
-- Run tests with testtools and doctest testrunners using tox.
+- Run tests with testtools, subunit, and doctest testrunners using tox.
 
 ### Documentation
 
