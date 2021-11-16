@@ -156,7 +156,7 @@ _patch_test_result(unittest.TextTestResult)
 # Hook into Teamcity unittests.
 # This allows flexmock to be used within PyCharm.
 with suppress(ImportError):
-    from tcunittest import TeamcityTestResult
+    from teamcity.unittestpy import TeamcityTestResult
 
     _patch_test_result(TeamcityTestResult)
 

@@ -17,10 +17,11 @@ Types of changes:
 ### Fixed
 
 - Fix subunit testrunner integration is broken.
+- Fix: TeamCity (PyCharm) testrunner integration is broken.
 
 ### Infrastructure
 
-- Run tests with testtools, subunit, and doctest testrunners using tox.
+- Run tests with testtools, subunit, TeamCity, and doctest testrunners using tox.
 
 ### Documentation
 

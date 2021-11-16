@@ -931,6 +931,14 @@ lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
 
 [[package]]
+name = "teamcity-messages"
+version = "1.29"
+description = "Send test results to TeamCity continuous integration server from unittest, nose, py.test, twisted trial, behave (Python 2.6+)"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "testtools"
 version = "2.5.0"
 description = "Extensions to the Python standard library unit testing framework"
@@ -1121,7 +1129,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6.2"
-content-hash = "89517ac007c1bfc4220e2e3f3d0651580305dbc83e7e7338dc26dc5a7c272a74"
+content-hash = "f67dc6b6470ecab7b523637697c83bdc3911151188ca76307046829bcde178da"
 
 [metadata.files]
 alabaster = [
@@ -1621,6 +1629,10 @@ sphinxcontrib-qthelp = [
 sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib-serializinghtml-1.1.5.tar.gz", hash = "sha256:aa5f6de5dfdf809ef505c4895e51ef5c9eac17d0f287933eb49ec495280b6952"},
     {file = "sphinxcontrib_serializinghtml-1.1.5-py2.py3-none-any.whl", hash = "sha256:352a9a00ae864471d3a7ead8d7d79f5fc0b57e8b3f95e9867eb9eb28999b92fd"},
+]
+teamcity-messages = [
+    {file = "teamcity-messages-1.29.tar.gz", hash = "sha256:d12329b8e1c8e125527929b5e639a2ca01e043e26167f367088af96d0fc6aba4"},
+    {file = "teamcity_messages-1.29-py3-none-any.whl", hash = "sha256:5732a3c64d1961c321751c397e5225f8fbc4dd4af1a94ab235d8aba0a4e2ba05"},
 ]
 testtools = [
     {file = "testtools-2.5.0-py3-none-any.whl", hash = "sha256:798525999f053e4df4e352c0c198baeb9f5079f34bad5bd57a44e97a54fa0330"},
