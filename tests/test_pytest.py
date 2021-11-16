@@ -26,6 +26,17 @@ def test_runtest_hook_with_fixture_for_pytest(runtest_hook_fixture):
     runtest_hook_fixture.foo()
 
 
+def test_flexmock_teardown_works_with_pytest_part1():
+    flexmock().should_receive("method1").ordered()
+
+
+def test_flexmock_teardown_works_with_pytest_part2():
+    mock = flexmock().should_receive("method2").ordered().mock()
+    # Raises CallOrderError if flexmock teardown is not automatically called
+    # after test part 1 above
+    mock.method2()
+
+
 class TestForPytest(test_flexmock.RegularClass):
     def test_class_level_test_for_pytest(self):
         flexmock(foo="bar").should_receive("foo").once()
