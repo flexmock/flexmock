@@ -62,6 +62,9 @@ mkdocs-material = "^7.3.4"
 markdown-include = "^0.6.0"
 mkdocstrings = "^0.16.2"
 testtools = "^2.5.0"
+"zope.testrunner" = "^5.3.0"
+python-subunit = "^1.4.0"
+teamcity-messages = "^1.29"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
