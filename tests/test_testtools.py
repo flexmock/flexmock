@@ -1,5 +1,5 @@
 """Test testtools integration."""
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,no-self-use
 from contextlib import suppress
 
 from testtools import TestCase
@@ -36,3 +36,12 @@ class TestFlexmock(TestCase):
         self.assertThat(mocked.method(), Equals(1))
         with suppress(exceptions.MethodCallError):
             flexmock_teardown()
+
+    def test_flexmock_teardown_works_with_testtools_part1(self):
+        flexmock().should_receive("method1").ordered()
+
+    def test_flexmock_teardown_works_with_testtools_part2(self):
+        mock = flexmock().should_receive("method2").ordered().mock()
+        # Raises CallOrderError if flexmock teardown is not automatically called
+        # after test part 1 above
+        mock.method2()
