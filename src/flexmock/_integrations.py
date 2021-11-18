@@ -35,7 +35,13 @@ def _patch_test_result(klass: Type[Any]) -> None:
 
 
 def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
-    """Add call to teardown in klass.stopTest method.
+    """Patch TextTestResult class stopTest method and add call to flexmock
+    teardown.
+
+    If the test failed already before flexmock teardown, nothing is done.
+    However if the test was successful before flexmock teardown and flexmock
+    assertions fail, flexmock updates the test result to failed by calling
+    addFailure method.
 
     Args:
         klass: the class whose stopTest method needs to be decorated.
@@ -65,10 +71,16 @@ def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
 
 
 def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
-    """Modify the addSuccess method of the klass for flexmock.
+    """Patch the addSuccess method of the TextTestResult class.
+
+    TextTestResult addSuccess method is replaced and the original addSuccess
+    method is called after flexmock teardown patched stopTest method.
+
+    An attribute is set in the replaced addSuccess method to indicate if the
+    test was successful before flexmock teardown was called.
 
     Args:
-        klass: the class whose stopTest method needs to be decorated.
+        klass: the class whose addSuccess method needs to be decorated.
     """
 
     @wraps(klass.addSuccess)
