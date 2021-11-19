@@ -1306,7 +1306,7 @@ class FlexmockContainer:
 
     @classmethod
     def get_flexmock_expectation(
-        cls, obj: Mock, name: Optional[str] = None, args: Optional[Any] = None
+        cls, obj: Mock, name: str, args: Optional[Any] = None
     ) -> Optional[Expectation]:
         """Retrieves an existing matching expectation."""
         if args is None:
@@ -1315,25 +1315,20 @@ class FlexmockContainer:
             args = {"kargs": args, "kwargs": {}}
         if not isinstance(args["kargs"], tuple):
             args["kargs"] = (args["kargs"],)
-        if name and obj in cls.flexmock_objects:
-            found = None
-            for expectation in reversed(cls.flexmock_objects[obj]):
-                if expectation._name == name and expectation._match_args(args):
-                    if expectation in cls.ordered or not expectation._ordered and not found:
-                        found = expectation
-            if found and found._ordered:
-                cls._verify_call_order(found, args)
-            return found
-        return None
+        found = None
+        for expectation in reversed(cls.flexmock_objects[obj]):
+            if expectation._name == name and expectation._match_args(args):
+                if expectation in cls.ordered or not expectation._ordered and not found:
+                    found = expectation
+        if found and found._ordered:
+            cls._verify_call_order(found, args)
+        return found
 
     @classmethod
     def _verify_call_order(cls, expectation: Expectation, args: Dict[str, Any]) -> None:
-        if not cls.ordered:
-            next_method = cls.last
-        else:
-            next_method = cls.ordered.pop(0)
-            cls.last = next_method
-        if expectation is not next_method and next_method is not None:
+        next_method = cls.ordered.pop(0)
+        cls.last = next_method
+        if expectation is not next_method:
             raise CallOrderError(
                 f"{_format_args(str(expectation._name), args)} called before "
                 f"{_format_args(str(next_method._name), next_method._args)}"
