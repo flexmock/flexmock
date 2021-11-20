@@ -4,9 +4,12 @@ import sys
 import unittest
 
 from flexmock import flexmock
+from tests.features import FlexmockTestCase
 
 
-class TestUnitTestIntegration(unittest.TestCase):
+class TestUnitTestIntegration(
+    FlexmockTestCase, unittest.TestCase
+):  # pylint: disable=too-many-ancestors
     """Flexmock unittest integration specific tests."""
 
     def test_failed_test_case(self):
@@ -18,9 +21,8 @@ class TestUnitTestIntegration(unittest.TestCase):
 
 if __name__ == "__main__":
     EXPECTED_FAILURES = 1
-    EXPECTED_TESTS = 1
     test = unittest.main(exit=False)
 
-    if len(test.result.failures) == EXPECTED_FAILURES and test.result.testsRun == EXPECTED_TESTS:
+    if len(test.result.failures) == EXPECTED_FAILURES and test.result.testsRun > EXPECTED_FAILURES:
         sys.exit(0)  # OK
     sys.exit(1)

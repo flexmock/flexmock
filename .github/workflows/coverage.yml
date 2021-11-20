@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate report
         run: |
-          poetry run coverage run --parallel-mode --source flexmock -m unittest tests/test_flexmock.py
+          export PYTHONPATH=$PWD
           poetry run coverage run --parallel-mode --source flexmock tests/test_unittest.py
           poetry run coverage run --parallel-mode --source flexmock tests/test_doctest.py
           poetry run coverage run --parallel-mode --source flexmock -m pytest tests/test_pytest.py
