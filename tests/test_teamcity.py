@@ -4,20 +4,13 @@ import unittest
 
 from teamcity.unittestpy import TeamcityTestRunner
 
-from flexmock import flexmock
+from tests.features import FlexmockTestCase
 
 
-class TestTeamCityTeardown(unittest.TestCase):
+class TestTeamCityTeardown(  # pylint: disable=too-many-ancestors
+    FlexmockTestCase, unittest.TestCase
+):
     """Test flexmock teardown works with TeamCity test runner (PyCharm)."""
-
-    def test_flexmock_teardown_works_with_pytest_part1(self):
-        flexmock().should_receive("method1").ordered()
-
-    def test_flexmock_teardown_works_with_pytest_part2(self):
-        mock = flexmock().should_receive("method2").ordered().mock()
-        # Raises CallOrderError if flexmock teardown is not automatically called
-        # after test part 1 above
-        mock.method2()
 
 
 if __name__ == "__main__":
