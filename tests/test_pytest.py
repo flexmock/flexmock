@@ -1,12 +1,14 @@
 """Test flexmock with pytest."""
 # pylint: disable=missing-docstring,redefined-outer-name,no-self-use
+import unittest
+
 import pytest
 
 from flexmock import flexmock
 from flexmock._api import flexmock_teardown
 from flexmock.exceptions import MethodCallError
-from tests import test_flexmock
-from tests.test_flexmock import assert_raises
+from tests.features import FlexmockTestCase
+from tests.utils import assert_raises
 
 
 def test_module_level_test_for_pytest():
@@ -37,7 +39,7 @@ def test_flexmock_teardown_works_with_pytest_part2():
     mock.method2()
 
 
-class TestForPytest(test_flexmock.RegularClass):
+class TestForPytest(FlexmockTestCase):  # pylint: disable=too-many-ancestors
     def test_class_level_test_for_pytest(self):
         flexmock(foo="bar").should_receive("foo").once()
         with assert_raises(
@@ -46,7 +48,7 @@ class TestForPytest(test_flexmock.RegularClass):
             flexmock_teardown()
 
 
-class TestUnittestClass(test_flexmock.TestFlexmockUnittest):
+class TestUnittestClass(unittest.TestCase):
     def test_unittest(self):
         mocked = flexmock(a=2)
         mocked.should_receive("a").once()

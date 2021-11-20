@@ -17,6 +17,7 @@ Types of changes:
 ### Changed
 
 - Remove documentation and test files from wheels build.
+- Re-organize unit tests.
 
 ## Release 0.11.2
 
