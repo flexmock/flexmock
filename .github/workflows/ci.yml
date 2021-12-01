@@ -73,3 +73,25 @@ jobs:
 
       - name: Run pylint
         run: poetry run pylint ${TARGETS}
+
+  test-sphinx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install
+
+      - name: Generate man pages with Sphinx
+        run: poetry run python setup.py build_sphinx -W --keep-going -n -b man --build-dir build/sphinx
