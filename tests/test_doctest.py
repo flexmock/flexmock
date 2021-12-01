@@ -91,4 +91,4 @@ if __name__ == "__main__":
         optionflags=doctest.ELLIPSIS,
     )
 
-    sys.exit(results1.failed + results2.failed)
+    sys.exit(bool(results1.failed + results2.failed))
