@@ -37,7 +37,7 @@ unittest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running unittest$(off)\n'
 	@printf '*****************\n'
-	$(PYTHON) tests/test_unittest.py
+	PYTHONPATH=$(shell pwd) $(PYTHON) tests/test_unittest.py
 
 .PHONY: doctest
 doctest:
