@@ -11,7 +11,7 @@ all: lint test
 lint: isort black mypy pylint
 
 .PHONY: test
-test: install twisted unittest doctest pytest
+test: install unittest doctest pytest
 
 .PHONY: install
 install:
@@ -45,13 +45,6 @@ doctest:
 	@printf '$(color)Running doctest$(off)\n'
 	@printf '*****************\n'
 	$(PYTHON) tests/test_doctest.py
-
-.PHONY: twisted
-twisted:
-	@printf '\n\n*****************\n'
-	@printf '$(color)Running twisted tests$(off)\n'
-	@printf '*****************\n'
-	$(PYTHON) -c "from twisted.scripts.trial import run; run();" tests/test_integrations.py
 
 .PHONY: mypy
 mypy:
