@@ -50,6 +50,10 @@ def module_function(x, y):
     return x - y
 
 
+async def async_function(x, y):
+    return x - y
+
+
 def kwargs_only_func1(foo, *, bar, baz=5):
     return foo + bar + baz
 

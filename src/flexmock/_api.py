@@ -269,12 +269,16 @@ class Mock:
         FlexmockContainer.add_expectation(mock, expectation)
 
     def _update_method(self, expectation: "Expectation", name: str) -> None:
-        method_instance = self._create_mock_method(name)
         if self._hasattr(self._object, name) and not hasattr(expectation, "_original"):
             expectation._update_original(name, self._object)
             expectation._method_type = self._get_method_type(name, expectation._original)
             if expectation._method_type in SPECIAL_METHODS:
                 expectation._original_function = getattr(self._object, name)
+
+        is_async = hasattr(expectation, "_original") and inspect.iscoroutinefunction(
+            expectation._original
+        )
+        method_instance = self._create_mock_method(name, is_async)
         if not inspect.isclass(self._object) or expectation._method_type in SPECIAL_METHODS:
             method_instance = types.MethodType(method_instance, self._object)
         expectation._local_override = _setattr(self._object, name, method_instance)
@@ -377,7 +381,7 @@ class Mock:
             setattr(obj, new_name, original)
             self._create_placeholder_mock_for_proper_teardown(obj, name, original)
 
-    def _create_mock_method(self, name: str) -> Callable[..., Any]:
+    def _create_mock_method(self, name: str, is_async: bool) -> Callable[..., Any]:
         def _handle_exception_matching(expectation: Expectation) -> None:
             # pylint: disable=misplaced-bare-raise
             return_values = expectation._return_values
@@ -503,11 +507,11 @@ class Mock:
                 raise return_value.raises  # pylint: disable=raising-bad-type
             return return_value.value
 
-        def mock_method(runtime_self: Any, *kargs: Any, **kwargs: Any) -> Any:
-            arguments = {"kargs": kargs, "kwargs": kwargs}
+        def mock_method(runtime_self: Any, *args: Any, **kwargs: Any) -> Any:
+            arguments = {"kargs": args, "kwargs": kwargs}
             expectation = FlexmockContainer.get_flexmock_expectation(self, name, arguments)
             if expectation:
-                return _handle_matched_expectation(expectation, runtime_self, *kargs, **kwargs)
+                return _handle_matched_expectation(expectation, runtime_self, *args, **kwargs)
             # inform the user which expectation(s) for the method were _not_ matched
             saved_expectations = reversed(FlexmockContainer.get_expectations_with_name(self, name))
             error_msg = (
@@ -521,6 +525,11 @@ class Mock:
                 )
             raise MethodSignatureError(error_msg)
 
+        async def async_mock_method(*args: Any, **kwargs: Any) -> Any:
+            return mock_method(*args, **kwargs)
+
+        if is_async:
+            return async_mock_method
         return mock_method
 
 
