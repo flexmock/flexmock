@@ -30,7 +30,7 @@ pytest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running pytest$(off)\n'
 	@printf '*****************\n'
-	pytest tests/test_pytest.py
+	pytest
 
 .PHONY: unittest
 unittest:

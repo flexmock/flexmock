@@ -33,7 +33,7 @@ jobs:
           poetry run coverage run --parallel-mode --source flexmock -m unittest tests/test_flexmock.py
           poetry run coverage run --parallel-mode --source flexmock tests/test_unittest.py
           poetry run coverage run --parallel-mode --source flexmock tests/test_doctest.py
-          poetry run coverage run --parallel-mode --source flexmock -m pytest tests/test_pytest.py
+          poetry run coverage run --parallel-mode --source flexmock -m pytest
           poetry run coverage combine
           poetry run coverage xml
 
