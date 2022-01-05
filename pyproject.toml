@@ -117,3 +117,7 @@ no_implicit_optional = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 ignore_errors = true
+
+[tool.pytest.ini_options]
+python_files = ["test_pytest.py"]
+xfail_strict = true
