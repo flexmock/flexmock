@@ -31,16 +31,6 @@ classifiers = [
     "Topic :: Software Development :: Testing :: Unit",
     "Typing :: Typed",
 ]
-include = [
-    "CHANGELOG.md",
-    "docs/**/*.md",
-    "LICENSE",
-    "README.md",
-    "src/**/*.py",
-    "tests/**/*.py",
-    "docs/conf.py",
-    "docs/toctree.rst",
-]
 packages = [{ include = "flexmock", from = "src" }]
 
 [tool.poetry.urls]
