@@ -15,7 +15,7 @@ from .stubbing import StubbingTestCase
 from .teardown import TeardownTestCase
 
 
-class FlexmockTestCase(  # pylint: disable=too-many-ancestors
+class FlexmockTestCase(
     ArgumentMatchingTestCase,
     CallCountTestCase,
     CommonTestCase,

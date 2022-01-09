@@ -7,9 +7,7 @@ from flexmock import flexmock
 from tests.features import FlexmockTestCase
 
 
-class TestUnitTestIntegration(
-    FlexmockTestCase, unittest.TestCase
-):  # pylint: disable=too-many-ancestors
+class TestUnitTestIntegration(FlexmockTestCase, unittest.TestCase):
     """Flexmock unittest integration specific tests."""
 
     def test_failed_test_case(self):

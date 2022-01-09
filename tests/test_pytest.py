@@ -39,7 +39,7 @@ def test_flexmock_teardown_works_with_pytest_part2():
     mock.method2()
 
 
-class TestForPytest(FlexmockTestCase):  # pylint: disable=too-many-ancestors
+class TestForPytest(FlexmockTestCase):
     def test_class_level_test_for_pytest(self):
         flexmock(foo="bar").should_receive("foo").once()
         with assert_raises(
