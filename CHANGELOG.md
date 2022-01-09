@@ -16,7 +16,7 @@ Types of changes:
 
 ### Changed
 
-- Remove documentation and test files from sdist and wheels packages.
+- Remove documentation and test files from wheels build.
 
 ## Release 0.11.2
 
