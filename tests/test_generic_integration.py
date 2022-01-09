@@ -5,5 +5,5 @@ import unittest
 from tests.features import FlexmockTestCase
 
 
-class TestIntegrations(FlexmockTestCase, unittest.TestCase):
+class TestGenericIntegration(FlexmockTestCase, unittest.TestCase):
     pass
