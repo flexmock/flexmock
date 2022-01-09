@@ -87,6 +87,7 @@ disable = [
     "protected-access",
     "broad-except",
     "fixme",
+    "too-many-ancestors",
 ]
 
 [tool.pylint.format]

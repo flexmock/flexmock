@@ -5,7 +5,5 @@ import testtools
 from tests.features import FlexmockTestCase
 
 
-class TestTestoolsIntegration(
-    FlexmockTestCase, testtools.TestCase
-):  # pylint: disable=too-many-ancestors
+class TestTestoolsIntegration(FlexmockTestCase, testtools.TestCase):
     pass

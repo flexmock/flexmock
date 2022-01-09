@@ -7,9 +7,7 @@ from teamcity.unittestpy import TeamcityTestRunner
 from tests.features import FlexmockTestCase
 
 
-class TestTeamCityTeardown(  # pylint: disable=too-many-ancestors
-    FlexmockTestCase, unittest.TestCase
-):
+class TestTeamCityTeardown(FlexmockTestCase, unittest.TestCase):
     """Test flexmock teardown works with TeamCity test runner (PyCharm)."""
 
 
