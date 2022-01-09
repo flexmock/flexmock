@@ -31,6 +31,15 @@ classifiers = [
     "Topic :: Software Development :: Testing :: Unit",
     "Typing :: Typed",
 ]
+include = [
+    { path = "CHANGELOG.md", format = "sdist" },
+    { path = "docs/**/*.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
+    { path = "README.md", format = "sdist" },
+    { path = "tests/**/*.py", format = "sdist" },
+    { path = "docs/conf.py", format = "sdist" },
+    { path = "docs/toctree.rst", format = "sdist" },
+]
 packages = [{ include = "flexmock", from = "src" }]
 
 [tool.poetry.urls]
