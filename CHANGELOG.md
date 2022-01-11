@@ -12,6 +12,12 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+## Unreleased
+
+### Changed
+
+- Remove documentation and test files from wheels build.
+
 ## Release 0.11.2
 
 ### Fixed

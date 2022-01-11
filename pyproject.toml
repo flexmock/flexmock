@@ -32,14 +32,13 @@ classifiers = [
     "Typing :: Typed",
 ]
 include = [
-    "CHANGELOG.md",
-    "docs/**/*.md",
-    "LICENSE",
-    "README.md",
-    "src/**/*.py",
-    "tests/**/*.py",
-    "docs/conf.py",
-    "docs/toctree.rst",
+    { path = "CHANGELOG.md", format = "sdist" },
+    { path = "docs/**/*.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
+    { path = "README.md", format = "sdist" },
+    { path = "tests/**/*.py", format = "sdist" },
+    { path = "docs/conf.py", format = "sdist" },
+    { path = "docs/toctree.rst", format = "sdist" },
 ]
 packages = [{ include = "flexmock", from = "src" }]
 
