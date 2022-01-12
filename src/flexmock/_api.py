@@ -391,7 +391,7 @@ class Mock:
                 args = return_values[0].value
                 if inspect.isclass(expected):
                     assert isinstance(args, dict)
-                    expected_instance = expected(*args["kargs"], **args["kwargs"])  # type: ignore
+                    expected_instance = expected(*args["kargs"], **args["kwargs"])
                     expected_message = str(expected_instance)
                     if expected is not raised and expected not in raised.__bases__:
                         raise ExceptionClassError(
@@ -499,7 +499,7 @@ class Mock:
                 if inspect.isclass(return_value.raises):
                     args = return_value.value
                     assert isinstance(args, dict)
-                    raise return_value.raises(*args["kargs"], **args["kwargs"])  # type: ignore
+                    raise return_value.raises(*args["kargs"], **args["kwargs"])
                 raise return_value.raises  # pylint: disable=raising-bad-type
             return return_value.value
 
@@ -1148,7 +1148,7 @@ class Expectation:
             self.__raise(FlexmockError, "can't use and_raise() with attribute stubs")
         if inspect.isclass(exception):
             try:
-                exception(*args, **kwargs)  # type: ignore
+                exception(*args, **kwargs)
             except TypeError:
                 self.__raise(
                     FlexmockError, f"can't initialize {exception} with the given arguments"
