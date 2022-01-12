@@ -14,6 +14,10 @@ Types of changes:
 
 ## Unreleased
 
+### Added
+
+- Add PEP 561 `py.typed` marker file.
+
 ### Changed
 
 - Remove documentation and test files from wheels build.
