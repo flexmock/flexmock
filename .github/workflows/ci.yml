@@ -75,7 +75,7 @@ jobs:
       - name: Run pylint
         run: poetry run pylint ${TARGETS}
 
-  test-sphinx:
+  test-docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -96,3 +96,6 @@ jobs:
 
       - name: Generate man pages with Sphinx
         run: poetry run python setup.py build_sphinx -W --keep-going -n -b man --build-dir build/sphinx
+
+      - name: Build docs with Mkdocs
+        run: poetry run mkdocs build --strict
