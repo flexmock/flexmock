@@ -76,10 +76,8 @@ build-backend = "poetry.core.masonry.api"
 disable = [
     "too-many-instance-attributes",
     "too-few-public-methods",
-    "logging-fstring-interpolation",
     "too-many-function-args",
     "too-many-arguments",
-    "bad-continuation",
     "too-many-locals",
     "too-many-branches",
     "too-many-statements",
