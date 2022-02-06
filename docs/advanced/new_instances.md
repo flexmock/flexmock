@@ -15,6 +15,13 @@ now been replaced by a function.
 
 Flexmock offers another alternative using the `.new_instances()` method:
 
+!!!warning
+
+    Usage of `.new_instances()` method is discouraged due to a bug in CPython
+    which prevents proper teardown of the mock. Due to this bug, the mock leaks
+    into other tests and can prevent creating new instances of the class. More
+    information in [issue #16](https://github.com/flexmock/flexmock/issues/16).
+
 ```python
 >>> class Group: pass
 >>> fake_group = flexmock(name="fake")

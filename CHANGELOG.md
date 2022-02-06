@@ -23,6 +23,10 @@ Types of changes:
 - Remove documentation and test files from wheels build.
 - Re-organize unit tests.
 
+### Documentation
+
+- Add a warning about the usage of `.new_instances()` method in the documentation.
+
 ## Release 0.11.2
 
 ### Fixed
