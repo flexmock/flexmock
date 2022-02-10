@@ -12,7 +12,7 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
-## Unreleased
+## Release 0.11.3
 
 ### Added
 
