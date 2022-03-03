@@ -80,7 +80,7 @@ toml==0.10.2; python_full_version >= "3.6.2"
 tomli==1.2.3; python_version >= "3.6" and python_full_version >= "3.6.2"
 tox==3.24.5; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 twisted-iocpsupport==1.0.2; platform_system == "Windows" and python_full_version >= "3.6.7"
-twisted==22.1.0; python_full_version >= "3.6.7"
+twisted==22.2.0; python_full_version >= "3.6.7"
 typed-ast==1.5.2; python_version < "3.8" and python_version >= "3.6" and implementation_name == "cpython" and python_full_version >= "3.6.2"
 typing-extensions==4.1.0; python_version < "3.8" and python_full_version >= "3.6.7" and python_version >= "3.6" and (python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "3.8" or python_full_version >= "3.5.0" and python_version < "3.8" and python_version >= "3.6")
 urllib3==1.26.8; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.6"
