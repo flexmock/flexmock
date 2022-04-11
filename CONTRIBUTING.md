@@ -80,5 +80,5 @@ The documentation is hosted on Read the Docs. Read the Docs uses the
 this file, run this command:
 
 ```
-poetry export --without-hashes --dev -f requirements.txt --output docs/requirements.txt
+make requirements
 ```
