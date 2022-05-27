@@ -95,7 +95,7 @@ flexmock(plane).should_receive("fly").and_return("ok")
 flexmock(plane).should_receive("fly").with_args("up").and_return("bad")
 ```
 
-Try to excecute `plane.fly()` with any, or no, arguments as defined by the first
+Try to execute `plane.fly()` with any, or no, arguments as defined by the first
 flexmock call will return the first value.
 
 ```python
