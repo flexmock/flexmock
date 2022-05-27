@@ -1268,7 +1268,7 @@ class Expectation:
         return failed, message
 
     def _reset(self) -> None:
-        """Returns the methods overriden by this expectation to their originals."""
+        """Returns the methods overridden by this expectation to their originals."""
         _mock = self._mock
         if not isinstance(_mock, Mock):
             original = self.__dict__.get("_original")

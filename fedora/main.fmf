@@ -11,7 +11,7 @@ discover:
       - name: Upstream test suite
         test: make test
 
-# this is overriden in CI, but we want to run locally via CLI
+# this is overridden in CI, but we want to run locally via CLI
 provision:
     how: local
 
