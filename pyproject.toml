@@ -48,7 +48,7 @@ packages = [{ include = "flexmock", from = "src" }]
 "Issue Tracker" = "https://github.com/flexmock/flexmock/issues"
 
 [tool.poetry.dependencies]
-python = "^3.7.0"
+python = "^3.7.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
