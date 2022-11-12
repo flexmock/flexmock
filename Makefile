@@ -74,6 +74,13 @@ pylint:
 	@printf '*****************\n'
 	pylint ${TARGETS}
 
+.PHONY: docs
+docs:
+	@printf '\n\n*****************\n'
+	@printf '$(color)Test building docs$(off)\n'
+	@printf '*****************\n'
+	mkdocs build --strict
+
 .PHONY: requirements
 requirements:
 	@printf '\n\n****************************\n'
