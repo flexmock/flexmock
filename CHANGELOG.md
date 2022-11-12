@@ -12,6 +12,16 @@ Types of changes:
 - **Infrastructure**: Changes in build or deployment infrastructure.
 - **Documentation**: Changes in documentation.
 
+## Unreleased
+
+### Added
+
+- Add Python 3.12 support.
+
+### Removed
+
+- Drop Python 3.6 support.
+
 ## Release 0.11.3
 
 ### Added
