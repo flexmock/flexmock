@@ -16,25 +16,25 @@ jobs:
       matrix:
         python-version:
           [
-            "pypy-3.6",
             "pypy-3.7",
             "pypy-3.8",
             "pypy-3.9",
-            "3.6",
             "3.7",
             "3.8",
             "3.9",
             "3.10",
-            "3.11-dev",
+            "3.11",
+            "3.12-dev",
           ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install needed dependencies
         run: |
@@ -49,15 +49,16 @@ jobs:
       TARGETS: src tests
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
+      - uses: actions/checkout@v3
 
       - name: Install Poetry
-        run: pip install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+          cache: "poetry"
 
       - name: Install dependencies
         run: |
@@ -80,15 +81,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
+      - uses: actions/checkout@v3
 
       - name: Install Poetry
-        run: pip install poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+          cache: "poetry"
 
       - name: Install dependencies
         run: |
@@ -99,4 +101,4 @@ jobs:
         run: poetry run python setup.py build_sphinx -W --keep-going -n -b man --build-dir build/sphinx
 
       - name: Build docs with Mkdocs
-        run: poetry run mkdocs build --strict
+        run: poetry run make docs
