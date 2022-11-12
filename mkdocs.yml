@@ -55,13 +55,12 @@ plugins:
 - mkdocstrings:
     handlers:
       python:
-        selection:
+        options:
           filters:
             - "!^_"  # exlude all members starting with _
-        rendering:
-          show_source: false
-          show_root_heading: true
-          show_root_full_path: false
+        show_source: false
+        show_root_heading: true
+        show_root_full_path: false
 
 markdown_extensions:
   - admonition

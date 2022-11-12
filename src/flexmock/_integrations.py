@@ -63,7 +63,7 @@ def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
                 if hasattr(self, "_pre_flexmock_success"):
                     self.addFailure(test, sys.exc_info())
             if hasattr(self, "_pre_flexmock_success"):
-                del self._pre_flexmock_success  # type: ignore
+                del self._pre_flexmock_success
         return saved_stop_test(self, test)
 
     if klass.stopTest is not decorated:
