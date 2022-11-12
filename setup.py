@@ -42,7 +42,7 @@ setup(
         "Topic :: Software Development :: Testing :: Unit",
         "Typing :: Typed",
     ],
-    python_requires=">=3.7.0,<4.0.0",
+    python_requires=">=3.7.1,<4.0.0",
     packages=["flexmock"],
     package_dir={"": "src"},
     include_package_data=True,
