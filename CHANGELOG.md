@@ -18,6 +18,10 @@ Types of changes:
 
 - Add Python 3.12 support.
 
+### Changed
+
+- Add tox.ini to sdist to make the downstream testing easier.
+
 ### Removed
 
 - Drop Python 3.6 support.

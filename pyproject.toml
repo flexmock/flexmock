@@ -36,6 +36,7 @@ include = [
     { path = "docs/**/*.md", format = "sdist" },
     { path = "LICENSE", format = "sdist" },
     { path = "README.md", format = "sdist" },
+    { path = "tox.ini", format = "sdist" },
     { path = "tests/**/*.py", format = "sdist" },
     { path = "docs/conf.py", format = "sdist" },
     { path = "docs/toctree.rst", format = "sdist" },

@@ -2,6 +2,7 @@ include *.py
 include CHANGELOG.md
 include LICENSE
 include README.md
+include tox.ini
 recursive-include tests *py
 recursive-include docs *.md
 include docs/conf.py
