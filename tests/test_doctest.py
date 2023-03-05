@@ -7,7 +7,6 @@ from flexmock import _api
 
 
 class Plane:
-
     model = "Airpy 1"
     is_flying = True
 
