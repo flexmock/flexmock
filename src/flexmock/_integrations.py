@@ -205,7 +205,8 @@ with suppress(ImportError):
     import subunit
 
     _patch_test_result(subunit.TestProtocolClient)
-    _patch_test_result(subunit.test_results.TestResultDecorator)
+    with suppress(AttributeError):
+        _patch_test_result(subunit.test_results.TestResultDecorator)
 
 
 # Hook into twisted.
