@@ -5,6 +5,8 @@ import random
 import re
 import sys
 
+import pytest
+
 from flexmock import exceptions, flexmock
 from flexmock._api import AT_LEAST, AT_MOST, EXACTLY, FlexmockContainer, Mock, flexmock_teardown
 from tests import some_module
@@ -265,6 +267,86 @@ class MockingTestCase:
         User.should_receive("get_name").and_return("mike")
         user = User()
         assert user.get_name() == "mike"
+
+    @pytest.mark.asyncio
+    async def test_flexmock_should_create_partial_old_style_object_mock_with_async_method(self):
+        class User:
+            def __init__(self, names=None):
+                self.names = names
+
+            async def get_names(self):
+                return self.names
+
+        user = User()
+        flexmock(user)
+
+        user.should_receive("get_names").and_return(["mike", "jones"])
+        assert await user.get_names() == ["mike", "jones"]
+
+    def test_flexmock_should_create_partial_old_style_object_mock_with_async_method_made_synchronous(
+        self,
+    ):
+        class User:
+            def __init__(self, names=None):
+                self.names = names
+
+            async def get_names(self):
+                return self.names
+
+        user = User()
+        flexmock(user)
+
+        user.should_receive("get_names").sync_().and_return(["mike", "jones"])
+        assert user.get_names() == ["mike", "jones"]
+
+    @pytest.mark.asyncio
+    async def test_flexmock_should_create_partial_old_style_object_mock_with_sync_method_made_asynchronous(
+        self,
+    ):
+        class User:
+            def __init__(self, names=None):
+                self.names = names
+
+            def get_names(self):
+                return self.names
+
+        user = User()
+        flexmock(user)
+
+        user.should_receive("get_names").async_().and_return(["mike", "jones"])
+        assert await user.get_names() == ["mike", "jones"]
+
+    def test_flexmock_should_not_be_set_sync_after_set_return_value(self):
+        class User:
+            def __init__(self, names=None):
+                self.names = names
+
+            def get_names(self):
+                return self.names
+
+        user = User()
+        flexmock(user)
+
+        with assert_raises(
+            exceptions.FlexmockError, ("sync_() should be used before setting a return value")
+        ):
+            user.should_receive("get_names").and_return(["mike", "jones"]).sync_()
+
+    def test_flexmock_should_not_be_set_async_after_set_return_value(self):
+        class User:
+            def __init__(self, names=None):
+                self.names = names
+
+            def get_names(self):
+                return self.names
+
+        user = User()
+        flexmock(user)
+
+        with assert_raises(
+            exceptions.FlexmockError, ("async_() should be used before setting a return value")
+        ):
+            user.should_receive("get_names").and_return(["mike", "jones"]).async_()
 
     def test_flexmock_should_match_expectations_against_builtin_classes(self):
         mock = flexmock(name="temp")

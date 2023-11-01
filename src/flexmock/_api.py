@@ -229,6 +229,9 @@ class Mock:
 
     def _create_expectation(self, name: str, return_value: Optional[Any] = None) -> "Expectation":
         expectation = self._get_or_create_expectation(name, return_value)
+        if hasattr(self._object, name):
+            expectation._is_async = inspect.iscoroutinefunction(getattr(self._object, name))
+
         FlexmockContainer.add_expectation(self, expectation)
 
         if _isproperty(self._object, name):
@@ -589,6 +592,7 @@ class Expectation:
             self._original = original
 
         self._name = name
+        self._is_async: Optional[bool] = False
         self._times_called: int = 0
         self._modifier: str = EXACTLY
         self._args: Optional[Dict[str, Any]] = None
@@ -879,6 +883,13 @@ class Expectation:
         else:
             value = values
 
+        if self._is_async:
+
+            async def future(anything: Any):
+                return anything
+
+            value = future(value)
+
         if not self._callable:
             _setattr(self._mock, str(self._name), value)
             return self
@@ -1061,6 +1072,43 @@ class Expectation:
         if modifier == AT_LEAST and expected_calls[AT_LEAST] is None:
             self.__raise(FlexmockError, "cannot use at_most with at_least unset")
         self._modifier = AT_MOST
+        return self
+
+    def async_(self) -> "Expectation":
+        """Set the return values of the expectation to corotines
+        Need to me set before the return value is set
+
+        Returns:
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").async_()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+            <coroutine object Plane.fly at ...>
+        """
+        if self._return_values:
+            self.__raise(FlexmockError, "async_() should be used before setting a return value")
+        self._is_async = True
+
+        return self
+
+    def sync_(self) -> "Expectation":
+        """If, the mocked method was async, this make the mock synchronous
+        Need to me set before the return value is set
+
+        Returns:
+            Self, i.e. can be chained with other Expectation methods.
+
+        Examples:
+            >>> flexmock(plane).should_receive("fly").sync_()
+            <flexmock._api.Expectation object at ...>
+            >>> plane.fly()
+        """
+        if self._return_values:
+            self.__raise(FlexmockError, "sync_() should be used before setting a return value")
+        self._is_async = False
+
         return self
 
     def ordered(self) -> "Expectation":
