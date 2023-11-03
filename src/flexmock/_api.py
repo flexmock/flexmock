@@ -28,6 +28,14 @@ DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("
 RE_TYPE = type(re.compile(""))
 
 
+async def future_raise(anything: Any):
+    raise anything
+
+
+async def future(anything: Any):
+    return anything
+
+
 class ReturnValue:
     """ReturnValue"""
 
@@ -503,7 +511,14 @@ class Mock:
                     args = return_value.value
                     assert isinstance(args, dict)
                     raise return_value.raises(*args["kargs"], **args["kwargs"])
+                if expectation._is_async:
+                    return future_raise(return_value.raises)
+
                 raise return_value.raises  # pylint: disable=raising-bad-type
+
+            if expectation._is_async:
+                return future(return_value.value)
+
             return return_value.value
 
         def mock_method(runtime_self: Any, *kargs: Any, **kwargs: Any) -> Any:
@@ -592,7 +607,7 @@ class Expectation:
             self._original = original
 
         self._name = name
-        self._is_async: Optional[bool] = False
+        self._is_async: bool = False
         self._times_called: int = 0
         self._modifier: str = EXACTLY
         self._args: Optional[Dict[str, Any]] = None
@@ -782,6 +797,14 @@ class Expectation:
                 return False
         return True
 
+    def _verify_not_async_spy(self):
+        """Check if trying to assert the output of an async call."""
+        is_spy = self._replace_with is self.__dict__.get("_original")
+
+        if self._is_async and is_spy:
+            caller_method = inspect.stack()[1].function
+            self.__raise(FlexmockError, caller_method + "() can not be used on an async spy")
+
     def mock(self) -> Mock:
         """Return the mock associated with this expectation.
 
@@ -876,19 +899,13 @@ class Expectation:
             >>> plane.passenger_count()
             3
         """
+        self._verify_not_async_spy()
         if not values:
             value = None
         elif len(values) == 1:
             value = values[0]
         else:
             value = values
-
-        if self._is_async:
-
-            async def future(anything: Any):
-                return anything
-
-            value = future(value)
 
         if not self._callable:
             _setattr(self._mock, str(self._name), value)
@@ -1074,7 +1091,7 @@ class Expectation:
         self._modifier = AT_MOST
         return self
 
-    def async_(self) -> "Expectation":
+    def make_async(self) -> "Expectation":
         """Set the return values of the expectation to corotines
         Need to me set before the return value is set
 
@@ -1082,18 +1099,18 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(plane).should_receive("fly").async_()
+            >>> flexmock(plane).should_receive("fly").make_async()
             <flexmock._api.Expectation object at ...>
             >>> plane.fly()
-            <coroutine object Plane.fly at ...>
+            <coroutine object future at ...>
         """
         if self._return_values:
-            self.__raise(FlexmockError, "async_() should be used before setting a return value")
+            self.__raise(FlexmockError, "make_async() should be used before setting a return value")
         self._is_async = True
 
         return self
 
-    def sync_(self) -> "Expectation":
+    def make_sync(self) -> "Expectation":
         """If, the mocked method was async, this make the mock synchronous
         Need to me set before the return value is set
 
@@ -1101,12 +1118,12 @@ class Expectation:
             Self, i.e. can be chained with other Expectation methods.
 
         Examples:
-            >>> flexmock(plane).should_receive("fly").sync_()
+            >>> flexmock(plane).should_receive("fly").make_sync()
             <flexmock._api.Expectation object at ...>
             >>> plane.fly()
         """
         if self._return_values:
-            self.__raise(FlexmockError, "sync_() should be used before setting a return value")
+            self.__raise(FlexmockError, "make_sync() should be used before setting a return value")
         self._is_async = False
 
         return self
@@ -1192,6 +1209,7 @@ class Expectation:
             >>> flexmock(plane).should_call("repair").and_raise(RuntimeError, "err msg")
             <flexmock._api.Expectation object at ...>
         """
+        self._verify_not_async_spy()
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_raise() with attribute stubs")
         if inspect.isclass(exception):
@@ -1254,6 +1272,7 @@ class Expectation:
             >>> next(log)
             'land'
         """
+        self._verify_not_async_spy()
         if not self._callable:
             self.__raise(FlexmockError, "can't use and_yield() with attribute stubs")
         return self.and_return(iter(args))

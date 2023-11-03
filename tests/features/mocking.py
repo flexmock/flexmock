@@ -269,7 +269,9 @@ class MockingTestCase:
         assert user.get_name() == "mike"
 
     @pytest.mark.asyncio
-    async def test_flexmock_should_create_partial_old_style_object_mock_with_async_method(self):
+    async def test_flexmock_should_create_partial_old_style_object_mock_with_make_async_method(
+        self,
+    ):
         class User:
             def __init__(self, names=None):
                 self.names = names
@@ -283,7 +285,8 @@ class MockingTestCase:
         user.should_receive("get_names").and_return(["mike", "jones"])
         assert await user.get_names() == ["mike", "jones"]
 
-    def test_flexmock_should_create_partial_old_style_object_mock_with_async_method_made_synchronous(
+    @pytest.mark.asyncio
+    def test_flexmock_should_create_partial_old_style_object_mock_with_make_async_method_made_synchronous(
         self,
     ):
         class User:
@@ -296,11 +299,11 @@ class MockingTestCase:
         user = User()
         flexmock(user)
 
-        user.should_receive("get_names").sync_().and_return(["mike", "jones"])
+        user.should_receive("get_names").make_sync().and_return(["mike", "jones"])
         assert user.get_names() == ["mike", "jones"]
 
     @pytest.mark.asyncio
-    async def test_flexmock_should_create_partial_old_style_object_mock_with_sync_method_made_asynchronous(
+    async def test_flexmock_should_create_partial_old_style_object_mock_with_make_syncmethod_made_asynchronous(
         self,
     ):
         class User:
@@ -313,10 +316,10 @@ class MockingTestCase:
         user = User()
         flexmock(user)
 
-        user.should_receive("get_names").async_().and_return(["mike", "jones"])
+        user.should_receive("get_names").make_async().and_return(["mike", "jones"])
         assert await user.get_names() == ["mike", "jones"]
 
-    def test_flexmock_should_not_be_set_sync_after_set_return_value(self):
+    def test_flexmock_should_not_be_set_make_async_after_set_return_value(self):
         class User:
             def __init__(self, names=None):
                 self.names = names
@@ -328,11 +331,11 @@ class MockingTestCase:
         flexmock(user)
 
         with assert_raises(
-            exceptions.FlexmockError, ("sync_() should be used before setting a return value")
+            exceptions.FlexmockError, ("make_sync() should be used before setting a return value")
         ):
-            user.should_receive("get_names").and_return(["mike", "jones"]).sync_()
+            user.should_receive("get_names").and_return(["mike", "jones"]).make_sync()
 
-    def test_flexmock_should_not_be_set_async_after_set_return_value(self):
+    def test_flexmock_should_not_be_set_make_aasync_after_set_return_value(self):
         class User:
             def __init__(self, names=None):
                 self.names = names
@@ -344,9 +347,9 @@ class MockingTestCase:
         flexmock(user)
 
         with assert_raises(
-            exceptions.FlexmockError, ("async_() should be used before setting a return value")
+            exceptions.FlexmockError, ("make_async() should be used before setting a return value")
         ):
-            user.should_receive("get_names").and_return(["mike", "jones"]).async_()
+            user.should_receive("get_names").and_return(["mike", "jones"]).make_async()
 
     def test_flexmock_should_match_expectations_against_builtin_classes(self):
         mock = flexmock(name="temp")

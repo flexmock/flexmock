@@ -8,6 +8,7 @@ from .common import CommonTestCase
 from .conditional import ConditionalAssertionsTestCase
 from .derived import DerivedTestCase
 from .mocking import MockingTestCase
+from .mocking_async import MockingAsyncTestCase
 from .ordered import OrderedTestCase
 from .proxied import ProxiedTestCase
 from .spying import SpyingTestCase
@@ -22,6 +23,7 @@ class FlexmockTestCase(
     ConditionalAssertionsTestCase,
     DerivedTestCase,
     MockingTestCase,
+    MockingAsyncTestCase,
     OrderedTestCase,
     ProxiedTestCase,
     SpyingTestCase,
