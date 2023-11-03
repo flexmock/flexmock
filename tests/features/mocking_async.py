@@ -179,3 +179,23 @@ class MockingAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         result = await instance.method()
         assert next(result) == 1
         assert next(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_mock_async_instance_method_can_make_it_sync(self):
+        class Class:
+            async def method(self):
+                return "method"
+
+        assert await Class().method() == "method"
+        flexmock(Class).should_receive("method").make_sync().and_return("mocked_method")
+        assert Class().method() == "mocked_method"
+
+    @pytest.mark.asyncio
+    async def test_mock_sync_instance_method_can_make_it_async(self):
+        class Class:
+            def method(self):
+                return "method"
+
+        assert Class().method() == "method"
+        flexmock(Class).should_receive("method").make_async().and_return("mocked_method")
+        assert await Class().method() == "mocked_method"
