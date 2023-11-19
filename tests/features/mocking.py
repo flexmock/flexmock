@@ -5,8 +5,6 @@ import random
 import re
 import sys
 
-import pytest
-
 from flexmock import exceptions, flexmock
 from flexmock._api import AT_LEAST, AT_MOST, EXACTLY, FlexmockContainer, Mock, flexmock_teardown
 from tests import some_module

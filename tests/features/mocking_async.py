@@ -1,6 +1,7 @@
 """Tests for flexmock mocking feature."""
 # pylint: disable=missing-docstring,no-self-use,no-member,too-many-lines
 import unittest
+
 import pytest
 
 from flexmock import exceptions, flexmock

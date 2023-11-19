@@ -28,11 +28,21 @@ DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("
 RE_TYPE = type(re.compile(""))
 
 
-async def future_raise(anything: Any):
+async def future_raise(anything: type[BaseException]) -> None:
+    """Raises the given exception in a a coroutine.
+
+    Args:
+        anything: an exception to be raised when the coroutine is resolved
+    """
     raise anything
 
 
-async def future(anything: Any):
+async def future(anything: Any) -> Any:
+    """Return the given argument in a a coroutine.
+
+    Args:
+        anything: an exception to be returned when the coroutine is resolved
+    """
     return anything
 
 
@@ -797,7 +807,7 @@ class Expectation:
                 return False
         return True
 
-    def _verify_not_async_spy(self):
+    def _verify_not_async_spy(self) -> None:
         """Check if trying to assert the output of an async call."""
         is_spy = self._replace_with is self.__dict__.get("_original")
 
@@ -1092,8 +1102,8 @@ class Expectation:
         return self
 
     def make_async(self) -> "Expectation":
-        """Set the return values of the expectation to corotines
-        Need to me set before the return value is set
+        """Set the return values of the expectation to coroutines
+        Need to be set before the return value is set
 
         Returns:
             Self, i.e. can be chained with other Expectation methods.
@@ -1111,8 +1121,8 @@ class Expectation:
         return self
 
     def make_sync(self) -> "Expectation":
-        """If, the mocked method was async, this make the mock synchronous
-        Need to me set before the return value is set
+        """Make the mocked method synchronous.
+        Need to be set before the return value is set
 
         Returns:
             Self, i.e. can be chained with other Expectation methods.
