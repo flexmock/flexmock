@@ -80,10 +80,3 @@ docs:
 	@printf '$(color)Test building docs$(off)\n'
 	@printf '*****************\n'
 	mkdocs build --strict
-
-.PHONY: requirements
-requirements:
-	@printf '\n\n****************************\n'
-	@printf '$(color)Generating docs requirements$(off)\n'
-	@printf '****************************\n'
-	poetry export --without-hashes --with dev -f requirements.txt --output docs/requirements.txt

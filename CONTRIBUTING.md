@@ -75,10 +75,5 @@ mkdocs serve
 For more details, see [Mkdocs - User guide](https://www.mkdocs.org/user-guide/)
 and [Mkdocs Material theme documentation](https://squidfunk.github.io/mkdocs-material/).
 
-The documentation is hosted on Read the Docs. Read the Docs uses the
-`requirements.txt` in `docs` folder to install needed dependencies. To regenerate
-this file, run this command:
-
-```
-make requirements
-```
+The documentation is automatically deployed to Read the Docs service on every
+new commit to the default branch.
