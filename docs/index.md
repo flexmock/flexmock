@@ -65,11 +65,10 @@ pip install flexmock
 
 Tested to work with:
 
-- Python 3.6
-- Python 3.7
 - Python 3.8
 - Python 3.9
 - Python 3.10
+- Python 3.11
 - PyPy3
 
 Automatically integrates with all major test runners, including:
