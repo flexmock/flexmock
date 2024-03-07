@@ -27,6 +27,11 @@ Types of changes:
 - Drop Python 3.6 and 3.7 support.
 - Drop Pytest 5.x support.
 
+## Fixed
+
+- Fixed the pytest integration by switching from wrapping of the test runner to
+  the pytest plugin system.
+
 ## Release 0.11.3
 
 ### Added

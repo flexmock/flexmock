@@ -48,6 +48,9 @@ packages = [{ include = "flexmock", from = "src" }]
 "Source Code" = "https://github.com/flexmock/flexmock"
 "Issue Tracker" = "https://github.com/flexmock/flexmock/issues"
 
+[tool.poetry.plugins.pytest11]
+flexmock = "flexmock._pytest_plugin"
+
 [tool.poetry.dependencies]
 python = "^3.8.0"
 

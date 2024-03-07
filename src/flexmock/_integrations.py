@@ -92,45 +92,6 @@ def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
         klass.addSuccess = decorated  # type: ignore
 
 
-# Hook flexmock into Pytest.
-# Pytest is a Python test framework:
-# https://github.com/pytest-dev/pytest
-
-with suppress(ImportError):
-    from _pytest import runner
-
-    saved_pytest = runner.call_runtest_hook
-
-    @wraps(saved_pytest)
-    def call_runtest_hook(
-        item: Any,
-        when: str,
-        **kwargs: Any,
-    ) -> runner.CallInfo:
-        """Call the teardown at the end of the tests.
-
-        Args:
-            item: The runner
-            when: The moment this runs
-            kwargs: additional arguments
-
-        Returns:
-            The teardown function
-        """
-        ret = saved_pytest(item, when, **kwargs)  # type: ignore
-        if when != "call" and ret.excinfo is None:
-            return ret
-        teardown = runner.CallInfo.from_call(flexmock_teardown, when=when)  # type: ignore
-        if hasattr(teardown, "duration"):
-            # CallInfo.duration only available in Pytest 6+
-            teardown.duration = ret.duration
-        if ret.excinfo is not None:
-            teardown.excinfo = ret.excinfo
-        return teardown
-
-    runner.call_runtest_hook = call_runtest_hook
-
-
 # Hook flexmock into doctest.
 
 with suppress(ImportError):
