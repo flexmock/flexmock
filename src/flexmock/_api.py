@@ -1,6 +1,6 @@
 """Flexmock public API."""
 
-# pylint: disable=no-self-use,too-many-lines
+# pylint: disable=too-many-lines
 import inspect
 import re
 import sys
@@ -95,8 +95,7 @@ class Mock:
             and isinstance(self.__dict__, dict)
             and "__iter__" in self.__dict__
         ):
-            for item in self.__dict__["__iter__"](self):
-                yield item
+            yield from self.__dict__["__iter__"](self)
         else:
             yield self
 

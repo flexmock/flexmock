@@ -1,6 +1,6 @@
 """Tests for flexmock spying feature."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member,broad-exception-raised
 import re
 
 from flexmock import exceptions, flexmock

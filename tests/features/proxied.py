@@ -1,6 +1,6 @@
 """Tests for mocking and spying proxied objects."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member
 from flexmock import flexmock
 from tests import some_module
 from tests.proxy import Proxy
