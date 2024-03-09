@@ -1,10 +1,11 @@
 """Flexmock setup.py."""
+
 from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as file:
     long_description = file.read()
 
-VERSION = "0.11.3"
+VERSION = "0.12.0"
 
 setup(
     name="flexmock",
