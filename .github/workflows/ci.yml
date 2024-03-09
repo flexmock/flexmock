@@ -8,6 +8,9 @@ on:
     branches:
       - "**"
 
+env:
+  PYTHON_VERSION: "3.8"
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,22 +19,22 @@ jobs:
       matrix:
         python-version:
           [
-            "pypy-3.7",
             "pypy-3.8",
             "pypy-3.9",
-            "3.7",
+            "pypy-3.10",
             "3.8",
             "3.9",
             "3.10",
             "3.11",
             "3.12",
+            "3.13-dev",
           ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -49,15 +52,15 @@ jobs:
       TARGETS: src tests
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Poetry
         run: pipx install poetry
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "poetry"
 
       - name: Install dependencies
@@ -81,15 +84,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Poetry
         run: pipx install poetry
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.7"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "poetry"
 
       - name: Install dependencies

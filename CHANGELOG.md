@@ -16,7 +16,7 @@ Types of changes:
 
 ### Added
 
-- Add Python 3.12 support.
+- Add Python 3.12 and 3.13 support.
 
 ### Changed
 
@@ -24,7 +24,8 @@ Types of changes:
 
 ### Removed
 
-- Drop Python 3.6 support.
+- Drop Python 3.6 and 3.7 support.
+- Drop Pytest 5.x support.
 
 ## Release 0.11.3
 
