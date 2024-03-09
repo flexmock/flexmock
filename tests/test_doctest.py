@@ -1,6 +1,6 @@
 """Test doctest integration and flexmock API examples."""
 
-# pylint: disable=missing-docstring,no-self-use
+# pylint: disable=missing-docstring
 import doctest
 import sys
 
@@ -37,8 +37,7 @@ class Plane:
         return None
 
     def flight_log(self):
-        for entry in ["land", "repair"]:
-            yield entry
+        yield from ["land", "repair"]
 
     def passenger_count(self):
         return len(self.passengers)

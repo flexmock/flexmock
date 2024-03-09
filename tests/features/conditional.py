@@ -1,6 +1,6 @@
 """Tests for conditional assertions."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member
 import functools
 
 from flexmock import exceptions, flexmock

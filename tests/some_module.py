@@ -1,6 +1,6 @@
 """Bogus module for testing."""
 
-# pylint: disable=missing-docstring,disallowed-name,invalid-name,no-self-use
+# pylint: disable=missing-docstring,disallowed-name,invalid-name
 
 MODULE_LEVEL_ATTRIBUTE = "test"
 

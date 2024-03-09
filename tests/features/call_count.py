@@ -1,6 +1,6 @@
 """Tests for call count modifiers."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member
 
 from flexmock import exceptions, flexmock
 from flexmock._api import flexmock_teardown

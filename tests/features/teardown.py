@@ -1,6 +1,6 @@
 """Tests for flexmock teardown."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member
 from flexmock import exceptions, flexmock
 from flexmock._api import UPDATED_ATTRS, flexmock_teardown
 from tests import some_module

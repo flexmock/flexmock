@@ -1,6 +1,6 @@
 """Tests for argument matching."""
 
-# pylint: disable=missing-docstring,no-self-use,no-member
+# pylint: disable=missing-docstring,no-member
 import re
 
 from flexmock import exceptions, flexmock

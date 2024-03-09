@@ -1,6 +1,6 @@
 """Test TeamCity (PyCharm) integration."""
 
-# pylint: disable=missing-docstring,no-self-use
+# pylint: disable=missing-docstring
 import unittest
 
 from teamcity.unittestpy import TeamcityTestRunner
