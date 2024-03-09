@@ -2,6 +2,7 @@
 
 Tests under this module should not depend on any test runner.
 """
+
 from .arg_matching import ArgumentMatchingTestCase
 from .call_count import CallCountTestCase
 from .common import CommonTestCase

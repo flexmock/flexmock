@@ -1,4 +1,5 @@
 """Tests for mocking and spying derived classes."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member
 from flexmock import exceptions, flexmock
 from tests.some_module import DerivedClass, SomeClass

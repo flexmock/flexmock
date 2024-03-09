@@ -1,4 +1,5 @@
 """Tests for flexmock spying feature."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member
 import re
 

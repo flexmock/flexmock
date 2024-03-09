@@ -1,4 +1,5 @@
 """Tests for call count modifiers."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member
 
 from flexmock import exceptions, flexmock

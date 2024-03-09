@@ -1,4 +1,5 @@
 """Tests for flexmock stubbing feature."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member
 from flexmock import flexmock
 from flexmock._api import flexmock_teardown

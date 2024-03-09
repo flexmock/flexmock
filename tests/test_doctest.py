@@ -1,4 +1,5 @@
 """Test doctest integration and flexmock API examples."""
+
 # pylint: disable=missing-docstring,no-self-use
 import doctest
 import sys

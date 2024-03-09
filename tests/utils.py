@@ -1,4 +1,5 @@
 """Utility functions for testing."""
+
 from contextlib import contextmanager
 from typing import Type, Union
 

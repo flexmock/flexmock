@@ -1,4 +1,5 @@
 """Test flexmock with pytest."""
+
 # pylint: disable=missing-docstring,redefined-outer-name,no-self-use
 import unittest
 

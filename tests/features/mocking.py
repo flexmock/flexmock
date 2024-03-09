@@ -1,4 +1,5 @@
 """Tests for flexmock mocking feature."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member,too-many-lines
 import os
 import random
