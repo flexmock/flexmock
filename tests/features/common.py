@@ -1,4 +1,5 @@
 """Flexmock tests that are not related to any particular feature."""
+
 # pylint: disable=missing-docstring,no-self-use
 from flexmock import Mock, flexmock
 from flexmock._api import (

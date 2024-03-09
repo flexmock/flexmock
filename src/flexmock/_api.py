@@ -1,4 +1,5 @@
 """Flexmock public API."""
+
 # pylint: disable=no-self-use,too-many-lines
 import inspect
 import re

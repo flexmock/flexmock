@@ -1,4 +1,5 @@
 """Tests for conditional assertions."""
+
 # pylint: disable=missing-docstring,no-self-use,no-member
 import functools
 

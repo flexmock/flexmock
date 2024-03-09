@@ -1,4 +1,5 @@
 """Test testtools integration."""
+
 # pylint: disable=missing-docstring,no-self-use
 import testtools
 

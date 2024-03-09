@@ -1,4 +1,5 @@
 """Test unittest integration."""
+
 # pylint: disable=missing-docstring,no-self-use
 import sys
 import unittest
