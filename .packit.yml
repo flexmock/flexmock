@@ -1,12 +1,21 @@
+actions:
+  post-upstream-clone:
+    - wget -O fedora/python-flexmock.spec https://src.fedoraproject.org/rpms/python-flexmock/raw/rawhide/f/python-flexmock.spec
+
+srpm_build_deps:
+- wget
+
+upstream_package_name: flexmock
+downstream_package_name: python-flexmock
 specfile_path: fedora/python-flexmock.spec
+
 jobs:
 - job: copr_build
   trigger: pull_request
-  metadata:
-    targets:
-      - fedora-all
+  targets:
+  - fedora-all
+
 - job: tests
   trigger: pull_request
-  metadata:
-    targets:
-      - fedora-all
+  targets:
+  - fedora-all
