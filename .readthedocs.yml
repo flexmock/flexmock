@@ -8,7 +8,8 @@ build:
   tools:
     python: "3.8"
   jobs:
-    post_install:
+    post_create_environment:
       - pip install poetry
+    post_install:
       - poetry config virtualenvs.create false
-      - poetry install
+      - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install
