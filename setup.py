@@ -5,7 +5,7 @@ from setuptools import setup
 with open("README.md", encoding="utf-8") as file:
     long_description = file.read()
 
-VERSION = "0.12.0"
+VERSION = "0.12.1"
 
 setup(
     name="flexmock",
@@ -52,5 +52,10 @@ setup(
             "version": ("setup.py", VERSION),
             "release": ("setup.py", VERSION),
         }
+    },
+    entry_points={
+        'pytest11': [
+            'flexmock = flexmock._pytest_plugin',
+        ],
     },
 )
