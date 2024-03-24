@@ -16,6 +16,12 @@ Types of changes:
 
 -
 
+## Release 0.12.1
+
+### Fixed
+
+- Flexmock Pytest plugin entrypoint missing from `setup.py`.
+
 ## Release 0.12.0
 
 ### Added
