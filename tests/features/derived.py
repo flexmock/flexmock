@@ -2,6 +2,7 @@
 
 # pylint: disable=missing-docstring,no-member
 from flexmock import exceptions, flexmock
+from flexmock._api import flexmock_teardown
 from tests.some_module import DerivedClass, SomeClass
 from tests.utils import assert_raises
 
@@ -128,3 +129,19 @@ class DerivedTestCase:
         ).once()  # should be twice
         assert DerivedClass().static_method_with_args(4) == 4
         assert DerivedClass.static_method_with_args(4) == 4
+
+    def test_multi_mock_class_method_on_derived_class_is_properly_torn_down(self):
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(1).once()
+        DerivedClass.class_method_with_args(1)
+
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(2).once()
+        DerivedClass.class_method_with_args(2)
+
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(3).once()
+        DerivedClass.class_method_with_args(3)
+
+        # Run teardown manually to allow this test case to be contained in single test
+        flexmock_teardown()
+
+        flexmock(DerivedClass).should_receive("class_method_with_args").with_args(4).once()
+        DerivedClass.class_method_with_args(4)

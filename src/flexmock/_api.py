@@ -531,7 +531,10 @@ def flexmock_teardown() -> None:
     classes = []
     for mock_object, expectations in FlexmockContainer.flexmock_objects.items():
         saved[mock_object] = expectations[:]
-        for expectation in expectations:
+        # Reset the expectations in reversed order to ensure everything is restored to
+        # its original form even if setting consequent expectations on the same object
+        # operates on top of previous expectation and not on original object.
+        for expectation in reversed(expectations):
             expectation._reset()
         for expectation in expectations:
             # Remove method type attributes set by flexmock. This needs to be done after
