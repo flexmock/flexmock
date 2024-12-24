@@ -6,7 +6,7 @@ import re
 import sys
 import types
 from types import BuiltinMethodType, TracebackType
-from typing import Any, Callable, Dict, Iterator, List, NoReturn, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Iterator, List, NoReturn, Optional, Tuple, Type, Union
 
 from flexmock.exceptions import (
     CallOrderError,
@@ -33,7 +33,9 @@ class ReturnValue:
     """ReturnValue"""
 
     def __init__(
-        self, value: Optional[Any] = None, raises: Optional[Type[BaseException]] = None
+        self,
+        value: Optional[Any] = None,
+        raises: Optional[Union[Type[BaseException], BaseException]] = None,
     ) -> None:
         self.value = value
         self.raises = raises
@@ -500,7 +502,7 @@ class Mock:
                     args = return_value.value
                     assert isinstance(args, dict)
                     raise return_value.raises(*args["kargs"], **args["kwargs"])
-                raise return_value.raises  # pylint: disable=raising-bad-type
+                raise return_value.raises
             return return_value.value
 
         def mock_method(runtime_self: Any, *kargs: Any, **kwargs: Any) -> Any:
@@ -1121,7 +1123,9 @@ class Expectation:
         self._runnable = func
         return self
 
-    def and_raise(self, exception: Type[BaseException], *args: Any, **kwargs: Any) -> "Expectation":
+    def and_raise(
+        self, exception: Union[Type[BaseException], BaseException], *args: Any, **kwargs: Any
+    ) -> "Expectation":
         """Specifies the exception to be raised when this expectation is met.
 
         Args:
