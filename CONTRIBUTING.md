@@ -33,23 +33,23 @@ make lint
 
 CI pipeline also runs tests using all the supported Python versions. You can use Tox if you want to run these tests yourself, but first you need to have all different Python versions available in your local system.
 
-One option is to use [Pyenv](https://github.com/pyenv/pyenv) to manage different Python versions. For example, if you would want to run the test suite using Python versions 3.6 and 3.7, you can install the needed Python versions with the following commands:
+One option is to use [Pyenv](https://github.com/pyenv/pyenv) to manage different Python versions. For example, if you would want to run the test suite using Python versions 3.8 and 3.9, you can install the needed Python versions with the following commands:
 
 ```
-pyenv install 3.6.14
-pyenv install 3.7.11
+pyenv install 3.8.20
+pyenv install 3.9.21
 ```
 
 After the installation, you can make the installed Python versions available globally:
 
 ```
-pyenv global 3.6.14 3.7.11
+pyenv global 3.8.20 3.9.21
 ```
 
 Finally, you can run Tox and it should discover the installed Python version automatically:
 
 ```
-tox -e py36,py37
+tox -e py38,py39
 ```
 
 You can omit the `-e` argument if you want to run the tests against all supported Python versions. If everything works, the output should be something similar to this:
@@ -57,8 +57,8 @@ You can omit the `-e` argument if you want to run the tests against all supporte
 ```
 ...
 __________ summary __________
-  py36: commands succeeded
-  py37: commands succeeded
+  py38: commands succeeded
+  py39: commands succeeded
   congratulations :)
 ```
 

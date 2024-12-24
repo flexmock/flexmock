@@ -36,7 +36,7 @@ Flexmock is a testing library for Python that makes it easy to create mocks, stu
 - **Simple and intuitive**: Declarations are structured to read more like English sentences than API calls, so they are easy to learn and use.
 - **Fully type annotated**: External API is fully type annotated so it works great with static analysis tools and editor auto-completion.
 - **Integrations with test runners**: Integrates seamlessly with all major test runners like unittest, doctest, and pytest.
-- **Python 3.6+ and PyPy3**: Extensively tested to work with latest Python versions.
+- **Python 3.8+ and PyPy3**: Extensively tested to work with latest Python versions.
 
 ## Installation
 
