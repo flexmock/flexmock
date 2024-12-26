@@ -16,6 +16,17 @@ Types of changes:
 
 -
 
+## Release 0.12.2
+
+### Fixed
+
+- Fix typing of `and_raise` (exception instances are allowed).
+- Fix teardown for spying on derived class methods.
+
+### Documentation
+
+- Remove python 3.6 mentions and add py-version config to pylint.
+
 ## Release 0.12.1
 
 ### Fixed
