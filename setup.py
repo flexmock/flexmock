@@ -5,7 +5,7 @@ from setuptools import setup
 with open("README.md", encoding="utf-8") as file:
     long_description = file.read()
 
-VERSION = "0.12.1"
+VERSION = "0.12.2"
 
 setup(
     name="flexmock",
