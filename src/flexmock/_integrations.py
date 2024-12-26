@@ -52,7 +52,7 @@ def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
 
     @wraps(saved_stop_test)
     def decorated(self: unittest.TextTestResult, test: unittest.TestCase) -> None:
-        if saved_stop_test.__code__ is not decorated.__code__:
+        if saved_stop_test.__code__ is not decorated.__code__:  # type: ignore [attr-defined]
             # if parent class was for some reason patched, avoid calling
             # flexmock_teardown() twice and delegate up the class hierarchy
             # this doesn't help if there is a gap and only the parent's
