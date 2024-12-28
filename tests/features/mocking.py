@@ -804,6 +804,34 @@ class MockingTestCase:
         flexmock(instance).should_receive("method").with_args("stuff")
         instance.method("stuff")
 
+    def test_with_args_scoped_mock(self):
+        class FooClass:
+            def method(self, arg):
+                return arg
+
+        flexmock(FooClass).should_receive("method").with_args("override").and_return("method override").once()
+        instance = FooClass()
+        assert instance.method("override") == "method override"
+        assert instance.method("original") == "original"
+
+    def test_with_args_on_new_constructor(self):
+        class FooClass:
+            def __init__(self, arg):
+                self.arg = arg
+
+            def method(self):
+                return self.arg
+
+        fake_Foo = flexmock()
+        fake_Foo.should_receive("method").and_return("method override")
+        flexmock(FooClass).should_receive("__new__").with_args("override").and_return(fake_Foo)
+        instance_mocked = FooClass("override")
+        assert isinstance(instance_mocked, Mock)
+        assert instance_mocked.method() == "method override"
+        instance_original = FooClass("original")
+        assert isinstance(instance_original, FooClass)
+        assert instance_original.method() == "original"
+
     def test_calling_with_keyword_args_matches_mock_with_positional_args(self):
         class FooClass:
             def method(self, arg1, arg2, arg3):
