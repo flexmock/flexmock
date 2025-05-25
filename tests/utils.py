@@ -1,13 +1,12 @@
 """Utility functions for testing."""
 
+import re
 from contextlib import contextmanager
-from typing import Type, Union
-
-from flexmock._api import RE_TYPE
+from typing import Union
 
 
 @contextmanager
-def assert_raises(expected_exception: Type[BaseException], match: Union[RE_TYPE, str, None]):
+def assert_raises(expected_exception: type[BaseException], match: Union[re.Pattern, str, None]):
     """Assert that code raises the correct exception with a correct error message.
 
     Args:
@@ -25,7 +24,7 @@ def assert_raises(expected_exception: Type[BaseException], match: Union[RE_TYPE,
             ) from raised_exception
         if match is not None:
             fail = False
-            if isinstance(match, RE_TYPE):
+            if isinstance(match, re.Pattern):
                 fail = not match.search(str(raised_exception))
                 match = match.pattern
             else:
