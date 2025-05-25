@@ -3,7 +3,8 @@ Pytest is a Python test framework:
 https://github.com/pytest-dev/pytest
 """
 
-from typing import Generator, Optional
+from collections.abc import Generator
+from typing import Optional
 
 import pytest
 from _pytest.runner import CallInfo, ExceptionInfo, Item, TestReport
@@ -15,7 +16,7 @@ from flexmock._api import flexmock_teardown
 def pytest_runtest_makereport(
     item: Item,  # pylint: disable=unused-argument
     call: CallInfo[None],
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     """Called to verify and tear down the mocks set up by flexmock.
 
     Args:

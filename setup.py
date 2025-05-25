@@ -30,7 +30,6 @@ setup(
         "Intended Audience :: Developers",
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -43,7 +42,7 @@ setup(
         "Topic :: Software Development :: Testing :: Unit",
         "Typing :: Typed",
     ],
-    python_requires=">=3.8.0,<4.0.0",
+    python_requires=">=3.9.0,<4.0.0",
     packages=["flexmock"],
     package_dir={"": "src"},
     include_package_data=True,
@@ -54,8 +53,8 @@ setup(
         }
     },
     entry_points={
-        'pytest11': [
-            'flexmock = flexmock._pytest_plugin',
+        "pytest11": [
+            "flexmock = flexmock._pytest_plugin",
         ],
     },
 )

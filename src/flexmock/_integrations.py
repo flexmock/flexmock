@@ -5,12 +5,12 @@ import sys
 import unittest
 from contextlib import suppress
 from functools import wraps
-from typing import Any, Type
+from typing import Any
 
 from flexmock._api import flexmock_teardown
 
 
-def _patch_test_result(klass: Type[Any]) -> None:
+def _patch_test_result(klass: type[Any]) -> None:
     """Patches flexmock into any class that inherits unittest.TestResult.
 
     This seems to work well for majority of test runners. In the case of nose
@@ -35,7 +35,7 @@ def _patch_test_result(klass: Type[Any]) -> None:
     _patch_add_success(klass)
 
 
-def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
+def _patch_stop_test(klass: type[unittest.TextTestResult]) -> None:
     """Patch TextTestResult class stopTest method and add call to flexmock
     teardown.
 
@@ -71,7 +71,7 @@ def _patch_stop_test(klass: Type[unittest.TextTestResult]) -> None:
         klass.stopTest = decorated  # type: ignore
 
 
-def _patch_add_success(klass: Type[unittest.TextTestResult]) -> None:
+def _patch_add_success(klass: type[unittest.TextTestResult]) -> None:
     """Patch the addSuccess method of the TextTestResult class.
 
     TextTestResult addSuccess method is replaced and the original addSuccess

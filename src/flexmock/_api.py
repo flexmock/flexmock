@@ -5,8 +5,9 @@ import inspect
 import re
 import sys
 import types
+from collections.abc import Callable, Iterator
 from types import BuiltinMethodType, TracebackType
-from typing import Any, Callable, Dict, Iterator, List, NoReturn, Optional, Tuple, Type, Union
+from typing import Any, NoReturn, Optional, Union
 
 from flexmock.exceptions import (
     CallOrderError,
@@ -25,8 +26,6 @@ EXACTLY = "exactly"
 SPECIAL_METHODS = (classmethod, staticmethod)
 UPDATED_ATTRS = ["should_receive", "should_call", "new_instances"]
 DEFAULT_CLASS_ATTRIBUTES = [attr for attr in dir(type) if attr not in dir(type("", (object,), {}))]
-# Fix Python 3.6 does not have re.Pattern type
-RE_TYPE = type(re.compile(""))
 
 
 class ReturnValue:
@@ -35,7 +34,7 @@ class ReturnValue:
     def __init__(
         self,
         value: Optional[Any] = None,
-        raises: Optional[Union[Type[BaseException], BaseException]] = None,
+        raises: Optional[Union[type[BaseException], BaseException]] = None,
     ) -> None:
         self.value = value
         self.raises = raises
@@ -73,7 +72,7 @@ class Mock:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
@@ -402,7 +401,7 @@ class Mock:
                             f"  Expected:\t{expected}\n"
                             f"  Raised:\t{raised}"
                         )
-                    if args["kargs"] and isinstance(args["kargs"][0], RE_TYPE):
+                    if args["kargs"] and isinstance(args["kargs"][0], re.Pattern):
                         if not args["kargs"][0].search(message):
                             raise ExceptionMessageError(
                                 f"Error message mismatch with raised {expected.__name__}:\n"
@@ -582,7 +581,7 @@ class Expectation:
     raise.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         mock: Mock,
         name: Optional[str] = None,
@@ -596,13 +595,13 @@ class Expectation:
         self._name = name
         self._times_called: int = 0
         self._modifier: str = EXACTLY
-        self._args: Optional[Dict[str, Any]] = None
+        self._args: Optional[dict[str, Any]] = None
         self._method_type = method_type
         self._argspec: Optional[inspect.FullArgSpec] = None
         self._return_values = [ReturnValue(return_value)] if return_value is not None else []
         self._replace_with: Optional[Callable[..., Any]] = None
         self._original_function: Optional[Callable[..., Any]] = None
-        self._expected_calls: Dict[str, Optional[int]] = {
+        self._expected_calls: dict[str, Optional[int]] = {
             EXACTLY: None,
             AT_LEAST: None,
             AT_MOST: None,
@@ -736,12 +735,12 @@ class Expectation:
                 # builtins don't change signature
                 pass
 
-    def _normalize_named_args(self, *kargs: Any, **kwargs: Any) -> Dict[str, Any]:
+    def _normalize_named_args(self, *kargs: Any, **kwargs: Any) -> dict[str, Any]:
         argspec = self._argspec
         default = {"kargs": kargs, "kwargs": kwargs}
         if not argspec:
             return default
-        ret: Dict[str, Any] = {"kargs": (), "kwargs": kwargs}
+        ret: dict[str, Any] = {"kargs": (), "kwargs": kwargs}
         if inspect.ismethod(self._original):
             args = argspec.args[1:]
         else:
@@ -752,7 +751,7 @@ class Expectation:
             ret["kwargs"][args[i]] = arg
         return ret
 
-    def __raise(self, exception: Type[BaseException], message: str) -> NoReturn:
+    def __raise(self, exception: type[BaseException], message: str) -> NoReturn:
         """Safe internal raise implementation.
 
         In case we're patching builtins, it's important to reset the
@@ -1124,7 +1123,7 @@ class Expectation:
         return self
 
     def and_raise(
-        self, exception: Union[Type[BaseException], BaseException], *args: Any, **kwargs: Any
+        self, exception: Union[type[BaseException], BaseException], *args: Any, **kwargs: Any
     ) -> "Expectation":
         """Specifies the exception to be raised when this expectation is met.
 
@@ -1239,7 +1238,7 @@ class Expectation:
                 ),
             )
 
-    def _verify_number_of_calls(self, final: bool) -> Tuple[bool, str]:
+    def _verify_number_of_calls(self, final: bool) -> tuple[bool, str]:
         if self._called_deprecated_property:
             raise FlexmockError(
                 "Calling once, twice, never, or mock without parentheses has been deprecated"
@@ -1298,9 +1297,9 @@ class Expectation:
 class FlexmockContainer:
     """Holds global hash of object/expectation mappings."""
 
-    flexmock_objects: Dict[Mock, List[Expectation]] = {}
-    properties: Dict[Any, List[str]] = {}
-    ordered: List[Expectation] = []
+    flexmock_objects: dict[Mock, list[Expectation]] = {}
+    properties: dict[Any, list[str]] = {}
+    ordered: list[Expectation] = []
     last: Optional[Expectation] = None
 
     @classmethod
@@ -1332,7 +1331,7 @@ class FlexmockContainer:
         return found
 
     @classmethod
-    def _verify_call_order(cls, expectation: Expectation, args: Dict[str, Any]) -> None:
+    def _verify_call_order(cls, expectation: Expectation, args: dict[str, Any]) -> None:
         next_method = cls.ordered.pop(0)
         cls.last = next_method
         if expectation is not next_method:
@@ -1350,7 +1349,7 @@ class FlexmockContainer:
             cls.flexmock_objects[obj] = [expectation]
 
     @classmethod
-    def get_expectations_with_name(cls, obj: Mock, name: str) -> List[Expectation]:
+    def get_expectations_with_name(cls, obj: Mock, name: str) -> list[Expectation]:
         """Get all expectations for given name."""
         return [x for x in FlexmockContainer.flexmock_objects.get(obj, []) if x._name == name]
 
@@ -1404,14 +1403,14 @@ def flexmock(spec: Optional[Any] = None, **kwargs: Any) -> Mock:
 
 
 def _arg_to_str(arg: Any) -> str:
-    if isinstance(arg, RE_TYPE):
+    if isinstance(arg, re.Pattern):
         return f"/{arg.pattern}/"
     if isinstance(arg, str):
         return f'"{arg}"'
     return f"{arg}"
 
 
-def _format_args(name: str, arguments: Optional[Dict[str, Any]]) -> str:
+def _format_args(name: str, arguments: Optional[dict[str, Any]]) -> str:
     if arguments is None:
         arguments = {"kargs": (), "kwargs": {}}
     kargs = ", ".join(_arg_to_str(arg) for arg in arguments["kargs"])
@@ -1443,7 +1442,7 @@ def _create_partial_mock(obj_or_class: Any, **kwargs: Any) -> Mock:
     return mock
 
 
-def _attach_flexmock_methods(mock: Mock, flexmock_class: Type[Mock], obj: Any) -> bool:
+def _attach_flexmock_methods(mock: Mock, flexmock_class: type[Mock], obj: Any) -> bool:
     try:
         for attr in UPDATED_ATTRS:
             if hasattr(obj, attr):
@@ -1469,7 +1468,7 @@ def _arguments_match(arg: Any, expected_arg: Any) -> bool:
         return True
     if inspect.isclass(expected_arg) and isinstance(arg, expected_arg):
         return True
-    if isinstance(expected_arg, RE_TYPE) and expected_arg.search(arg):
+    if isinstance(expected_arg, re.Pattern) and expected_arg.search(arg):
         return True
     return False
 
