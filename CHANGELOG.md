@@ -14,6 +14,10 @@ Types of changes:
 
 ## Unreleased
 
+### Added
+
+- Add Python 3.14 support.
+
 ### Removed
 
 - Drop Python 3.8 and Python 3.9 support.
