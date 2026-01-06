@@ -7,7 +7,7 @@ import sys
 import types
 from collections.abc import Callable, Iterator
 from types import BuiltinMethodType, TracebackType
-from typing import Any, NoReturn, Optional, Union
+from typing import Any, NoReturn
 
 from flexmock.exceptions import (
     CallOrderError,
@@ -33,8 +33,8 @@ class ReturnValue:
 
     def __init__(
         self,
-        value: Optional[Any] = None,
-        raises: Optional[Union[type[BaseException], BaseException]] = None,
+        value: Any | None = None,
+        raises: type[BaseException] | BaseException | None = None,
     ) -> None:
         self.value = value
         self.raises = raises
@@ -72,9 +72,9 @@ class Mock:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         pass
 
@@ -228,7 +228,7 @@ class Mock:
             return self.should_receive("__new__").and_return(args).one_by_one()
         raise FlexmockError("new_instances can only be called on a class mock")
 
-    def _create_expectation(self, name: str, return_value: Optional[Any] = None) -> "Expectation":
+    def _create_expectation(self, name: str, return_value: Any | None = None) -> "Expectation":
         expectation = self._get_or_create_expectation(name, return_value)
         FlexmockContainer.add_expectation(self, expectation)
 
@@ -245,7 +245,7 @@ class Mock:
         return expectation
 
     def _get_or_create_expectation(
-        self, name: str, return_value: Optional[Any] = None
+        self, name: str, return_value: Any | None = None
     ) -> "Expectation":
         saved_expectations = FlexmockContainer.get_expectations_with_name(self, name)
         if saved_expectations:
@@ -305,7 +305,7 @@ class Mock:
         setattr(self._object, f"{name}__flexmock__method_type", method_type)
         return method_type
 
-    def _get_saved_method_type(self, name: str, method: Callable[..., Any]) -> Optional[Any]:
+    def _get_saved_method_type(self, name: str, method: Callable[..., Any]) -> Any | None:
         """Check method type of the original method if it was saved to the class or base class."""
         bound_to = getattr(method, "__self__", None)
         if bound_to is not None and inspect.isclass(bound_to):
@@ -344,7 +344,7 @@ class Mock:
             )
 
     def _update_attribute(
-        self, expectation: "Expectation", name: str, return_value: Optional[Any] = None
+        self, expectation: "Expectation", name: str, return_value: Any | None = None
     ) -> None:
         expectation._callable = False
         if self._hasattr(self._object, name) and not hasattr(expectation, "_original"):
@@ -584,10 +584,10 @@ class Expectation:
     def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         mock: Mock,
-        name: Optional[str] = None,
-        return_value: Optional[Any] = None,
-        original: Optional[Any] = None,
-        method_type: Optional[Any] = None,
+        name: str | None = None,
+        return_value: Any | None = None,
+        original: Any | None = None,
+        method_type: Any | None = None,
     ) -> None:
         if original is not None:
             self._original = original
@@ -595,13 +595,13 @@ class Expectation:
         self._name = name
         self._times_called: int = 0
         self._modifier: str = EXACTLY
-        self._args: Optional[dict[str, Any]] = None
+        self._args: dict[str, Any] | None = None
         self._method_type = method_type
-        self._argspec: Optional[inspect.FullArgSpec] = None
+        self._argspec: inspect.FullArgSpec | None = None
         self._return_values = [ReturnValue(return_value)] if return_value is not None else []
-        self._replace_with: Optional[Callable[..., Any]] = None
-        self._original_function: Optional[Callable[..., Any]] = None
-        self._expected_calls: dict[str, Optional[int]] = {
+        self._replace_with: Callable[..., Any] | None = None
+        self._original_function: Callable[..., Any] | None = None
+        self._expected_calls: dict[str, int | None] = {
             EXACTLY: None,
             AT_LEAST: None,
             AT_MOST: None,
@@ -1123,7 +1123,7 @@ class Expectation:
         return self
 
     def and_raise(
-        self, exception: Union[type[BaseException], BaseException], *args: Any, **kwargs: Any
+        self, exception: type[BaseException] | BaseException, *args: Any, **kwargs: Any
     ) -> "Expectation":
         """Specifies the exception to be raised when this expectation is met.
 
@@ -1300,7 +1300,7 @@ class FlexmockContainer:
     flexmock_objects: dict[Mock, list[Expectation]] = {}
     properties: dict[Any, list[str]] = {}
     ordered: list[Expectation] = []
-    last: Optional[Expectation] = None
+    last: Expectation | None = None
 
     @classmethod
     def reset(cls) -> None:
@@ -1312,8 +1312,8 @@ class FlexmockContainer:
 
     @classmethod
     def get_flexmock_expectation(
-        cls, obj: Mock, name: str, args: Optional[Any] = None
-    ) -> Optional[Expectation]:
+        cls, obj: Mock, name: str, args: Any | None = None
+    ) -> Expectation | None:
         """Retrieves an existing matching expectation."""
         if args is None:
             args = {"kargs": (), "kwargs": {}}
@@ -1369,7 +1369,7 @@ class FlexmockContainer:
                 delattr(obj, name)
 
 
-def flexmock(spec: Optional[Any] = None, **kwargs: Any) -> Mock:
+def flexmock(spec: Any | None = None, **kwargs: Any) -> Mock:
     """Main entry point into the flexmock API.
 
     This function is used to either generate a new fake object or take
@@ -1410,7 +1410,7 @@ def _arg_to_str(arg: Any) -> str:
     return f"{arg}"
 
 
-def _format_args(name: str, arguments: Optional[dict[str, Any]]) -> str:
+def _format_args(name: str, arguments: dict[str, Any] | None) -> str:
     if arguments is None:
         arguments = {"kargs": (), "kwargs": {}}
     kargs = ", ".join(_arg_to_str(arg) for arg in arguments["kargs"])

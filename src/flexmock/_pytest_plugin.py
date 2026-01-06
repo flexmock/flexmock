@@ -4,7 +4,6 @@ https://github.com/pytest-dev/pytest
 """
 
 from collections.abc import Generator
-from typing import Optional
 
 import pytest
 from _pytest.runner import CallInfo, ExceptionInfo, Item, TestReport
@@ -34,4 +33,4 @@ def pytest_runtest_makereport(
     elif call.when == "teardown":
         flexmock_teardown()
 
-    _test_report: Optional[TestReport] = yield
+    _test_report: TestReport | None = yield

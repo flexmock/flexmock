@@ -2,11 +2,10 @@
 
 import re
 from contextlib import contextmanager
-from typing import Union
 
 
 @contextmanager
-def assert_raises(expected_exception: type[BaseException], match: Union[re.Pattern, str, None]):
+def assert_raises(expected_exception: type[BaseException], match: re.Pattern | str | None):
     """Assert that code raises the correct exception with a correct error message.
 
     Args:
