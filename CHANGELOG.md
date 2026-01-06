@@ -22,6 +22,10 @@ Types of changes:
 
 - Drop Python 3.8 and Python 3.9 support.
 
+### Infrastructure
+
+- Add Pytest 9.0 to tox test run.
+
 ## Release 0.12.2
 
 ### Fixed
