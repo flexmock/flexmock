@@ -1,0 +1,49 @@
+name: Publish the release to PyPI
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.10"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set release name as environment variable
+        run: echo "RELEASE_NAME=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Verify version matches tag
+        run: |
+          POETRY_VERSION=$(poetry version -s)
+          RELEASE_TAG=${{ github.event.release.tag_name }}
+          # Strip 'v' prefix if exists
+          CLEAN_TAG=${RELEASE_TAG#v}
+          if [ "$POETRY_VERSION" != "$CLEAN_TAG" ]; then
+            echo "Version mismatch!"
+            echo "Poetry version: $POETRY_VERSION"
+            echo "Release tag: $RELEASE_TAG"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "poetry"
+
+      - name: Build the release package
+        run: poetry build
+
+      - name: Publish the release to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
