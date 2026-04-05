@@ -1,7 +1,6 @@
 
 color := $(shell tput setaf 2)
 off := $(shell tput sgr0)
-PYTHON := $(if $(shell command -v python3),python3,python)
 TARGETS = src tests
 
 .PHONY: all
@@ -30,53 +29,53 @@ pytest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running pytest$(off)\n'
 	@printf '*****************\n'
-	pytest
+	poetry run pytest
 
 .PHONY: unittest
 unittest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running unittest$(off)\n'
 	@printf '*****************\n'
-	PYTHONPATH=$(shell pwd) $(PYTHON) tests/test_unittest.py
+	PYTHONPATH=$(shell pwd) poetry run python tests/test_unittest.py
 
 .PHONY: doctest
 doctest:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running doctest$(off)\n'
 	@printf '*****************\n'
-	$(PYTHON) tests/test_doctest.py
+	poetry run python tests/test_doctest.py
 
 .PHONY: mypy
 mypy:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running mypy$(off)\n'
 	@printf '*****************\n'
-	mypy ${TARGETS}
+	poetry run mypy ${TARGETS}
 
 .PHONY: isort
 isort:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running isort$(off)\n'
 	@printf '*****************\n'
-	isort --check-only ${TARGETS}
+	poetry run isort --check-only ${TARGETS}
 
 .PHONY: black
 black:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running black$(off)\n'
 	@printf '*****************\n'
-	black --check ${TARGETS}
+	poetry run black --check ${TARGETS}
 
 .PHONY: pylint
 pylint:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Running pylint$(off)\n'
 	@printf '*****************\n'
-	pylint ${TARGETS}
+	poetry run pylint ${TARGETS}
 
 .PHONY: docs
 docs:
 	@printf '\n\n*****************\n'
 	@printf '$(color)Test building docs$(off)\n'
 	@printf '*****************\n'
-	mkdocs build --strict
+	poetry run mkdocs build --strict
