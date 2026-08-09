@@ -741,7 +741,14 @@ class Expectation:
         if not argspec:
             return default
         ret: dict[str, Any] = {"kargs": (), "kwargs": kwargs}
-        if inspect.ismethod(self._original):
+        # Builtin methods take `self` as the first argument but `inspect.ismethod` returns False
+        # so we need to check for them explicitly
+        is_builtin_method = (
+            isinstance(self._original, BuiltinMethodType)
+            and argspec.args
+            and argspec.args[0] == "self"
+        )
+        if inspect.ismethod(self._original) or is_builtin_method:
             args = argspec.args[1:]
         else:
             args = argspec.args

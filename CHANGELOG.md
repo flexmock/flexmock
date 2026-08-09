@@ -14,7 +14,12 @@ Types of changes:
 
 ## Unreleased
 
--
+### Fixed
+
+- Do not treat `self` as a regular argument when normalizing the arguments of a
+  spied builtin method. Positional arguments were shifted by one and displayed
+  with the wrong names in error messages (for example
+  `center(self=10)` instead of `center(width=10)`).
 
 ## Release 0.13.0
 
