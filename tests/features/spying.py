@@ -160,6 +160,21 @@ class SpyingTestCase:
         flexmock(user).should_call("get_stuff")
         assert user.get_stuff() == ("real", "stuff")
 
+    def test_spying_builtin_method_does_not_name_arguments_self(self):
+        class String(str):
+            pass
+
+        string = String("abc")
+        flexmock(string)
+        # `self` must not be counted as an argument of the builtin method
+        string.should_call("center").with_args(10).ordered()
+        string.should_call("endswith").ordered()
+        with assert_raises(
+            exceptions.CallOrderError,
+            re.compile(r'endswith\("c"\) called before center\((width=)?10\)'),
+        ):
+            string.endswith("c")
+
     def test_and_raise_with_value_that_is_not_a_class(self):
         class RaisesException:
             def get_stuff(self):
