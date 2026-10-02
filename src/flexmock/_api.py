@@ -748,7 +748,13 @@ class Expectation:
             and argspec.args
             and argspec.args[0] == "self"
         )
-        if inspect.ismethod(self._original) or is_builtin_method:
+        # Instance methods accessed on a class are unbound functions.
+        is_unbound_method = (
+            inspect.isfunction(self._original)
+            and inspect.isclass(self._mock)
+            and self._method_type is not staticmethod
+        )
+        if inspect.ismethod(self._original) or is_builtin_method or is_unbound_method:
             args = argspec.args[1:]
         else:
             args = argspec.args

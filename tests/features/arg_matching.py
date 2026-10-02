@@ -243,6 +243,29 @@ class ArgumentMatchingTestCase:
         instance.instance_method_with_args("red")
         instance.instance_method_with_args("blue")
 
+    def test_class_mock_instance_method_error_uses_argument_name(self):
+        class Bicycle:
+            def speak(self, secondary_noise=""):
+                pass
+
+        flexmock(Bicycle).should_receive("speak").with_args("creak")
+        with assert_raises(
+            exceptions.MethodSignatureError,
+            (
+                "Arguments for call speak did not match expectations:\n"
+                '  Received call:\tspeak("boom")\n'
+                '  Expected call[1]:\tspeak(secondary_noise="creak")'
+            ),
+        ):
+            Bicycle().speak("boom")
+
+    def test_class_mock_instance_method_matches_positional_and_keyword_args(self):
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args("red").once()
+        flexmock(SomeClass).should_receive("instance_method_with_args").with_args(a="blue").once()
+        instance = SomeClass()
+        instance.instance_method_with_args(a="red")
+        instance.instance_method_with_args("blue")
+
     def test_with_args_with_class_method(self):
         flexmock(SomeClass).should_receive("class_method_with_args").with_args("red").once()
         flexmock(SomeClass).should_receive("class_method_with_args").with_args("blue").once()
