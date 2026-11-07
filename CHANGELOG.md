@@ -20,6 +20,7 @@ Types of changes:
   spied builtin method. Positional arguments were shifted by one and displayed
   with the wrong names in error messages (for example
   `center(self=10)` instead of `center(width=10)`).
+- Fix argument names and matching for instance methods mocked on a class.
 
 ## Release 0.13.0
 
