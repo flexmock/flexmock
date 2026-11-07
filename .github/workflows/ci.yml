@@ -115,3 +115,23 @@ jobs:
 
       - name: Build docs with Mkdocs
         run: make docs
+
+  # Single required status check for branch protection. It runs even when a needed job
+  # fails or is skipped, because a skipped required check would count as passing.
+  all-checks-pass:
+    name: Tests and lints pass
+    if: always()
+    needs: [test, lint, test-docs]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check that all jobs succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for result in $RESULTS; do
+            if [ "$result" != "success" ]; then
+              exit 1
+            fi
+          done
