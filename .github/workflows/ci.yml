@@ -2,11 +2,15 @@ name: Test and lint
 
 on:
   workflow_dispatch:
+  workflow_call:
   push:
     branches: [master]
   pull_request:
     branches:
       - "**"
+
+permissions:
+  contents: read
 
 env:
   PYTHON_VERSION: "3.10"
@@ -30,10 +34,12 @@ jobs:
           ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -49,13 +55,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Poetry
         run: pipx install poetry
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "poetry"
@@ -64,6 +72,9 @@ jobs:
         run: |
           poetry config virtualenvs.in-project true
           poetry install
+
+      - name: Check release metadata
+        run: poetry run python scripts/release.py check
 
       - name: Run isort
         run: make isort
@@ -81,13 +92,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Poetry
         run: pipx install poetry
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "poetry"

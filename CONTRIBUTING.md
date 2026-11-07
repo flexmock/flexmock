@@ -77,3 +77,53 @@ and [Mkdocs Material theme documentation](https://squidfunk.github.io/mkdocs-mat
 
 The documentation is automatically deployed to Read the Docs service on every
 new commit to the default branch.
+
+## Releasing a new version
+
+Releases are made with `scripts/release.py`. It needs [GitHub CLI](https://cli.github.com/)
+and a clean, up-to-date `master` branch.
+
+1. Bump the version in `pyproject.toml` and `setup.py`, move the entries in the
+   `Unreleased` section of `CHANGELOG.md` under the new version, and open a pull
+   request. Choose `major`, `minor` or `patch` following semantic versioning. The
+   script shows the changes and asks for confirmation before it commits them to a new
+   branch, pushes the branch and opens the pull request:
+
+   ```
+   poetry run python scripts/release.py prepare minor
+   ```
+
+2. Merge the pull request after it has been approved and CI passes. Do not create
+   the release before the pull request is merged.
+
+3. Update your local `master` branch and create the GitHub release. The script
+   shows the release notes and asks for confirmation before it creates the release
+   and its `v`-prefixed tag at the current commit:
+
+   ```
+   git switch master
+   git pull --ff-only
+   poetry run python scripts/release.py release
+   ```
+
+4. The release starts the publish workflow, which first runs the CI workflow. After
+   the tests and linters pass and the release checks succeed, the workflow waits for
+   approval to deploy to the `pypi` environment. Before approving, check that the
+   commit of the run is on the default branch and that its `.github/workflows/`
+   directory is the same as on the default branch.
+
+Saving a draft or publishing a pre-release does not publish anything to PyPI, but
+changing a pre-release to a release does start the workflow.
+
+If the workflow fails before the deployment, nothing has been uploaded to PyPI. Fix
+the problem in a pull request, remove the failed release with
+`gh release delete v1.2.3 --cleanup-tag` and create it again. If the tag cannot be
+reused, release a new version instead.
+
+### Release infrastructure
+
+PyPI trusted publishing is tied to the workflow file `publish.yml` and the `pypi`
+environment. The manual approval exists only if the `pypi` environment has required
+reviewers: GitHub creates a missing environment without any protection when a
+workflow references it. Do not delete or rename the environment, and do not leave
+the environment name blank in the PyPI trusted publisher.

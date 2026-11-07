@@ -26,6 +26,12 @@ Types of changes:
   `center(self=10)` instead of `center(width=10)`).
 - Fix argument names and matching for instance methods mocked on a class.
 
+### Infrastructure
+
+- Publish releases to PyPI only after tests and linters pass and the deployment
+  is approved.
+- Add `scripts/release.py` for preparing release pull requests and creating releases.
+
 ## Release 0.13.0
 
 ### Added

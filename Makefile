@@ -1,7 +1,7 @@
 
 color := $(shell tput setaf 2)
 off := $(shell tput sgr0)
-TARGETS = src tests
+TARGETS = src tests scripts/release.py
 
 .PHONY: all
 all: lint test
