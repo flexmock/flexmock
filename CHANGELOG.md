@@ -18,6 +18,11 @@ Types of changes:
 
 - Add Python 3.15 support.
 
+### Removed
+
+- Drop Python 3.10 support.
+- Drop pytest 6 support.
+
 ### Fixed
 
 - Do not treat `self` as a regular argument when normalizing the arguments of a
