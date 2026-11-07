@@ -266,6 +266,20 @@ class ArgumentMatchingTestCase:
         instance.instance_method_with_args(a="red")
         instance.instance_method_with_args("blue")
 
+    def test_class_mock_inherited_static_method_matches_positional_and_keyword_args(self):
+        class Parent:
+            @staticmethod
+            def method(a):
+                pass
+
+        class Child(Parent):
+            pass
+
+        flexmock(Child).should_receive("method").with_args("red").once()
+        flexmock(Child).should_receive("method").with_args(a="blue").once()
+        Child.method(a="red")
+        Child.method("blue")
+
     def test_with_args_with_class_method(self):
         flexmock(SomeClass).should_receive("class_method_with_args").with_args("red").once()
         flexmock(SomeClass).should_receive("class_method_with_args").with_args("blue").once()
