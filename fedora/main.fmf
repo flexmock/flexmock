@@ -9,7 +9,11 @@ discover:
     how: shell
     tests:
       - name: Upstream test suite
-        test: make test
+        test: |
+            export PYTHONPATH="$PWD"
+            python3 tests/test_unittest.py
+            python3 tests/test_doctest.py
+            python3 -m pytest tests/test_pytest.py
 
 # this is overridden in CI, but we want to run locally via CLI
 provision:
@@ -21,7 +25,6 @@ prepare:
     package:
       - python3-pytest
       - python3-twisted
-      - make
 
 # make sure the tests are actually executed, the default way
 execute:
