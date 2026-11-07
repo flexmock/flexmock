@@ -14,6 +14,10 @@ Types of changes:
 
 ## Unreleased
 
+### Added
+
+- Add Python 3.15 support.
+
 ### Fixed
 
 - Do not treat `self` as a regular argument when normalizing the arguments of a
