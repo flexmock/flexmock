@@ -126,16 +126,20 @@ class Mock:
         self._ensure_object_has_named_attribute(name)
 
         if chained_methods:
+            expectations = FlexmockContainer.get_expectations_with_name(self, name)
+            if expectations:
+                chained_mock = expectations[-1]._chained_mock
+                if chained_mock is not None:
+                    return chained_mock.should_receive(chained_methods)
+
             if not isinstance(self._object, Mock) and not hasattr(
                 getattr(self._object, name), "__call__"
             ):
-                # Create a partial mock if the given name is callable
-                # this allows chaining attributes
-                return_value = _create_partial_mock(getattr(self._object, name))
+                chained_mock = _create_partial_mock(getattr(self._object, name))
             else:
-                return_value = Mock()
-            self._create_expectation(name, return_value)
-            return return_value.should_receive(chained_methods)
+                chained_mock = Mock()
+            self._create_expectation(name, chained_mock)._chained_mock = chained_mock
+            return chained_mock.should_receive(chained_methods)
 
         return self._create_expectation(name)
 
@@ -593,6 +597,7 @@ class Expectation:
             self._original = original
 
         self._name = name
+        self._chained_mock: Mock | None = None
         self._times_called: int = 0
         self._modifier: str = EXACTLY
         self._args: dict[str, Any] | None = None
