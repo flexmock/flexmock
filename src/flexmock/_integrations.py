@@ -59,7 +59,8 @@ def _patch_stop_test(klass: type[unittest.TextTestResult]) -> None:
             # parent class was patched, but should cover most screw-ups
             try:
                 flexmock_teardown()
-                saved_add_success(self, test)
+                if hasattr(self, "_pre_flexmock_success"):
+                    saved_add_success(self, test)
             except Exception:
                 if hasattr(self, "_pre_flexmock_success"):
                     self.addFailure(test, sys.exc_info())

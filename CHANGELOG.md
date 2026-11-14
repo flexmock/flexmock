@@ -14,6 +14,12 @@ Types of changes:
 
 ## Unreleased
 
+### Fixed
+
+- Do not report unsuccessful or skipped unittest tests as successful after
+  flexmock teardown. Successful tests are still reported after their mock
+  expectations have been checked.
+
 ## Release 0.14.0
 
 ### Added
