@@ -132,8 +132,8 @@ class TeardownTestCase:
         base_attrs = list(vars(Base).keys())
         instance_attrs = list(vars(instance).keys())
         child_attrs = list(vars(Child).keys())
-        flexmock(Base).should_call("class_method").times(3)  # TODO: should be once #80
-        flexmock(Base).should_call("static_method").times(3)  # TODO: should be once #80
+        flexmock(Base).should_call("class_method").once()
+        flexmock(Base).should_call("static_method").once()
         Base.class_method()
         Base.static_method()
 
