@@ -275,7 +275,20 @@ class Mock:
             expectation._update_original(name, self._object)
             expectation._method_type = self._get_method_type(name, expectation._original)
             if expectation._method_type in SPECIAL_METHODS:
-                expectation._original_function = getattr(self._object, name)
+                expectation._original_function = _unwrap_mock_method(getattr(self._object, name))
+            # A subclass can be mocked after its base class, in which case the
+            # original method is the mock method of the base class. Use the original
+            # method of the base class instead of its mock method so that calling the
+            # method of the subclass does not call the mock method of the base class.
+            expectation._original = _unwrap_mock_method(expectation._original)
+            expectation._update_argspec()
+        original = expectation.__dict__.get("_original_function") or expectation.__dict__.get(
+            "_original"
+        )
+        if original is not None:
+            # Save the original method to the mock method so that mocking a subclass
+            # after its base class does not chain the mock methods together.
+            setattr(method_instance, "__flexmock_original__", original)
         if not inspect.isclass(self._object) or expectation._method_type in SPECIAL_METHODS:
             method_instance = types.MethodType(method_instance, self._object)
         expectation._local_override = _setattr(self._object, name, method_instance)
@@ -1474,6 +1487,13 @@ def _attach_flexmock_methods(mock: Mock, flexmock_class: type[Mock], obj: Any) -
             "Consider wrapping it in a class you can mock instead"
         ) from exc
     return True
+
+
+def _unwrap_mock_method(method: Any) -> Any:
+    """Return the original method of a mock method, or the method itself."""
+    func = getattr(method, "__func__", method)
+    original = getattr(func, "__flexmock_original__", None)
+    return method if original is None else original
 
 
 def _arguments_match(arg: Any, expected_arg: Any) -> bool:

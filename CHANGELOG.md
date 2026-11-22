@@ -14,6 +14,13 @@ Types of changes:
 
 ## Unreleased
 
+### Fixed
+
+- Fix spying on derived class methods after the base class has been spied. The
+  spy of the derived class no longer matches the expectations of the base class
+  spy, and calls to the derived class no longer increment the call count of the
+  base class spy.
+
 ## Release 0.14.0
 
 ### Added
